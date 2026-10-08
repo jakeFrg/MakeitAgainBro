@@ -1,0 +1,153 @@
+{
+    "_comentarios":  {
+                         "notas":  "Lista cronologica de las notas que se juegan.",
+                         "tiempoMs":  "Momento de impacto desde el inicio del audio, en milisegundos.",
+                         "carril":  "Carril: 0 izquierda, 1 abajo, 2 arriba, 3 derecha."
+                     },
+    "notas":  [
+                  {
+                      "tiempoMs":  1000,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  1500,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  2000,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  2500,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  3000,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  3250,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  3500,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  4000,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  4500,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  5000,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  5500,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  5750,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  6000,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  6500,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  7000,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  7500,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  8000,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  8250,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  8500,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  9000,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  9500,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  10000,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  10500,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  11000,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  11500,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  11750,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  12000,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  12500,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  13000,
+                      "carril":  0
+                  },
+                  {
+                      "tiempoMs":  13500,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  14000,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  14500,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  15000,
+                      "carril":  2
+                  },
+                  {
+                      "tiempoMs":  15500,
+                      "carril":  1
+                  },
+                  {
+                      "tiempoMs":  15750,
+                      "carril":  3
+                  },
+                  {
+                      "tiempoMs":  16000,
+                      "carril":  0
+                  }
+              ]
+}

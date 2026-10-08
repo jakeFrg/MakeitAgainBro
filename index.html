@@ -1,0 +1,93 @@
+<!-- Main page structure for the rhythm game. -->
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ritmo — demo de cuatro carriles</title>
+  <!-- Load the visual styles and game logic from their separate files. -->
+  <link rel="stylesheet" href="style.css">
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <!-- Header and player status area. -->
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Demo de ritmo">RITMO<span>///</span></a>
+      <div class="tag">DEMO · 4 CARRILES</div>
+    </header>
+
+    <section class="layout">
+      <!-- Controls: score, difficulty, keys, and local file selection. -->
+      <aside class="sidebar">
+        <p class="eyebrow">ARCADE DE RITMO</p>
+        <h1>Sigue el<br><em>compás.</em></h1>
+        <p class="intro">Pulsa la flecha cuando la nota llegue a la línea brillante. El chart incluido es una secuencia de ejemplo.</p>
+
+        <!-- Score and consecutive-hit counter. -->
+        <div class="stats">
+          <div><span class="stat-label">PUNTOS</span><strong id="score">000000</strong></div>
+          <div><span class="stat-label">COMBO</span><strong id="combo">0<span class="small">×</span></strong></div>
+        </div>
+        <div class="feedback" id="feedback" aria-live="polite">LISTO</div>
+
+        <!-- Travel duration controls how quickly notes fall. -->
+        <label class="difficulty-label" for="difficulty">DIFICULTAD</label>
+        <select id="difficulty" class="difficulty">
+          <option value="2600">Facil - lento</option>
+          <option value="1800" selected>Normal</option>
+          <option value="1100">Dificil - rapido</option>
+        </select>
+        <!-- Start and reset controls. -->
+        <div class="controls">
+          <button id="startButton" class="primary">▶ &nbsp; EMPEZAR</button>
+          <button id="resetButton" class="secondary">↺ &nbsp; REINICIAR</button>
+        </div>
+
+        <!-- Buttons let the player bind a keyboard key to each lane. -->
+        <section class="key-settings" aria-label="Asignar teclas">
+          <strong>ASIGNAR TECLAS</strong>
+          <div class="key-row"><span>Izquierda</span><button type="button" class="key-bind" data-bind-lane="0">←</button></div>
+          <div class="key-row"><span>Abajo</span><button type="button" class="key-bind" data-bind-lane="1">↓</button></div>
+          <div class="key-row"><span>Arriba</span><button type="button" class="key-bind" data-bind-lane="2">↑</button></div>
+          <div class="key-row"><span>Derecha</span><button type="button" class="key-bind" data-bind-lane="3">→</button></div>
+          <button id="defaultKeys" type="button" class="default-keys">Volver a las flechas</button>
+        </section>
+
+        <!-- Select the song audio and an optional chart JSON file. -->
+        <div class="file-controls">
+          <label class="file-label" for="audioFile">CANCIÓN MP3 <span id="audioName">elige un archivo</span></label>
+          <input id="audioFile" type="file" accept="audio/*">
+          <label class="file-label" for="chartFile">MAPA JSON <span>cargar otro mapa</span></label>
+          <input id="chartFile" type="file" accept="application/json,.json">
+        </div>
+        <p class="tip">Sin MP3, la demo usa un reloj interno.<br>Teclas: ← ↓ ↑ →</p>
+      </aside>
+
+      <!-- Playfield: four lanes, falling notes, and hit receptors. -->
+      <section class="game-card" aria-label="Pista de juego">
+        <div class="game-head"><span>JUGADOR 01</span><span id="clock">00:00</span></div>
+        <div class="stage" id="stage">
+          <!-- Background columns give each note lane its own track. -->
+          <div class="lane lane-0"></div><div class="lane lane-1"></div>
+          <div class="lane lane-2"></div><div class="lane lane-3"></div>
+          <div class="lane-glow"></div>
+          <!-- Notes should be hit where this line crosses the receptors. -->
+          <div class="hit-line"></div>
+          <!-- Fixed target arrows; falling notes travel down toward them. -->
+          <div class="receptors">
+            <div class="receptor" data-lane="0">←</div><div class="receptor" data-lane="1">↓</div>
+            <div class="receptor" data-lane="2">↑</div><div class="receptor" data-lane="3">→</div>
+          </div>
+          <!-- JavaScript creates and animates chart notes inside this layer. -->
+          <div id="notes" class="notes"></div>
+          <!-- Prompt shown before the round starts. -->
+          <div class="stage-message" id="stageMessage">PULSA EMPEZAR<br><small>Y PREPÁRATE</small></div>
+        </div>
+        <div class="game-foot"><span>← IZQ.</span><span>↓ ABAJO</span><span>↑ ARRIBA</span><span>→ DER.</span></div>
+      </section>
+    </section>
+    <footer>MAPA DE NOTAS EDITABLE · <code>game-over-baby-chart.json</code></footer>
+  </main>
+</body>
+</html>
