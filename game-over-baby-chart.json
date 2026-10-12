@@ -1,9 +1,11 @@
 {
     "_comentarios":  {
-                         "notas":  "Lista cronologica de las notas que se juegan.",
+                         "notas":  "Lista de notas de toda la seccion del mapa, en orden de tiempo.",
                          "tiempoMs":  "Momento de impacto desde el inicio del audio, en milisegundos.",
-                         "carril":  "Carril: 0 izquierda, 1 abajo, 2 arriba, 3 derecha."
+                         "carril":  "Carril de 0 a 3: izquierda, abajo, arriba, derecha.",
+                         "impulso":  "Marca una nota especial por su tiempoMs; acertarla carga 25 puntos de energia."
                      },
+    "desfaseMs":  0,
     "notas":  [
                   {
                       "tiempoMs":  1000,
@@ -27,7 +29,8 @@
                   },
                   {
                       "tiempoMs":  3250,
-                      "carril":  2
+                      "carril":  2,
+                      "impulso":  true
                   },
                   {
                       "tiempoMs":  3500,
@@ -63,7 +66,8 @@
                   },
                   {
                       "tiempoMs":  7000,
-                      "carril":  3
+                      "carril":  3,
+                      "impulso":  true
                   },
                   {
                       "tiempoMs":  7500,
@@ -107,7 +111,8 @@
                   },
                   {
                       "tiempoMs":  11750,
-                      "carril":  0
+                      "carril":  0,
+                      "impulso":  true
                   },
                   {
                       "tiempoMs":  12000,
@@ -139,7 +144,8 @@
                   },
                   {
                       "tiempoMs":  15500,
-                      "carril":  1
+                      "carril":  1,
+                      "impulso":  true
                   },
                   {
                       "tiempoMs":  15750,

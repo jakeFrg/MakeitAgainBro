@@ -1,69 +1,423 @@
-/* Simple styles for the rhythm game. Change colors in :root. */
-/* Theme palette used by the page and playfield. */
-:root { --bg:#15151b; --panel:#22222b; --text:#f5f5f7; --muted:#aaa; --pink:#ff4db8; --cyan:#50e7f2; }
-/* Apply predictable sizing to every element. */
-* { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--text); font:16px Arial,sans-serif; }
-/* Center the page and constrain its overall width. */
-.app { max-width:1000px; margin:auto; padding:20px; }
-/* Top branding row. */
-.topbar { display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #444; }
-.brand { color:white; font-size:22px; font-weight:bold; text-decoration:none; }
-.brand span, .sidebar h1 em { color:var(--pink); }
-.tag, .eyebrow { color:var(--cyan); font-size:12px; }
-/* Two-column layout: controls on the left, game on the right. */
-.layout { display:grid; grid-template-columns:1fr 470px; gap:35px; align-items:center; margin:25px auto; max-width:970px; }
-/* Sidebar typography, score, and feedback. */
-.sidebar h1 { font-size:56px; line-height:.95; margin:10px 0; }
-.sidebar h1 em { font-style:normal; }
-.intro, .tip { color:var(--muted); line-height:1.5; max-width:330px; }
-.stats { display:flex; gap:35px; margin:20px 0; }
-.stats div { display:grid; gap:5px; }
-.stat-label, .game-head, .game-foot, footer { font-size:11px; letter-spacing:1px; color:var(--muted); }
-.stats strong { font-size:27px; }
-.small { color:var(--pink); }
-.feedback { height:28px; color:var(--cyan); font-weight:bold; }
-/* Difficulty selector and action buttons. */
-.difficulty-label { display:block; margin:8px 0; color:var(--muted); font-size:12px; }
-.difficulty { width:100%; max-width:320px; padding:10px; margin-bottom:12px; background:#292933; color:white; border:1px solid #555; }
-.controls { display:flex; gap:8px; max-width:320px; }
-button { border:0; padding:12px; font-weight:bold; cursor:pointer; }
-.primary { flex:1; background:var(--pink); color:#17131a; }
-.secondary { background:#393943; color:white; }
-/* Local audio and chart file inputs. */
-.file-controls { display:grid; gap:6px; max-width:320px; margin-top:18px; }
-.file-label { display:flex; justify-content:space-between; margin-top:6px; color:var(--muted); font-size:11px; }
-.file-label span { color:var(--cyan); }
-.file-controls input { width:100%; color:#ddd; margin-bottom:6px; }
-/* Outer frame around the scrolling playfield. */
-.game-card { width:470px; padding:12px; background:var(--panel); border:1px solid #454550; }
-.game-head { display:flex; justify-content:space-between; padding:5px; }
-/* Four vertical lanes form the note travel area. */
-.stage { height:700px; min-height:600px; display:grid; grid-template-columns:repeat(4,1fr); position:relative; overflow:hidden; background:#111116; }
-.lane { border-right:1px solid #34343d; }
-.lane-0 { --note-color:#50e7f2; }.lane-1 { --note-color:#ff4db8; }.lane-2 { --note-color:#a989ff; }.lane-3 { --note-color:#ffd65a; }
-/* Horizontal timing line and fixed lane receptors. */
-.hit-line { position:absolute; bottom:76px; left:0; right:0; height:3px; background:var(--pink); box-shadow:0 0 12px var(--pink); }
-.receptors { position:absolute; bottom:52px; left:0; right:0; display:grid; grid-template-columns:repeat(4,1fr); justify-items:center; }
-.receptor { width:42px; height:42px; display:grid; place-items:center; border:2px solid #777; border-radius:8px; color:#aaa; font-size:24px; }
-.receptor.active { border-color:var(--pink); color:white; box-shadow:0 0 15px var(--pink); }
-/* A note element is positioned here by game.js as it falls. */
-.note { position:absolute; width:46px; height:46px; transform:translate(-50%,-50%); display:grid; place-items:center; border:2px solid var(--note-color); border-radius:9px; background:#292933; color:white; font-size:26px; box-shadow:0 0 12px var(--note-color); }
-.stage-message { position:absolute; top:8px; width:100%; text-align:center; color:#aaa; line-height:2; font-size:12px; }
-.stage-message small { font-size:10px; }
-.game-foot { display:grid; grid-template-columns:repeat(4,1fr); text-align:center; padding:12px 0 4px; }
-footer { text-align:center; padding:10px; }
-/* Stack the sidebar and playfield on narrow screens. */
-@media(max-width:700px) { /* Two-column layout: controls on the left, game on the right. */
-.layout { grid-template-columns:1fr; } /* Outer frame around the scrolling playfield. */
-.game-card { max-width:420px; width:100%; margin:auto; } /* Four vertical lanes form the note travel area. */
-.stage { height:70vh; min-height:520px; } /* Sidebar typography, score, and feedback. */
-.sidebar h1 { font-size:48px; } /* Outer frame around the scrolling playfield. */
-.game-card { width:100%; } }
-/* Key assignment panel and the button currently waiting for a key. */
-.key-settings { max-width:320px; margin:16px 0 4px; padding:10px; background:#202027; border:1px solid #444; }
-.key-settings strong { display:block; margin-bottom:7px; color:var(--cyan); font-size:11px; letter-spacing:1px; }
-.key-row { display:flex; align-items:center; justify-content:space-between; padding:3px 0; color:var(--muted); font-size:13px; }
-.key-bind { min-width:50px; padding:6px 10px; background:#393943; color:white; border:1px solid #666; }
-.key-bind.waiting { border-color:var(--pink); background:#58264a; }
-.default-keys { margin-top:6px; padding:6px 8px; background:transparent; color:var(--cyan); border:1px solid #555; font-size:11px; }
+﻿/* --------------------------------------------------------------------------
+   1. Variables y base
+   -------------------------------------------------------------------------- */
+
+/* Paleta y ajustes generales de la página. */
+:root {
+  --bg: #101016;
+  --panel: #1c1b25;
+  --text: #f7f4ff;
+  --muted: #aaa7b5;
+  --pink: #ff4db8;
+  --cyan: #50e7f2;
+  --gold: #ffd65a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 72% 18%, #30203b 0, transparent 40%),
+    var(--bg);
+  color: var(--text);
+  font: 16px Arial, sans-serif;
+}
+
+/* Textos pequeños en mayúsculas (etiquetas, cabeceras y pie). */
+.stat-label, .game-head, .game-foot, footer, .boost-title, .boost-status {
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+/* Botones: estilo base compartido por toda la página. */
+button { border: 0; padding: 10px 11px; font-weight: bold; cursor: pointer; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* --------------------------------------------------------------------------
+   2. Estructura de la página
+   -------------------------------------------------------------------------- */
+
+.app { max-width: 1450px; margin: auto; padding: 22px 28px; }
+
+/* Encabezado con la marca. */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #373540;
+}
+.brand {
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-decoration: none;
+}
+.brand span, .player-panel h1 em { color: var(--pink); }
+.tag, .eyebrow { color: var(--cyan); font-size: 10px; letter-spacing: 1.4px; }
+
+/* Tres columnas: archivos a la izquierda, pista centrada y controles a la derecha. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(190px, 240px) minmax(420px, 500px) minmax(210px, 260px);
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  max-width: 1240px;
+  margin: 28px auto;
+}
+
+/* Paneles laterales (izquierdo y derecho). */
+.settings-panel, .player-panel {
+  min-width: 0;
+  padding: 18px;
+  background: #1c1b25dd;
+  border: 1px solid #383642;
+}
+
+footer { text-align: center; padding: 12px 0; font-size: 9px; }
+
+/* --------------------------------------------------------------------------
+   3. Panel izquierdo: ajustes y archivos
+   -------------------------------------------------------------------------- */
+
+.settings-panel h2 { margin: 8px 0 28px; font-size: 28px; line-height: 1.05; }
+
+/* Selector de velocidad (dificultad). */
+.difficulty-label { display: block; margin: 8px 0; color: var(--muted); font-size: 10px; }
+.difficulty {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #292833;
+  color: white;
+  border: 1px solid #555;
+}
+
+/* Carga de canción y mapa. */
+.file-controls { display: grid; gap: 7px; margin-top: 20px; }
+.file-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.file-label span { color: var(--cyan); font-size: 11px; }
+.file-controls input { width: 100%; color: #ddd; font-size: 11px; }
+
+/* --------------------------------------------------------------------------
+   4. Panel derecho: jugador, marcador y controles
+   -------------------------------------------------------------------------- */
+
+.player-panel h1 {
+  margin: 8px 0 18px;
+  font-size: clamp(34px, 3vw, 46px);
+  line-height: .95;
+}
+.player-panel h1 em { font-style: normal; }
+
+/* Marcador y mensajes del jugador. */
+.stats { display: flex; gap: 26px; margin: 16px 0 10px; }
+.stats div { display: grid; gap: 4px; }
+.stats strong { font-size: 25px; }
+.small { color: var(--pink); }
+.feedback {
+  min-height: 30px;
+  color: var(--cyan);
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: .8px;
+}
+
+/* Botones de partida e impulso. */
+.controls { display: flex; gap: 7px; margin: 12px 0; }
+.primary { flex: 1; background: var(--pink); color: #17131a; }
+.secondary { background: #393943; color: white; }
+
+.boost-button {
+  width: 100%;
+  margin: 3px 0 12px;
+  padding: 9px;
+  background: #332b1b;
+  color: var(--gold);
+  border: 1px solid #7f6c3b;
+  font-size: 9px;
+}
+.boost-button.ready { background: #6b4b12; box-shadow: 0 0 12px #ffd65a66; }
+.boost-button.active { color: #17131a; background: var(--gold); }
+
+/* Reasignación de teclas; el botón en espera se resalta. */
+.key-settings {
+  margin-top: 10px;
+  padding: 10px;
+  background: #202027;
+  border: 1px solid #444;
+}
+.key-settings strong {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--cyan);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.key-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.key-bind {
+  min-width: 45px;
+  padding: 6px 10px;
+  background: #393943;
+  color: white;
+  border: 1px solid #666;
+}
+.key-bind.waiting { border-color: var(--pink); background: #58264a; }
+.default-keys {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid #555;
+  font-size: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   5. Tarjeta central y barra de impulso
+   -------------------------------------------------------------------------- */
+
+/* Marco central del tablero. */
+.game-card {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(145deg, #211f2b, #17161d);
+  border: 1px solid #403d4a;
+  box-shadow: 0 20px 70px #0008;
+}
+.game-head { display: flex; justify-content: space-between; padding: 4px 6px 10px; }
+
+/* Barra de carga de impulso. */
+.boost-hud {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin: 0 5px 12px;
+}
+.boost-title { color: var(--gold); font-weight: bold; }
+.boost-meter {
+  height: 12px;
+  padding: 2px;
+  overflow: hidden;
+  border: 1px solid #69636f;
+  background: #0c0b11;
+  transform: skewX(-12deg);
+}
+.boost-fill {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #ffe66d, #ff8e3c);
+  box-shadow: 0 0 12px #ffd65a;
+  transition: width .18s ease;
+}
+.boost-status { min-width: 34px; text-align: right; color: var(--gold); }
+
+/* Recordatorio de teclas bajo la pista. */
+.game-foot {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  text-align: center;
+  padding: 12px 0 3px;
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: .8px;
+}
+
+/* --------------------------------------------------------------------------
+   6. Campo de juego
+   -------------------------------------------------------------------------- */
+
+/* Marco oscuro que contiene la pista. */
+.stage {
+  position: relative;
+  height: min(72vh, 690px);
+  min-height: 500px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 100%, #17151f, #09090e 75%);
+}
+
+/* Pista trapezoidal centrada: angosta arriba y ancha al llegar a las teclas. */
+.highway {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  overflow: hidden;
+  clip-path: polygon(29% 0, 71% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, #22202d, #121119 55%, #1d1b26);
+  filter: drop-shadow(0 0 14px #50e7f233);
+}
+.highway::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, #ffffff0b, transparent 35%, #0003);
+}
+
+/* Carriles: separadores verticales y brillo decorativo. */
+.lane {
+  border-right: 1px solid #aaa3bf44;
+  background: linear-gradient(90deg, #ffffff04, transparent 50%, #0002);
+}
+.lane:last-of-type { border-right: 0; }
+.lane-glow {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #a989ff0d, transparent 55%);
+}
+
+/* Línea de golpe: aquí deben pulsarse las notas. */
+.hit-line {
+  position: absolute;
+  z-index: 3;
+  bottom: 76px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff4db8 8%, #ff4db8 92%, transparent);
+  box-shadow: 0 0 12px #ff4db8;
+}
+
+/* Receptores: flechas fijas, cada una con el color de su carril. */
+.receptors {
+  position: absolute;
+  z-index: 4;
+  bottom: 52px;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: center;
+}
+.receptor {
+  width: clamp(29px, 7vw, 43px);
+  height: clamp(29px, 7vw, 43px);
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--note-color);
+  border-radius: 7px;
+  color: var(--note-color);
+  background: #181720e8;
+  font-size: 23px;
+  text-shadow: 0 0 8px var(--note-color);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--note-color) 50%, transparent);
+  transition: transform .08s, background .08s;
+}
+.receptor[data-lane="0"] { --note-color: #50e7f2; }
+.receptor[data-lane="1"] { --note-color: #ff4db8; }
+.receptor[data-lane="2"] { --note-color: #a989ff; }
+.receptor[data-lane="3"] { --note-color: #ffd65a; }
+.receptor.active { transform: scale(1.12); background: var(--note-color); color: #17131a; }
+
+/* Capa de notas: JavaScript crea y mueve las gemas aquí. */
+.notes { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
+.note {
+  position: absolute;
+  width: clamp(28px, 6.2vw, 58px);
+  height: 12px;
+  transform: translate(-50%, -50%);
+  border: 1px solid #ffffffc9;
+  border-radius: 999px;
+  background: var(--note-color);
+  box-shadow: 0 0 10px var(--note-color), inset 0 1px 3px #fff;
+}
+
+/* Gema dorada con estrella: carga la barra de impulso. */
+.note.boost-note {
+  width: clamp(34px, 7vw, 64px);
+  height: 15px;
+  border: 2px solid #fff1a5;
+  background: linear-gradient(90deg, #ffad38, #fff08a, #ffad38);
+  box-shadow: 0 0 16px #ffd65a;
+}
+.note.boost-note::after {
+  content: "★";
+  position: absolute;
+  inset: -5px 0 0;
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  line-height: 13px;
+  text-shadow: 0 0 5px #ff9d00;
+}
+
+/* Impulso activo: resplandor dorado en la pista y en la línea de golpe. */
+.stage.boost-active .highway { filter: drop-shadow(0 0 18px #ffd65a99); }
+.stage.boost-active .hit-line {
+  background: linear-gradient(90deg, transparent, #ffd65a, #fff4b0, #ffd65a, transparent);
+  box-shadow: 0 0 18px #ffd65a;
+}
+
+/* Mensaje sobre la pista (empezar, fin de partida). */
+.stage-message {
+  position: absolute;
+  z-index: 8;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+  color: #aaa;
+  line-height: 1.8;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 5px #000;
+  pointer-events: none;
+}
+.stage-message small { font-size: 9px; }
+
+/* --------------------------------------------------------------------------
+   7. Pantallas medianas y pequeñas
+   -------------------------------------------------------------------------- */
+
+/* Tablet: la pista se queda centrada arriba y los paneles debajo, a los lados. */
+@media (max-width: 1120px) {
+  .app { padding: 16px; }
+  .layout {
+    grid-template-columns: minmax(190px, 1fr) minmax(410px, 500px);
+    grid-template-areas:
+      "game game"
+      "settings player";
+    max-width: 900px;
+    gap: 18px;
+  }
+  .settings-panel { grid-area: settings; }
+  .game-card { grid-area: game; width: min(100%, 500px); justify-self: center; }
+  .player-panel { grid-area: player; }
+}
+
+/* Celular: todo en una sola columna. */
+@media (max-width: 650px) {
+  .topbar { align-items: flex-start; gap: 8px; }
+  .tag { text-align: right; }
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "game"
+      "settings"
+      "player";
+  }
+  .game-card { width: 100%; }
+  .stage { height: 65vh; min-height: 460px; }
+}
