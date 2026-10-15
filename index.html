@@ -11,88 +11,87 @@
   <main class="app">
     <header class="topbar">
       <a class="brand" href="#" aria-label="Demo de ritmo">RITMO<span>///</span></a>
-      <div class="tag">ARCADE DE RITMO · 4 CARRILES</div>
+      <h1 class="page-title">PRUEBA DE MECÁNICA</h1>
+      <details class="options-menu" id="optionsMenu">
+        <summary>⚙ OPCIONES</summary>
+        <div class="options-panel">
+          <h2>Opciones de juego</h2>
+          <label class="option-label" for="difficulty">VELOCIDAD DE LAS NOTAS</label>
+          <select id="difficulty" class="difficulty">
+            <option value="2600">Lenta</option>
+            <option value="1800" selected>Normal</option>
+            <option value="1100">Rápida</option>
+          </select>
+
+          <section class="menu-game-controls" aria-label="Control de partida">
+            <h3>PARTIDA</h3>
+            <div class="controls">
+              <button id="startButton" class="primary" type="button">▶ &nbsp; EMPEZAR</button>
+              <button id="resetButton" class="secondary" type="button">↺ &nbsp; REINICIAR</button>
+            </div>
+          </section>
+
+          <div class="file-controls">
+            <label class="file-label" for="audioFile">CANCIÓN MP3 <span id="audioName">elige un archivo</span></label>
+            <input id="audioFile" type="file" accept="audio/*">
+            <label class="file-label" for="chartFile">MAPA DE NOTAS JSON <span>cargar otro mapa</span></label>
+            <input id="chartFile" type="file" accept="application/json,.json">
+          </div>
+
+          <section class="key-settings" aria-label="Asignación de teclas">
+            <strong>ASIGNAR TECLAS</strong>
+            <div class="key-row"><span>Carril 1</span><button type="button" class="key-bind" data-bind-lane="0">←</button></div>
+            <div class="key-row"><span>Carril 2</span><button type="button" class="key-bind" data-bind-lane="1">↓</button></div>
+            <div class="key-row"><span>Carril 3</span><button type="button" class="key-bind" data-bind-lane="2">↑</button></div>
+            <div class="key-row"><span>Carril 4</span><button type="button" class="key-bind" data-bind-lane="3">→</button></div>
+            <button id="defaultKeys" type="button" class="default-keys">Restaurar flechas</button>
+          </section>
+        </div>
+      </details>
     </header>
 
-    <!-- Ajustes y selección de archivos a la izquierda, pista al centro y controles a la derecha. -->
-    <section class="layout">
-      <aside class="settings-panel" aria-label="Configuración de la partida">
-        <p class="eyebrow">CONFIGURACIÓN</p>
-        <h2>Audio y<br>velocidad</h2>
-
-        <label class="difficulty-label" for="difficulty">VELOCIDAD DE LAS NOTAS</label>
-        <select id="difficulty" class="difficulty">
-          <option value="2600">Lenta</option>
-          <option value="1800" selected>Normal</option>
-          <option value="1100">Rápida</option>
-        </select>
-
-        <!-- La canción y el mapa de tiempos se cargan por separado. -->
-        <div class="file-controls">
-          <label class="file-label" for="audioFile">CANCIÓN MP3 <span id="audioName">elige un archivo</span></label>
-          <input id="audioFile" type="file" accept="audio/*">
-          <label class="file-label" for="chartFile">MAPA DE NOTAS JSON <span>cargar otro mapa</span></label>
-          <input id="chartFile" type="file" accept="application/json,.json">
-        </div>
-      </aside>
-
-      <!-- La pista se mantiene como columna central de la página. -->
-      <section class="game-card" aria-label="Pista de juego">
-        <div class="game-head"><span>JUGADOR 01</span><span id="clock">00:00</span></div>
-        <!-- Solo las notas doradas especiales cargan esta barra. -->
-        <div class="boost-hud">
-          <span class="boost-title">IMPULSO</span>
-          <div class="boost-meter" role="progressbar" aria-label="Carga de impulso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <div id="boostFill" class="boost-fill"></div>
-          </div>
-          <span id="boostStatus" class="boost-status">0%</span>
-        </div>
-
-        <!-- Pista trapezoidal: cuatro carriles y gemas que bajan hacia la línea. -->
-        <div class="stage" id="stage">
-          <div class="highway" id="highway" aria-label="Pista de cuatro carriles">
-            <div class="lane lane-0"></div><div class="lane lane-1"></div>
-            <div class="lane lane-2"></div><div class="lane lane-3"></div>
-            <div class="lane-glow"></div>
-            <div class="hit-line"></div>
-            <!-- Receptores fijos en la parte inferior de la pista. -->
-            <div class="receptors">
-              <div class="receptor" data-lane="0">←</div><div class="receptor" data-lane="1">↓</div>
-              <div class="receptor" data-lane="2">↑</div><div class="receptor" data-lane="3">→</div>
-            </div>
-            <div id="notes" class="notes"></div>
-          </div>
-          <div class="stage-message" id="stageMessage">PULSA EMPEZAR<br><small>Y PREPÁRATE</small></div>
-        </div>
-        <div class="game-foot"><span>← CARRIL 1</span><span>↓ CARRIL 2</span><span>↑ CARRIL 3</span><span>→ CARRIL 4</span></div>
+    <section class="game-main">
+      <div class="concert-lights" aria-hidden="true"></div>
+      <section class="scoreboard visually-hidden" aria-label="Estado de la partida">
+        <div id="feedback" class="feedback" aria-live="polite">LISTO</div>
       </section>
 
-      <!-- Título solicitado, marcador, acciones y asignación de controles a la derecha. -->
-      <aside class="player-panel" aria-label="Controles del jugador">
-        <p class="eyebrow">ENTRENAMIENTO</p>
-        <h1>Prueba de<br><em>mecánica</em></h1>
-        <div class="stats">
-          <div><span class="stat-label">PUNTOS</span><strong id="score">000000</strong></div>
-          <div><span class="stat-label">COMBO</span><strong id="combo">0<span class="small">×</span></strong></div>
+      <section class="game-card" aria-label="Pista de juego">
+        <span id="clock" class="visually-hidden">00:00</span>
+        <div class="stage" id="stage">
+          <div class="highway" id="highway" aria-label="Pista de cuatro carriles">
+            <div class="lane-glow"></div>
+            <div class="hit-line"></div>
+            <div class="receptors">
+              <div class="receptor" data-lane="0" aria-label="Carril 1"></div><div class="receptor" data-lane="1" aria-label="Carril 2"></div>
+              <div class="receptor" data-lane="2" aria-label="Carril 3"></div><div class="receptor" data-lane="3" aria-label="Carril 4"></div>
+            </div>
+          </div>
+          <div id="notes" class="notes"></div>
+          <svg class="perspective-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+            <path class="track-border" d="M300 400 H700 M300 400 L20 1000 M700 400 L980 1000 M20 1000 H980" />
+            <path class="lane-dividers" d="M400 400 L260 1000 M500 400 V1000 M600 400 L740 1000" />
+          </svg>
+          <div class="impulse-hud" aria-label="Barra de impulso">
+            <div class="boost-meter" role="progressbar" aria-label="Carga de impulso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div id="boostFill" class="boost-fill"></div>
+            </div>
+            <span id="boostStatus" class="visually-hidden">0%</span>
+          </div>
+          <div class="stage-message" id="stageMessage" hidden></div>
         </div>
-        <div class="feedback" id="feedback" aria-live="polite">LISTO</div>
-        <div class="controls">
-          <button id="startButton" class="primary" type="button">▶ &nbsp; EMPEZAR</button>
-          <button id="resetButton" class="secondary" type="button">↺ &nbsp; REINICIAR</button>
-        </div>
-        <button id="boostButton" type="button" class="boost-button" disabled>ESPACIO · IMPULSO</button>
+      </section>
 
-        <section class="key-settings" aria-label="Asignación de teclas">
-          <strong>ASIGNAR TECLAS</strong>
-          <div class="key-row"><span>Carril 1</span><button type="button" class="key-bind" data-bind-lane="0">←</button></div>
-          <div class="key-row"><span>Carril 2</span><button type="button" class="key-bind" data-bind-lane="1">↓</button></div>
-          <div class="key-row"><span>Carril 3</span><button type="button" class="key-bind" data-bind-lane="2">↑</button></div>
-          <div class="key-row"><span>Carril 4</span><button type="button" class="key-bind" data-bind-lane="3">→</button></div>
-          <button id="defaultKeys" type="button" class="default-keys">Restaurar flechas</button>
-        </section>
-      </aside>
+      <section class="power-controls" aria-label="Impulso y controles de partida">
+        <div class="boost-hud">
+          <div class="score-block points-inline"><span class="stat-label">PUNTOS</span><strong id="score">000000</strong></div>
+          <div class="combo-block combo-orb" aria-label="Combo">
+            <strong><span id="combo">0</span><span id="comboMultiplier" class="multiplier">x1</span></strong>
+          </div>
+          <div id="judgementDisplay" class="judgement-display" aria-live="polite"></div>
+        </div>
+      </section>
     </section>
-    <footer>LAS NOTAS ESPECIALES CARGAN EL IMPULSO · game-over-baby-chart.json</footer>
   </main>
 </body>
 </html>

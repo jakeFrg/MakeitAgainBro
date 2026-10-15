@@ -1,167 +1,149 @@
-﻿/* --------------------------------------------------------------------------
+﻿/* ==========================================================================
+   Estilos del juego de ritmo (fondo de concierto y menú de opciones).
+   Arriba: marca, título y menú de opciones · Centro: marcador y pista ·
+   Abajo: barra de impulso y botones de partida.
+   Los colores principales se cambian en :root.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
    1. Variables y base
    -------------------------------------------------------------------------- */
 
-/* Paleta y ajustes generales de la página. */
+/* Fondo de concierto pixelado y paleta de la interfaz. */
 :root {
-  --bg: #101016;
-  --panel: #1c1b25;
+  --bg: #090914;
+  --panel: #171724;
   --text: #f7f4ff;
-  --muted: #aaa7b5;
+  --muted: #aaa7bd;
   --pink: #ff4db8;
   --cyan: #50e7f2;
   --gold: #ffd65a;
+  --purple: #8b5cff;
 }
 
 * { box-sizing: border-box; }
 
+/* La imagen fondo-concierto.png debe estar en la misma carpeta que este archivo. */
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(ellipse at 72% 18%, #30203b 0, transparent 40%),
-    var(--bg);
+  overflow-x: hidden;
   color: var(--text);
-  font: 16px Arial, sans-serif;
+  font: 15px Arial, sans-serif;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(#0909149c, #090914b8),
+    url("fondo-concierto.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
-/* Textos pequeños en mayúsculas (etiquetas, cabeceras y pie). */
-.stat-label, .game-head, .game-foot, footer, .boost-title, .boost-status {
-  color: var(--muted);
-  font-size: 9px;
-  letter-spacing: 1px;
-}
+/* Los botones y selectores heredan la fuente de la página. */
+button, select { font: inherit; }
 
-/* Botones: estilo base compartido por toda la página. */
-button { border: 0; padding: 10px 11px; font-weight: bold; cursor: pointer; }
-button:disabled { opacity: .5; cursor: not-allowed; }
+/* Contenedor central de la página. */
+.app { width: min(100% - 32px, 1200px); margin: 0 auto; padding: 18px 0 14px; }
 
 /* --------------------------------------------------------------------------
-   2. Estructura de la página
+   2. Barra superior y menú de opciones
    -------------------------------------------------------------------------- */
 
-.app { max-width: 1450px; margin: auto; padding: 22px 28px; }
-
-/* Encabezado con la marca. */
+/* Marca, título y botón del menú. */
 .topbar {
+  min-height: 54px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #373540;
+  gap: 18px;
+  padding: 0 4px 12px;
+  border-bottom: 1px solid #4a315866;
 }
 .brand {
+  flex: 0 0 auto;
   color: white;
-  font-size: 22px;
-  font-weight: bold;
+  font-size: 19px;
+  font-weight: 900;
   letter-spacing: 2px;
   text-decoration: none;
 }
-.brand span, .player-panel h1 em { color: var(--pink); }
-.tag, .eyebrow { color: var(--cyan); font-size: 10px; letter-spacing: 1.4px; }
-
-/* Tres columnas: archivos a la izquierda, pista centrada y controles a la derecha. */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(190px, 240px) minmax(420px, 500px) minmax(210px, 260px);
-  gap: 24px;
-  justify-content: center;
-  align-items: center;
-  max-width: 1240px;
-  margin: 28px auto;
+.brand span { color: var(--pink); margin-left: 5px; }
+.page-title {
+  margin: 0;
+  color: #f5edff;
+  text-align: center;
+  font-size: clamp(16px, 2.6vw, 25px);
+  letter-spacing: 2px;
 }
 
-/* Paneles laterales (izquierdo y derecho). */
-.settings-panel, .player-panel {
-  min-width: 0;
+/* Menú desplegable de opciones (<details>); la flecha cambia al abrirse. */
+.options-menu { position: relative; z-index: 20; flex: 0 0 auto; }
+.options-menu summary {
+  list-style: none;
+  cursor: pointer;
+  border: 1px solid #6e557d;
+  background: #21172c;
+  padding: 10px 13px;
+  color: var(--cyan);
+  font-weight: bold;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.options-menu summary::-webkit-details-marker { display: none; }
+.options-menu summary::after { content: " ▾"; color: var(--pink); }
+.options-menu[open] summary::after { content: " ▴"; }
+
+/* Panel flotante con dificultad, archivos y teclas. */
+.options-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(370px, calc(100vw - 32px));
+  max-height: min(76vh, 680px);
+  overflow: auto;
   padding: 18px;
-  background: #1c1b25dd;
-  border: 1px solid #383642;
+  border: 1px solid #684c78;
+  background: #13121ded;
+  box-shadow: 0 18px 50px #000b;
+  backdrop-filter: blur(14px);
 }
+.options-panel h2 { margin: 0 0 16px; font-size: 20px; }
+.menu-game-controls { margin: 14px 0 4px; padding: 12px 0 0; border-top: 1px solid #4a4056; }
+.menu-game-controls h3 { margin: 0 0 8px; color: var(--cyan); font-size: 10px; letter-spacing: 1px; }
+.options-panel .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.options-panel .controls button { min-width: 0; padding: 9px 7px; font-size: 10px; }
 
-footer { text-align: center; padding: 12px 0; font-size: 9px; }
-
-/* --------------------------------------------------------------------------
-   3. Panel izquierdo: ajustes y archivos
-   -------------------------------------------------------------------------- */
-
-.settings-panel h2 { margin: 8px 0 28px; font-size: 28px; line-height: 1.05; }
-
-/* Selector de velocidad (dificultad). */
-.difficulty-label { display: block; margin: 8px 0; color: var(--muted); font-size: 10px; }
+/* Selector de dificultad y etiquetas de campos. */
+.option-label, .file-label {
+  display: block;
+  margin: 12px 0 6px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
 .difficulty {
   width: 100%;
   padding: 10px;
-  margin-bottom: 12px;
-  background: #292833;
+  background: #272633;
   color: white;
-  border: 1px solid #555;
+  border: 1px solid #60566a;
 }
 
 /* Carga de canción y mapa. */
-.file-controls { display: grid; gap: 7px; margin-top: 20px; }
-.file-label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 9px;
-}
-.file-label span { color: var(--cyan); font-size: 11px; }
+.file-controls { display: grid; gap: 5px; }
+.file-label span { display: block; margin-top: 4px; color: var(--cyan); font-size: 11px; letter-spacing: 0; }
 .file-controls input { width: 100%; color: #ddd; font-size: 11px; }
-
-/* --------------------------------------------------------------------------
-   4. Panel derecho: jugador, marcador y controles
-   -------------------------------------------------------------------------- */
-
-.player-panel h1 {
-  margin: 8px 0 18px;
-  font-size: clamp(34px, 3vw, 46px);
-  line-height: .95;
-}
-.player-panel h1 em { font-style: normal; }
-
-/* Marcador y mensajes del jugador. */
-.stats { display: flex; gap: 26px; margin: 16px 0 10px; }
-.stats div { display: grid; gap: 4px; }
-.stats strong { font-size: 25px; }
-.small { color: var(--pink); }
-.feedback {
-  min-height: 30px;
-  color: var(--cyan);
-  font-weight: bold;
-  font-size: 12px;
-  letter-spacing: .8px;
-}
-
-/* Botones de partida e impulso. */
-.controls { display: flex; gap: 7px; margin: 12px 0; }
-.primary { flex: 1; background: var(--pink); color: #17131a; }
-.secondary { background: #393943; color: white; }
-
-.boost-button {
-  width: 100%;
-  margin: 3px 0 12px;
-  padding: 9px;
-  background: #332b1b;
-  color: var(--gold);
-  border: 1px solid #7f6c3b;
-  font-size: 9px;
-}
-.boost-button.ready { background: #6b4b12; box-shadow: 0 0 12px #ffd65a66; }
-.boost-button.active { color: #17131a; background: var(--gold); }
 
 /* Reasignación de teclas; el botón en espera se resalta. */
 .key-settings {
-  margin-top: 10px;
-  padding: 10px;
-  background: #202027;
-  border: 1px solid #444;
+  margin-top: 18px;
+  padding: 12px;
+  background: #201c29;
+  border: 1px solid #4a4056;
 }
 .key-settings strong {
   display: block;
-  margin-bottom: 7px;
+  margin-bottom: 8px;
   color: var(--cyan);
   font-size: 10px;
   letter-spacing: 1px;
@@ -170,130 +152,158 @@ footer { text-align: center; padding: 12px 0; font-size: 9px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 3px 0;
-  color: var(--muted);
+  padding: 4px 0;
+  color: #c8c2d2;
   font-size: 12px;
 }
 .key-bind {
-  min-width: 45px;
+  min-width: 48px;
   padding: 6px 10px;
-  background: #393943;
+  border: 1px solid #62556e;
+  background: #302a3a;
   color: white;
-  border: 1px solid #666;
+  cursor: pointer;
 }
 .key-bind.waiting { border-color: var(--pink); background: #58264a; }
 .default-keys {
-  margin-top: 6px;
-  padding: 6px 8px;
+  margin-top: 8px;
+  padding: 7px 9px;
   background: transparent;
+  border: 1px solid #5c4a69;
   color: var(--cyan);
-  border: 1px solid #555;
   font-size: 10px;
+  cursor: pointer;
 }
 
 /* --------------------------------------------------------------------------
-   5. Tarjeta central y barra de impulso
+   3. Zona central: luces y marcador
    -------------------------------------------------------------------------- */
 
-/* Marco central del tablero. */
-.game-card {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(145deg, #211f2b, #17161d);
-  border: 1px solid #403d4a;
-  box-shadow: 0 20px 70px #0008;
-}
-.game-head { display: flex; justify-content: space-between; padding: 4px 6px 10px; }
+/* La pista se amplía para ocupar casi toda la altura de la ventana. */
+.game-main { position: relative; width: min(100%, 1100px); margin: 12px auto 0; }
 
-/* Barra de carga de impulso. */
-.boost-hud {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 8px;
-  align-items: center;
-  margin: 0 5px 12px;
+/* Haces de luz difuminados detrás del marcador. */
+.concert-lights {
+  position: absolute;
+  z-index: 0;
+  top: 20px;
+  left: -18%;
+  right: -18%;
+  height: 34%;
+  pointer-events: none;
+  background:
+    linear-gradient(72deg, transparent 30%, #ff3c9f18 42%, transparent 55%),
+    linear-gradient(108deg, transparent 36%, #605cff20 49%, transparent 62%),
+    radial-gradient(ellipse at 50% 0, #fd4a9b35, transparent 68%);
+  filter: blur(7px);
 }
-.boost-title { color: var(--gold); font-weight: bold; }
-.boost-meter {
-  height: 12px;
-  padding: 2px;
+
+/* Puntos, combo y mensaje de resultado. */
+.scoreboard {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   overflow: hidden;
-  border: 1px solid #69636f;
-  background: #0c0b11;
-  transform: skewX(-12deg);
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
-.boost-fill {
-  width: 0;
-  height: 100%;
-  background: linear-gradient(90deg, #ffe66d, #ff8e3c);
-  box-shadow: 0 0 12px #ffd65a;
-  transition: width .18s ease;
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.score-block, .combo-block { display: grid; gap: 3px; min-width: 90px; }
+.stat-label { color: #aaa4bd; font-size: 9px; letter-spacing: 1.2px; }
+.score-block strong, .combo-block strong {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
 }
-.boost-status { min-width: 34px; text-align: right; color: var(--gold); }
 
-/* Recordatorio de teclas bajo la pista. */
-.game-foot {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  text-align: center;
-  padding: 12px 0 3px;
-  color: var(--muted);
-  font-size: 8px;
+/* Multiplicador: cambia de color según el nivel (data-tier). */
+.multiplier { color: var(--pink); font-size: 19px; text-shadow: 0 0 10px #ff4db877; }
+.multiplier[data-tier="2"] { color: var(--cyan); }
+.multiplier[data-tier="4"] { color: #b99cff; }
+.multiplier[data-tier="8"] { color: var(--gold); }
+
+.feedback {
+  min-width: 150px;
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: bold;
   letter-spacing: .8px;
+  text-align: left;
 }
 
 /* --------------------------------------------------------------------------
-   6. Campo de juego
+   4. Tarjeta del juego
    -------------------------------------------------------------------------- */
 
-/* Marco oscuro que contiene la pista. */
+/* Marco de la pista. El escenario detrás sugiere luces y público de concierto. */
+.game-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. Campo de juego y pista
+   -------------------------------------------------------------------------- */
+
+/* Escenario: luces de colores arriba y silueta del público abajo. */
 .stage {
   position: relative;
-  height: min(72vh, 690px);
-  min-height: 500px;
+  height: min(calc(100vh - 190px), 1080px);
+  min-height: 520px;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 100%, #17151f, #09090e 75%);
+  perspective: 1000px;
+  background: linear-gradient(#09091433, #07071044);
+}
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(74deg, transparent 21%, #fd478a27 34%, transparent 47%),
+    linear-gradient(106deg, transparent 36%, #624bff24 49%, transparent 62%),
+    radial-gradient(ellipse at 50% 6%, #ff8d552b, transparent 46%);
 }
 
-/* Pista trapezoidal centrada: angosta arriba y ancha al llegar a las teclas. */
+/* Pista trapezoidal con perspectiva: angosta arriba y ancha abajo. */
 .highway {
   position: absolute;
+  z-index: 1;
   inset: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   overflow: hidden;
-  clip-path: polygon(29% 0, 71% 0, 100% 100%, 0 100%);
-  background: linear-gradient(180deg, #22202d, #121119 55%, #1d1b26);
+  clip-path: polygon(30% 40%, 70% 40%, 98% 100%, 2% 100%);
+  background: linear-gradient(180deg, #211c2db8, #13121dcc 50%, #0d0c14e8);
   filter: drop-shadow(0 0 14px #50e7f233);
 }
 .highway::before {
   content: "";
   position: absolute;
-  inset: 0;
   z-index: 1;
+  inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, #ffffff0b, transparent 35%, #0003);
+  background: linear-gradient(180deg, #ffffff12, transparent 30%, #0005);
 }
 
 /* Carriles: separadores verticales y brillo decorativo. */
-.lane {
-  border-right: 1px solid #aaa3bf44;
-  background: linear-gradient(90deg, #ffffff04, transparent 50%, #0002);
-}
-.lane:last-of-type { border-right: 0; }
 .lane-glow {
   position: absolute;
   z-index: 1;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, #a989ff0d, transparent 55%);
+  background: linear-gradient(180deg, #b57cff14, transparent 60%);
 }
 
 /* Línea de golpe: aquí deben pulsarse las notas. */
 .hit-line {
   position: absolute;
   z-index: 3;
-  bottom: 76px;
+  bottom: 73px;
   left: 0;
   right: 0;
   height: 2px;
@@ -305,7 +315,7 @@ footer { text-align: center; padding: 12px 0; font-size: 9px; }
 .receptors {
   position: absolute;
   z-index: 4;
-  bottom: 52px;
+  bottom: 49px;
   left: 0;
   right: 0;
   display: grid;
@@ -313,17 +323,15 @@ footer { text-align: center; padding: 12px 0; font-size: 9px; }
   justify-items: center;
 }
 .receptor {
-  width: clamp(29px, 7vw, 43px);
-  height: clamp(29px, 7vw, 43px);
+  width: clamp(29px, 6vw, 42px);
+  height: clamp(29px, 6vw, 42px);
   display: grid;
   place-items: center;
   border: 2px solid var(--note-color);
   border-radius: 7px;
   color: var(--note-color);
-  background: #181720e8;
-  font-size: 23px;
-  text-shadow: 0 0 8px var(--note-color);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--note-color) 50%, transparent);
+  background: #11101be8;
+  box-shadow: 0 0 13px color-mix(in srgb, var(--note-color) 55%, transparent);
   transition: transform .08s, background .08s;
 }
 .receptor[data-lane="0"] { --note-color: #50e7f2; }
@@ -334,20 +342,24 @@ footer { text-align: center; padding: 12px 0; font-size: 9px; }
 
 /* Capa de notas: JavaScript crea y mueve las gemas aquí. */
 .notes { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
+.perspective-lines { position: absolute; z-index: 7; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.perspective-lines path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.perspective-lines .track-border { stroke: #50e7f2; stroke-width: 4; opacity: .92; filter: drop-shadow(0 0 5px #50e7f2aa); }
+.perspective-lines .lane-dividers { stroke: #dcd5ed; stroke-width: 2.4; opacity: .76; filter: drop-shadow(0 0 3px #dcd5ed66); }
 .note {
   position: absolute;
-  width: clamp(28px, 6.2vw, 58px);
-  height: 12px;
+  width: clamp(38px, 4.2vw, 58px);
+  height: 16px;
   transform: translate(-50%, -50%);
-  border: 1px solid #ffffffc9;
-  border-radius: 999px;
-  background: var(--note-color);
-  box-shadow: 0 0 10px var(--note-color), inset 0 1px 3px #fff;
+  border: 2px solid var(--note-color);
+  border-radius: 4px;
+  background: #10101add;
+  box-shadow: 0 0 9px var(--note-color), inset 0 0 5px color-mix(in srgb, var(--note-color) 25%, transparent);
 }
 
 /* Gema dorada con estrella: carga la barra de impulso. */
 .note.boost-note {
-  width: clamp(34px, 7vw, 64px);
+  width: clamp(34px, 6vw, 62px);
   height: 15px;
   border: 2px solid #fff1a5;
   background: linear-gradient(90deg, #ffad38, #fff08a, #ffad38);
@@ -377,8 +389,8 @@ footer { text-align: center; padding: 12px 0; font-size: 9px; }
   z-index: 8;
   top: 10px;
   width: 100%;
+  color: #c9c2d5;
   text-align: center;
-  color: #aaa;
   line-height: 1.8;
   font-size: 11px;
   letter-spacing: 1px;
@@ -388,36 +400,123 @@ footer { text-align: center; padding: 12px 0; font-size: 9px; }
 .stage-message small { font-size: 9px; }
 
 /* --------------------------------------------------------------------------
-   7. Pantallas medianas y pequeñas
+   6. Barra de impulso y botones de partida
    -------------------------------------------------------------------------- */
 
-/* Tablet: la pista se queda centrada arriba y los paneles debajo, a los lados. */
-@media (max-width: 1120px) {
-  .app { padding: 16px; }
-  .layout {
-    grid-template-columns: minmax(190px, 1fr) minmax(410px, 500px);
-    grid-template-areas:
-      "game game"
-      "settings player";
-    max-width: 900px;
-    gap: 18px;
-  }
-  .settings-panel { grid-area: settings; }
-  .game-card { grid-area: game; width: min(100%, 500px); justify-self: center; }
-  .player-panel { grid-area: player; }
+/* Puntos y combo se alinean con la base de la pista; los botones quedan debajo. */
+.power-controls {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+}
+.boost-hud {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) auto minmax(0, 1fr);
+  gap: 8px 18px;
+  align-items: center;
+}
+.impulse-hud { position: absolute; z-index: 10; left: 14%; right: 14%; bottom: 10%; }
+.points-inline { grid-column: 1; align-self: start; margin-top: 8px; }
+.combo-orb { grid-column: 2; }
+.judgement-display { grid-column: 3; grid-row: 1; justify-self: end; align-self: center; }
+
+/* Esfera circular con el combo actual. */
+.combo-orb {
+  width: 110px;
+  height: 82px;
+  transform: translateY(34px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid #ff4db899;
+  border-radius: 50%;
+  background: radial-gradient(circle, #342039, #17131d);
+  box-shadow: 0 0 13px #ff4db833;
+}
+.combo-orb strong { gap: 7px; font-size: 27px; }
+.combo-orb #combo { font-size: 1em; }
+.combo-orb .multiplier { font-size: 17px; }
+
+/* Barra amarilla de impulso integrada sobre la pista. */
+.boost-meter {
+  height: 14px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #ffd65a;
+  background: #0c0b14;
+  box-shadow: 0 0 12px #ffd65a88, 0 0 0 2px #0c0b14;
+  border-radius: 999px;
+}
+.boost-fill {
+  width: 0;
+  height: 100%;
+  background: #ffd65a;
+  box-shadow: 0 0 12px #ffd65a;
+  transition: width .18s ease;
+  border-radius: inherit;
+}
+.judgement-display {
+  position: relative;
+  width: 100%;
+  min-height: 24px;
+  color: var(--cyan);
+  text-align: center;
+  font-size: clamp(14px, 2vw, 22px);
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 9px currentColor;
+  pointer-events: none;
+}
+.judgement-display.show { animation: judgement-pop .95s ease-out both; }
+@keyframes judgement-pop {
+  0% { opacity: 0; transform: scale(.72) translateY(5px); }
+  18% { opacity: 1; transform: scale(1.08) translateY(0); }
+  35% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.96) translateY(-4px); }
 }
 
-/* Celular: todo en una sola columna. */
+/* Puntos en línea junto a la barra. */
+.points-inline { text-align: left; }
+.points-inline .stat-label { font-size: 8px; }
+.points-inline strong { justify-content: flex-start; font-size: 17px; }
+
+/* Botones de partida. */
+.controls { grid-column: 1 / -1; display: flex; justify-content: center; gap: 9px; }
+.controls button { min-width: 132px; padding: 10px 14px; border: 0; font-weight: bold; cursor: pointer; }
+.controls button:disabled { opacity: .5; cursor: not-allowed; }
+.primary { background: var(--pink); color: #17131a; }
+.secondary { background: #393943; color: white; }
+
+/* --------------------------------------------------------------------------
+   7. Pantallas pequeñas
+   -------------------------------------------------------------------------- */
+
+/* Celular: todo más compacto y los botones ocupan el ancho disponible. */
 @media (max-width: 650px) {
-  .topbar { align-items: flex-start; gap: 8px; }
-  .tag { text-align: right; }
-  .layout {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "game"
-      "settings"
-      "player";
-  }
-  .game-card { width: 100%; }
-  .stage { height: 65vh; min-height: 460px; }
+  .app { width: calc(100% - 20px); padding-top: 10px; }
+  .topbar { gap: 8px; }
+  .brand { font-size: 16px; }
+  .page-title { font-size: 13px; letter-spacing: .8px; }
+  .options-menu summary { padding: 9px 8px; font-size: 9px; }
+  .game-main { margin-top: 16px; }
+  .feedback { min-width: 95px; font-size: 9px; }
+  .score-block strong, .combo-block strong { font-size: 20px; }
+  .stage { height: min(calc(100vh - 210px), 980px); min-height: 420px; }
+  .power-controls { grid-template-columns: 1fr; }
+  .boost-hud { grid-template-columns: minmax(68px, 1fr) auto minmax(0, 1fr); gap: 7px; }
+  .impulse-hud { left: 18%; right: 18%; bottom: 10%; }
+  .boost-meter { height: 12px; }
+  .combo-orb { width: 86px; height: 66px; transform: translateY(24px); }
+  .points-inline strong { font-size: 15px; }
+  .controls { grid-column: auto; }
+  .controls button { min-width: 0; flex: 1; }
 }
