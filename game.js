@@ -1,6 +1,12 @@
 ﻿(() => {
-  // Chart de respaldo para que el juego funcione sin cargar un JSON aparte.
-  const chartDefault = {
+  'use strict';
+ 
+  /* ==========================================================================
+     1. CONFIGURACIÓN
+     ========================================================================== */
+ 
+  // Mapa de respaldo para jugar sin cargar un JSON. "boost: true" = gema especial.
+  const DEFAULT_CHART = {
     offsetMs: 0,
     notes: [
       {timeMs:1000,lane:0},{timeMs:1500,lane:2},{timeMs:2000,lane:1},{timeMs:2500,lane:3},
@@ -14,266 +20,350 @@
       {timeMs:15000,lane:2},{timeMs:15500,lane:1,boost:true},{timeMs:15750,lane:3},{timeMs:16000,lane:0}
     ]
   };
-
-  // Controles por carril; Espacio se reserva para activar el impulso.
-  const defaultLaneKeys = ['ArrowLeft','ArrowDown','ArrowUp','ArrowRight'];
-  const laneNames = ['Carril 1','Carril 2','Carril 3','Carril 4'];
-  const laneColors = ['#50e7f2','#ff4db8','#a989ff','#ffd65a'];
-  const topLaneCenters = [35,45,55,65];
-  let laneKeys = [...defaultLaneKeys];
-  let bindingLane = null;
-
-  // Elementos que se actualizan durante la partida.
-  const stage = document.querySelector('#stage');
-  const notesBox = document.querySelector('#notes');
-  const scoreEl = document.querySelector('#score');
-  const comboEl = document.querySelector('#combo');
-  const multiplierEl = document.querySelector('#comboMultiplier');
-  const clockEl = document.querySelector('#clock');
-  const feedback = document.querySelector('#feedback');
-  const message = document.querySelector('#stageMessage');
-  const judgementDisplay = document.querySelector('#judgementDisplay');
-  const boostFill = document.querySelector('#boostFill');
-  const boostStatus = document.querySelector('#boostStatus');
-  const boostMeter = document.querySelector('.boost-meter');
-  const optionsMenu = document.querySelector('#optionsMenu');
-
-  // Relojes, puntuación, sonido y energía del impulso.
-  let chart = chartDefault;
+ 
+  // Teclas por carril (Espacio queda reservado para el impulso), nombres y colores.
+  const DEFAULT_LANE_KEYS = ['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'];
+  const LANE_NAMES  = ['Carril 1', 'Carril 2', 'Carril 3', 'Carril 4'];
+  const LANE_COLORS = ['#50e7f2', '#ff4db8', '#a989ff', '#ffd65a'];
+ 
+  // Posición horizontal (%) de cada carril arriba de la pista; abajo se calcula con laneBottomX().
+  const TOP_LANE_CENTERS = [35, 45, 55, 65];
+ 
+  const HIT_WINDOW_MS = 150;                // margen para acertar una nota
+  const BOOST_COST = 25;                    // energía mínima (%) para activar el impulso
+  const BOOST_DURATION_MS = 8000;           // duración máxima del impulso con la barra llena
+  const SPECIAL_CHARGE_AMOUNT = 25;         // energía (%) que da una gema especial
+  const SPECIAL_CHARGE_DURATION_MS = 1200;  // la energía se suma poco a poco durante este tiempo
+ 
+  /* ==========================================================================
+     2. ELEMENTOS DE LA PÁGINA
+     ========================================================================== */
+ 
+  const $ = selector => document.querySelector(selector);
+ 
+  const stage            = $('#stage');
+  const notesBox         = $('#notes');
+  const scoreEl          = $('#score');
+  const comboEl          = $('#combo');
+  const multiplierEl     = $('#comboMultiplier');
+  const clockEl          = $('#clock');
+  const feedback         = $('#feedback');
+  const message          = $('#stageMessage');
+  const judgementDisplay = $('#judgementDisplay');
+  const boostFill        = $('#boostFill');
+  const boostStatus      = $('#boostStatus');
+  const boostMeter       = $('.boost-meter');
+  const volumeControl    = $('#volumeControl');
+  const volumeValue      = $('#volumeValue');
+  const receptors        = Array.from(document.querySelectorAll('.receptor'));
+ 
+  /* ==========================================================================
+     3. ESTADO
+     ========================================================================== */
+ 
+  // Mapa
+  let chart = DEFAULT_CHART;          // mapa que se está jugando
+  let selectedChart = DEFAULT_CHART;  // mapa elegido por el jugador (se restaura al salir de práctica)
   let notes = [];
+ 
+  // Teclas
+  let laneKeys = [...DEFAULT_LANE_KEYS];
+  let bindingLane = null;             // carril esperando una nueva tecla
+  const heldLaneKeys = new Set();     // carriles con la tecla mantenida
+ 
+  // Reloj de la partida
   let running = false;
-  let preRoll = false;
+  let preRoll = false;                // cuenta previa antes de la primera nota
   let startedAt = 0;
   let preRollStartedAt = 0;
   let pausedAt = 0;
+  let leadMs = 1800;                  // tiempo que tarda una nota en caer (velocidad)
+ 
+  // Puntuación e impulso
   let score = 0;
   let combo = 0;
-  let audio = null;
-  let audioUrl = null;
-  let soundContext = null;
-  let leadMs = 1800;
-  let energy = 0;
-  let boostActiveUntil = -1;
+  let energy = 0;                     // energía del impulso (0 a 100)
+  let pendingEnergy = [];             // cargas de gemas especiales aún sumándose
+  let boostActiveUntil = -1;          // momento en que termina el impulso (-1 = inactivo)
   let boostLastTickAt = -1;
-  const hitWindowMs = 150;
-  const boostCost = 50;
-  const boostDurationMs = 8000;
-
-  // Convierte las entradas del mapa en gemas dibujadas sobre la pista.
-  function resetNotes() {
-    notesBox.replaceChildren();
-    notes = chart.notes.map((note,index) => {
-      const element = document.createElement('div');
-      const isBoost = Boolean(note.impulso ?? note.boost);
-      element.className = isBoost ? 'note boost-note' : 'note';
-      element.hidden = true;
-      element.style.setProperty('--note-color',laneColors[note.lane]);
-      notesBox.appendChild(element);
-      return {
-        timeMs:Number(note.timeMs),
-        lane:Number(note.lane),
-        boost:isBoost,
-        element,
-        hit:false,
-        missed:false,
-        id:index
-      };
-    }).sort((a,b) => a.timeMs-b.timeMs);
-  }
-
-  // Nombra las teclas de forma breve en el menú de opciones.
+ 
+  // Efectos
+  let judgementAnimation = null;
+  const receptorFlashTimers = [0, 0, 0, 0];
+  let feedbackAudioContext = null;
+  let feedbackOscillator = null;
+  let feedbackGain = null;
+  let feedbackVolume = 0.2;
+ 
+  /* ==========================================================================
+     4. UTILIDADES
+     ========================================================================== */
+ 
+  // Teclas de un solo carácter se guardan en minúscula.
+  const normalizeKey = key => (key.length === 1 ? key.toLowerCase() : key);
+ 
+  // Etiqueta corta de una tecla para los botones de asignación.
   function keyLabel(key) {
-    const labels = {ArrowLeft:'←',ArrowDown:'↓',ArrowUp:'↑',ArrowRight:'→'};
+    const labels = {ArrowLeft:'←', ArrowDown:'↓', ArrowUp:'↑', ArrowRight:'→'};
     return labels[key] || (key.length === 1 ? key.toUpperCase() : key);
   }
-
-  function refreshKeyButtons() {
-    document.querySelectorAll('.key-bind').forEach(button => {
-      const lane = Number(button.dataset.bindLane);
-      button.textContent = keyLabel(laneKeys[lane]);
-      button.classList.toggle('waiting',bindingLane === lane);
-    });
+ 
+  function formatTime(ms) {
+    const seconds = Math.max(0, Math.floor(ms / 1000));
+    return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
   }
-
-  // Devuelve el tiempo de canción, negativo durante la cuenta previa.
+ 
+  // Tiempo de la partida en ms; negativo durante la cuenta previa.
   function chartTime() {
     if (!running) return pausedAt;
-    if (preRoll) return performance.now()-preRollStartedAt-leadMs;
-    return audio ? audio.currentTime*1000 : performance.now()-startedAt;
+    if (preRoll) return performance.now() - preRollStartedAt - leadMs;
+    return performance.now() - startedAt;
   }
-
-  function setFeedback(text,color='var(--cyan)') {
+ 
+  // Tiempo de la canción: reloj de la partida más el desfase del mapa.
+  const songClock = () => chartTime() + (chart.offsetMs || 0);
+ 
+  // Posición horizontal (%) de un carril en la parte baja de la pista.
+  const laneBottomX = lane => 2 + (lane + 0.5) * 24;
+ 
+  /* ==========================================================================
+     5. INTERFAZ (mensajes, puntos, impulso, teclas)
+     ========================================================================== */
+ 
+  // Mensaje de texto del juego (LISTO, FALLO, etc.).
+  function setFeedback(text, color = 'var(--cyan)') {
     feedback.textContent = text;
     feedback.style.color = color;
   }
-
-  // Muestra por un instante la calidad temporal del golpe en la esquina libre.
-  function showJudgement(label,color) {
+ 
+  // Muestra un instante la calidad del golpe (EXCELENTE, MALO...) con una animación.
+  function showJudgement(label, color) {
     judgementDisplay.textContent = label;
     judgementDisplay.style.color = color;
-    judgementDisplay.classList.remove('show');
-    void judgementDisplay.offsetWidth;
-    judgementDisplay.classList.add('show');
+    if (judgementAnimation) judgementAnimation.cancel();
+    judgementAnimation = judgementDisplay.animate([
+      {opacity:0, transform:'scale(.72) translateY(5px)', offset:0},
+      {opacity:1, transform:'scale(1.08) translateY(0)', offset:.18},
+      {opacity:1, transform:'scale(1) translateY(0)', offset:.35},
+      {opacity:0, transform:'scale(.96) translateY(-4px)', offset:1}
+    ], {duration:950, easing:'ease-out', fill:'forwards'});
   }
-
-  // Combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.
+ 
+  // Nivel de combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.
   function comboTier() {
     if (combo >= 30) return 8;
     if (combo >= 20) return 4;
     if (combo >= 10) return 2;
     return 1;
   }
-
-  function currentMultiplier(time=chartTime()+(chart.offsetMs||0)) {
-    const boostIsActive = boostActiveUntil >= 0 && time < boostActiveUntil;
-    return comboTier() * (boostIsActive ? 2 : 1);
+ 
+  const isBoostActive = time => boostActiveUntil >= 0 && time < boostActiveUntil;
+ 
+  // Multiplicador total: nivel de combo (x2 más si el impulso está activo).
+  function currentMultiplier(time = songClock()) {
+    return comboTier() * (isBoostActive(time) ? 2 : 1);
   }
-
-  function updateScore(time=chartTime()+(chart.offsetMs||0)) {
-    scoreEl.textContent = String(score).padStart(6,'0');
+ 
+  // Refresca puntos, combo y multiplicador en pantalla.
+  function updateScore(time = songClock()) {
+    scoreEl.textContent = String(score).padStart(6, '0');
     comboEl.textContent = String(combo);
     multiplierEl.textContent = `x${currentMultiplier(time)}`;
     multiplierEl.dataset.tier = String(comboTier());
-    multiplierEl.classList.toggle('boosted',boostActiveUntil >= 0 && time < boostActiveUntil);
+    multiplierEl.classList.toggle('boosted', isBoostActive(time));
   }
-
-  function formatTime(ms) {
-    const seconds = Math.max(0,Math.floor(ms/1000));
-    return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
-  }
-
-  // Beeps sintéticos cortos con volumen bajo para acierto y fallo.
-  function playFeedbackSound(success) {
-    try {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) return;
-      if (!soundContext) soundContext = new AudioContextClass();
-      if (soundContext.state === 'suspended') soundContext.resume();
-
-      const now = soundContext.currentTime;
-      const oscillator = soundContext.createOscillator();
-      const volume = soundContext.createGain();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(success ? 760 : 220,now);
-      oscillator.frequency.exponentialRampToValueAtTime(success ? 540 : 155,now+0.075);
-      volume.gain.setValueAtTime(success ? 0.018 : 0.012,now);
-      volume.gain.exponentialRampToValueAtTime(0.0001,now+0.095);
-      oscillator.connect(volume);
-      volume.connect(soundContext.destination);
-      oscillator.start(now);
-      oscillator.stop(now+0.1);
-    } catch (error) {
-      // El juego puede continuar aunque el navegador no permita generar sonido.
-    }
-  }
-
-  // Actualiza el relleno y el porcentaje visible de la barra de impulso.
-  function updateBoostUI(time=chartTime()+(chart.offsetMs||0)) {
-    const percent = Math.max(0,Math.min(100,energy));
+ 
+  // Refresca el relleno y el porcentaje de la barra de impulso.
+  function updateBoostUI() {
+    const percent = Math.max(0, Math.min(100, energy));
     boostFill.style.width = `${percent}%`;
-    boostMeter.setAttribute('aria-valuenow',String(Math.round(percent)));
+    boostMeter.setAttribute('aria-valuenow', String(Math.round(percent)));
     boostStatus.textContent = `${Math.round(percent)}%`;
   }
-
-  // Activa el doble multiplicador; la carga se consume gradualmente durante ocho segundos.
+ 
+  // Muestra en cada botón la tecla asignada a su carril.
+  function refreshKeyButtons() {
+    document.querySelectorAll('.key-bind').forEach(button => {
+      const lane = Number(button.dataset.bindLane);
+      button.textContent = keyLabel(laneKeys[lane]);
+      button.classList.toggle('waiting', bindingLane === lane);
+    });
+  }
+ 
+  /* ==========================================================================
+     6. SONIDO DE ACIERTO Y FALLO
+     ========================================================================== */
+ 
+  // Prepara un único oscilador reutilizable (no reproduce música).
+  function prepareFeedbackAudio() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      if (!feedbackAudioContext) {
+        feedbackAudioContext = new AudioContextClass();
+        feedbackOscillator = feedbackAudioContext.createOscillator();
+        feedbackGain = feedbackAudioContext.createGain();
+        feedbackOscillator.type = 'sine';
+        feedbackGain.gain.value = 0;
+        feedbackOscillator.connect(feedbackGain);
+        feedbackGain.connect(feedbackAudioContext.destination);
+        feedbackOscillator.start();
+      }
+      if (feedbackAudioContext.state === 'suspended') feedbackAudioContext.resume().catch(() => {});
+    } catch (error) {
+      feedbackAudioContext = null;
+      feedbackOscillator = null;
+      feedbackGain = null;
+    }
+  }
+ 
+  // Tono corto: agudo si aciertas, grave si fallas.
+  function playFeedbackTone(success) {
+    if (!feedbackAudioContext || !feedbackOscillator || !feedbackGain || feedbackVolume <= 0) return;
+    const now = feedbackAudioContext.currentTime;
+    const gain = feedbackGain.gain;
+    feedbackOscillator.frequency.setValueAtTime(success ? 660 : 190, now);
+    gain.cancelScheduledValues(now);
+    gain.setValueAtTime(0.0001, now);
+    gain.exponentialRampToValueAtTime(feedbackVolume * 0.035, now + 0.012);
+    gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+  }
+ 
+  /* ==========================================================================
+     7. NOTAS Y MAPAS
+     ========================================================================== */
+ 
+  // Crea los elementos de las notas a partir del mapa (normales, sostenidas y especiales).
+  function resetNotes() {
+    notesBox.replaceChildren();
+    notes = chart.notes.map((note, index) => {
+      const element = document.createElement('div');
+      const isBoost = Boolean(note.impulso ?? note.boost);
+      const holdMs = Math.max(0, Number(note.duracionMs ?? note.holdMs ?? 0));
+      element.className = `note${isBoost ? ' boost-note' : ''}${holdMs > 0 ? ' hold-note' : ''}`;
+      element.hidden = true;
+      element.style.setProperty('--note-color', LANE_COLORS[note.lane]);
+      notesBox.appendChild(element);
+      return {
+        timeMs: Number(note.timeMs),
+        lane: Number(note.lane),
+        boost: isBoost,
+        holdMs,
+        holdUntil: 0,
+        holding: false,
+        element,
+        hit: false,
+        missed: false,
+        id: index
+      };
+    }).sort((a, b) => a.timeMs - b.timeMs);
+  }
+ 
+  // Modo práctica: 90 notas simples en carriles al azar, sin repetir carril seguido.
+  function createPracticeChart() {
+    const practiceNotes = [];
+    let timeMs = 1200;
+    let previousLane = -1;
+    for (let index = 0; index < 90; index++) {
+      timeMs += 350 + Math.floor(Math.random() * 750);
+      let lane = Math.floor(Math.random() * 4);
+      if (lane === previousLane) lane = (lane + 1 + Math.floor(Math.random() * 3)) % 4;
+      practiceNotes.push({timeMs, lane}); // solo pulsaciones simples, sin notas sostenidas
+      previousLane = lane;
+    }
+    return {offsetMs: 0, notes: practiceNotes};
+  }
+ 
+  // Lee un JSON (campos en español o inglés), lo valida y devuelve un mapa listo para usar.
+  function parseChart(parsed) {
+    const list = parsed.notas ?? parsed.notes;
+    const timeOf = note => note.tiempoMs ?? note.timeMs;
+    const laneOf = note => note.carril ?? note.lane;
+ 
+    const invalid = !Array.isArray(list) || list.some(note =>
+      !Number.isFinite(+timeOf(note)) || !Number.isInteger(+laneOf(note)) ||
+      +laneOf(note) < 0 || +laneOf(note) > 3
+    );
+    if (invalid) throw new Error('Formato de notas incorrecto');
+ 
+    return {
+      offsetMs: Number(parsed.desfaseMs ?? parsed.offsetMs ?? DEFAULT_CHART.offsetMs),
+      notes: list.map(note => ({
+        timeMs: Number(timeOf(note)),
+        lane: Number(laneOf(note)),
+        boost: Boolean(note.impulso ?? note.boost),
+        holdMs: Math.max(0, Number(note.duracionMs ?? note.holdMs ?? 0))
+      }))
+    };
+  }
+ 
+  /* ==========================================================================
+     8. IMPULSO (energía)
+     ========================================================================== */
+ 
+  // Suma poco a poco la energía de las gemas especiales y, con el impulso activo, la va gastando.
+  function advanceEnergy(time) {
+    const charging = [];
+    for (const charge of pendingEnergy) {
+      const elapsed = Math.min(SPECIAL_CHARGE_DURATION_MS, Math.max(0, time - charge.startedAt));
+      const addedTime = elapsed - charge.appliedMs;
+      if (addedTime > 0) energy = Math.min(100, energy + charge.amount * addedTime / SPECIAL_CHARGE_DURATION_MS);
+      charge.appliedMs = elapsed;
+      if (elapsed < SPECIAL_CHARGE_DURATION_MS) charging.push(charge);
+    }
+    pendingEnergy = charging;
+ 
+    if (boostActiveUntil >= 0) {
+      const elapsed = Math.max(0, time - boostLastTickAt);
+      energy = Math.max(0, energy - elapsed * 100 / BOOST_DURATION_MS);
+      if (energy <= 0.001) {
+        energy = 0;
+        boostActiveUntil = -1;
+        boostLastTickAt = -1;
+        stage.classList.remove('boost-active');
+        setFeedback('IMPULSO TERMINADO');
+        updateScore(time);
+      } else {
+        boostActiveUntil = time + energy / 100 * BOOST_DURATION_MS;
+        boostLastTickAt = time;
+      }
+    }
+  }
+ 
+  // Activa el impulso (tecla Espacio): necesita al menos 25% y dura según la energía acumulada.
   function activateBoost() {
-    const time = chartTime()+(chart.offsetMs||0);
+    const time = songClock();
     if (!running || time < boostActiveUntil) return;
-    if (energy < boostCost) {
-      setFeedback('NECESITAS 50% DE IMPULSO','#ffd65a');
+    if (energy < BOOST_COST) {
+      setFeedback('NECESITAS 25% DE IMPULSO', '#ffd65a');
       return;
     }
-    boostActiveUntil = time+boostDurationMs;
+    boostActiveUntil = time + energy / 100 * BOOST_DURATION_MS;
     boostLastTickAt = time;
     stage.classList.add('boost-active');
-    updateBoostUI(time);
+    updateBoostUI();
     updateScore(time);
-    setFeedback('¡IMPULSO ACTIVADO!','#ffd65a');
+    setFeedback('¡IMPULSO ACTIVADO!', '#ffd65a');
   }
-
-  // Animación: da perspectiva a la pista y sincroniza las notas con el audio.
-  function frame(now) {
-    requestAnimationFrame(frame);
-    if (!running) return;
-
-    // La cuenta previa permite que las primeras gemas entren por el borde superior de la pista.
-    if (preRoll && now-preRollStartedAt >= leadMs) {
-      preRoll = false;
-      if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => setFeedback('NO SE PUDO REPRODUCIR EL MP3','#ff687e'));
-      }
-      startedAt = performance.now();
-      setFeedback('¡A JUGAR!');
-    }
-
-    const time = chartTime();
-    const songTime = time+(chart.offsetMs||0);
-    if (audio && !preRoll && audio.ended) {
-      running = false;
-      pausedAt = time;
-      setFeedback('FIN · REINICIA PARA JUGAR');
-      message.hidden = false;
-      message.innerHTML = '¡BUEN JUEGO!<br><small>REINICIA PARA VOLVER A EMPEZAR</small>';
-      return;
-    }
-
-    clockEl.textContent = preRoll ? `EN ${Math.ceil((leadMs-(now-preRollStartedAt))/1000)}` : formatTime(time);
-    if (boostActiveUntil >= 0 && songTime < boostActiveUntil) {
-      if (boostLastTickAt >= 0) {
-        const elapsed = Math.max(0,songTime-boostLastTickAt);
-        energy = Math.max(0,energy-(elapsed*boostCost/boostDurationMs));
-      }
-      boostLastTickAt = songTime;
-    } else if (boostActiveUntil >= 0 && songTime >= boostActiveUntil) {
-      energy = 0;
-      boostActiveUntil = -1;
-      boostLastTickAt = -1;
-      stage.classList.remove('boost-active');
-      setFeedback('IMPULSO TERMINADO');
-      updateScore(songTime);
-    }
-    updateBoostUI(songTime);
-
-    const height = stage.clientHeight;
-    const hitY = height-76;
-    const entryY = height*0.4;
-    const travel = hitY-entryY;
-    for (const note of notes) {
-      if (note.hit || note.missed) continue;
-      const untilHit = note.timeMs-(chart.offsetMs||0)-time;
-      if (untilHit < -hitWindowMs) {
-        note.missed = true;
-        note.element.remove();
-        combo = 0;
-        updateScore(songTime);
-        setFeedback('FALLO','#ff687e');
-        showJudgement('MALO','#ff687e');
-        playFeedbackSound(false);
-        continue;
-      }
-      note.element.hidden = untilHit > leadMs;
-      if (note.element.hidden) continue;
-
-      // La nota se estrecha arriba y se alinea con su receptor al llegar abajo.
-      const y = hitY-(untilHit/leadMs)*travel;
-      const progress = Math.max(0,Math.min(1,(y-entryY)/travel));
-      const topX = [35,45,55,65][note.lane];
-      const bottomX = 2+(note.lane+0.5)*24;
-      note.element.style.left = `${topX+(bottomX-topX)*progress}%`;
-      note.element.style.top = `${y}px`;
-    }
-  }
-  requestAnimationFrame(frame);
-
-  // Inicia una ronda y reinicia el multiplicador, audio y notas.
-  function start() {
-    if (running) return;
-    if (audio) { audio.pause(); audio.currentTime = 0; }
+ 
+  // Resetea todo lo relacionado con el impulso.
+  function clearBoostState() {
     energy = 0;
+    pendingEnergy = [];
     boostActiveUntil = -1;
     boostLastTickAt = -1;
     stage.classList.remove('boost-active');
+  }
+ 
+  /* ==========================================================================
+     9. CONTROL DE PARTIDA
+     ========================================================================== */
+ 
+  // Empieza una ronda: reinicia puntos, impulso y notas, y arranca la cuenta previa.
+  function start() {
+    if (running) return;
+    clearBoostState();
+    heldLaneKeys.clear();
     preRoll = true;
     preRollStartedAt = performance.now();
     startedAt = preRollStartedAt;
@@ -283,182 +373,375 @@
     combo = 0;
     updateScore(-leadMs);
     resetNotes();
-    updateBoostUI(-leadMs);
+    updateBoostUI();
     message.hidden = true;
     setFeedback('PREPÁRATE');
   }
-
-  // Detiene el juego y devuelve las barras a su estado inicial.
+ 
+  // Detiene la partida y deja todo en su estado inicial.
   function reset() {
     running = false;
     preRoll = false;
-    if (audio) { audio.pause(); audio.currentTime = 0; }
     pausedAt = 0;
     score = 0;
     combo = 0;
-    energy = 0;
-    boostActiveUntil = -1;
-    boostLastTickAt = -1;
-    stage.classList.remove('boost-active');
+    clearBoostState();
+    heldLaneKeys.clear();
     updateScore(0);
     clockEl.textContent = '00:00';
     resetNotes();
-    updateBoostUI(0);
-    message.hidden = false;
+    updateBoostUI();
     message.textContent = '';
     message.hidden = true;
     setFeedback('LISTO');
   }
-
-  // Busca la nota más cercana y evalúa si el jugador acertó.
+ 
+  /* ==========================================================================
+     10. NOTAS SOSTENIDAS
+     ========================================================================== */
+ 
+  // Completa una nota sostenida: suma puntos (y energía si es especial).
+  function finishHold(note, time) {
+    note.holding = false;
+    note.hit = true;
+    note.element.remove();
+    combo++;
+    score += 200 * currentMultiplier(time);
+    if (note.boost) pendingEnergy.push({startedAt: time, appliedMs: 0, amount: SPECIAL_CHARGE_AMOUNT});
+    updateScore(time);
+    updateBoostUI();
+    showJudgement('EXCELENTE', '#50e7f2');
+    setFeedback('¡NOTA SOSTENIDA!');
+    playFeedbackTone(true);
+  }
+ 
+  // Soltar la tecla antes de tiempo rompe la nota y reinicia el combo.
+  function failHold(note, time) {
+    note.holding = false;
+    note.missed = true;
+    note.element.remove();
+    combo = 0;
+    updateScore(time);
+    setFeedback('SOLTASTE LA TECLA ANTES DE TIEMPO', '#ff687e');
+    showJudgement('FALLO', '#ff687e');
+    playFeedbackTone(false);
+  }
+ 
+  /* ==========================================================================
+     11. GOLPES
+     ========================================================================== */
+ 
+  // Califica el golpe según el error de tiempo (menos error = más puntos).
+  function getJudgement(timingError) {
+    if (timingError <= 35)  return {label:'EXCELENTE', points:150, color:'#a989ff'};
+    if (timingError <= 75)  return {label:'BUENO',     points:120, color:'#50e7f2'};
+    if (timingError <= 115) return {label:'BIEN',      points:90,  color:'#ffd65a'};
+    return {label:'MALO', points:50, color:'#ff687e'};
+  }
+ 
+  // Ilumina un instante el receptor del carril pulsado.
+  function flashReceptor(lane) {
+    const receptor = receptors[lane];
+    receptor.classList.add('active');
+    clearTimeout(receptorFlashTimers[lane]);
+    receptorFlashTimers[lane] = setTimeout(() => {
+      receptor.classList.remove('active');
+      receptorFlashTimers[lane] = 0;
+    }, 100);
+  }
+ 
+  // Busca la nota pendiente más cercana del carril y evalúa si el jugador acertó.
   function pressLane(lane) {
     if (!running) return;
-    const time = chartTime()+(chart.offsetMs||0);
-    const candidate = notes
-      .filter(note => note.lane === lane && !note.hit && !note.missed)
-      .sort((a,b) => Math.abs(a.timeMs-time)-Math.abs(b.timeMs-time))[0];
-    const receptor = document.querySelector(`.receptor[data-lane="${lane}"]`);
-    receptor.classList.add('active');
-    setTimeout(() => receptor.classList.remove('active'),100);
-
-    const timingError = candidate ? Math.abs(candidate.timeMs-time) : Infinity;
-    if (candidate && timingError <= hitWindowMs) {
-      candidate.hit = true;
-      candidate.element.remove();
-      combo++;
-      const multiplier = currentMultiplier(time);
-      const judgement = timingError <= 35
-        ? {label:'EXCELENTE',points:150,color:'#a989ff'}
-        : timingError <= 75
-          ? {label:'BUENO',points:120,color:'#50e7f2'}
-          : timingError <= 115
-            ? {label:'BIEN',points:90,color:'#ffd65a'}
-            : {label:'MALO',points:50,color:'#ff687e'};
-      score += (combo % 10 === 0 ? judgement.points+50 : judgement.points)*multiplier;
-      if (candidate.boost) energy = Math.min(100,energy+25);
-      updateScore(time);
-      updateBoostUI(time);
-      showJudgement(judgement.label,judgement.color);
-      setFeedback(candidate.boost ? '¡NOTA ESPECIAL! +25% IMPULSO' : '¡ACIERTO!');
-      playFeedbackSound(true);
-    } else {
+    const time = songClock();
+ 
+    let candidate = null;
+    let timingError = Infinity;
+    for (const note of notes) {
+      if (note.lane !== lane || note.hit || note.missed) continue;
+      const error = Math.abs(note.timeMs - time);
+      if (error < timingError) {
+        candidate = note;
+        timingError = error;
+      }
+    }
+ 
+    flashReceptor(lane);
+ 
+    // Fallo: no había nota al alcance.
+    if (!candidate || timingError > HIT_WINDOW_MS) {
       combo = 0;
       updateScore(time);
-      setFeedback('FALLO','#ff687e');
-      showJudgement('MALO','#ff687e');
-      playFeedbackSound(false);
-    }
-  }
-
-  // Permite reasignar carriles; Espacio queda reservado para el impulso.
-  document.addEventListener('keydown',event => {
-    if (bindingLane !== null) {
-      event.preventDefault();
-      if (event.key === 'Escape') {
-        bindingLane = null;
-        refreshKeyButtons();
-        setFeedback('ASIGNACION CANCELADA');
-        return;
-      }
-      if (event.code === 'Space') {
-        setFeedback('ESPACIO ESTA RESERVADO PARA IMPULSO','#ffd65a');
-        return;
-      }
-      const newKey = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-      if (laneKeys.some((key,index) => key === newKey && index !== bindingLane)) {
-        setFeedback('ESA TECLA YA ESTA ASIGNADA','#ff687e');
-        return;
-      }
-      laneKeys[bindingLane] = newKey;
-      bindingLane = null;
-      refreshKeyButtons();
-      setFeedback(`TECLA ASIGNADA: ${keyLabel(newKey)}`);
+      setFeedback('FALLO', '#ff687e');
+      showJudgement('MALO', '#ff687e');
+      playFeedbackTone(false);
       return;
     }
+ 
+    // Nota sostenida: empieza a contar mientras mantienes la tecla.
+    if (candidate.holdMs > 0) {
+      candidate.hit = true;
+      candidate.holding = true;
+      candidate.holdUntil = time + candidate.holdMs;
+      candidate.element.classList.add('being-held');
+      setFeedback('MANTÉN PRESIONADA LA TECLA', '#50e7f2');
+      showJudgement('MANTÉN', '#50e7f2');
+      return;
+    }
+ 
+    // Nota normal: suma puntos (con bono cada 10 aciertos) y energía si es especial.
+    candidate.hit = true;
+    candidate.element.remove();
+    combo++;
+    const multiplier = currentMultiplier(time);
+    const judgement = getJudgement(timingError);
+    score += (combo % 10 === 0 ? judgement.points + 50 : judgement.points) * multiplier;
+    if (candidate.boost) pendingEnergy.push({startedAt: time, appliedMs: 0, amount: SPECIAL_CHARGE_AMOUNT});
+    updateScore(time);
+    updateBoostUI();
+    showJudgement(judgement.label, judgement.color);
+    setFeedback(candidate.boost ? '¡GEMA ESPECIAL! +25% DE IMPULSO' : '¡ACIERTO!');
+    playFeedbackTone(true);
+  }
+ 
+  /* ==========================================================================
+     12. BUCLE DE ANIMACIÓN
+     ========================================================================== */
+ 
+  // Nota sostenida en curso: queda en la línea de golpe y su cola se acorta.
+  function updateHeldNote(note, songTime, hitY, travel) {
+    const remaining = note.holdUntil - songTime;
+    if (!heldLaneKeys.has(note.lane)) { failHold(note, songTime); return; }
+    if (remaining <= 0) { finishHold(note, songTime); return; }
+    note.element.hidden = false;
+    note.element.style.left = `${laneBottomX(note.lane)}%`;
+    note.element.style.top = `${hitY}px`;
+    note.element.style.setProperty('--hold-length', `${Math.max(12, Math.min(travel, remaining / leadMs * travel))}px`);
+  }
+ 
+  // Nota que cae: la marca como fallada si pasó, o la coloca en la pista según su tiempo.
+  function updateFallingNote(note, time, songTime, hitY, entryY, travel) {
+    if (note.hit || note.missed) return;
+ 
+    const untilHit = note.timeMs - (chart.offsetMs || 0) - time;
+    if (untilHit < -HIT_WINDOW_MS) {
+      note.missed = true;
+      note.element.remove();
+      combo = 0;
+      updateScore(songTime);
+      setFeedback('FALLO', '#ff687e');
+      showJudgement('MALO', '#ff687e');
+      return;
+    }
+ 
+    note.element.hidden = untilHit > leadMs;
+    if (note.element.hidden) return;
+ 
+    // La nota se estrecha arriba y se alinea con su receptor al llegar abajo.
+    const y = hitY - (untilHit / leadMs) * travel;
+    const progress = Math.max(0, Math.min(1, (y - entryY) / travel));
+    const topX = TOP_LANE_CENTERS[note.lane];
+    const bottomX = laneBottomX(note.lane);
+    note.element.style.left = `${topX + (bottomX - topX) * progress}%`;
+    note.element.style.top = `${y}px`;
+    if (note.holdMs > 0) {
+      note.element.style.setProperty('--hold-length', `${Math.max(24, Math.min(travel, note.holdMs / leadMs * travel))}px`);
+    }
+  }
+ 
+  // Se ejecuta en cada cuadro: avanza la cuenta previa, el reloj, la energía y las notas.
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (!running) return;
+ 
+    // Termina la cuenta previa y empieza el tiempo real de la canción.
+    if (preRoll && now - preRollStartedAt >= leadMs) {
+      preRoll = false;
+      startedAt = performance.now();
+      setFeedback('¡A JUGAR!');
+    }
+ 
+    const time = chartTime();
+    const songTime = time + (chart.offsetMs || 0);
+    clockEl.textContent = preRoll ? `EN ${Math.ceil((leadMs - (now - preRollStartedAt)) / 1000)}` : formatTime(time);
+    advanceEnergy(songTime);
+    updateBoostUI();
+ 
+    // Geometría de la pista: las notas entran al 40% de la altura y llegan a la línea de golpe.
+    const height = stage.clientHeight;
+    const hitY = height - 76;
+    const entryY = height * 0.4;
+    const travel = hitY - entryY;
+ 
+    for (const note of notes) {
+      if (note.holding) updateHeldNote(note, songTime, hitY, travel);
+      else updateFallingNote(note, time, songTime, hitY, entryY, travel);
+    }
+  }
+ 
+  /* ==========================================================================
+     13. TECLADO
+     ========================================================================== */
+ 
+  // Captura la nueva tecla de un carril; Escape cancela y Espacio está reservado.
+  function handleBinding(event) {
+    event.preventDefault();
+ 
+    if (event.key === 'Escape') {
+      bindingLane = null;
+      refreshKeyButtons();
+      setFeedback('ASIGNACION CANCELADA');
+      return;
+    }
+    if (event.code === 'Space') {
+      setFeedback('ESPACIO ESTA RESERVADO PARA IMPULSO', '#ffd65a');
+      return;
+    }
+ 
+    const newKey = normalizeKey(event.key);
+    if (laneKeys.some((key, index) => key === newKey && index !== bindingLane)) {
+      setFeedback('ESA TECLA YA ESTA ASIGNADA', '#ff687e');
+      return;
+    }
+ 
+    laneKeys[bindingLane] = newKey;
+    bindingLane = null;
+    refreshKeyButtons();
+    setFeedback(`TECLA ASIGNADA: ${keyLabel(newKey)}`);
+  }
+ 
+  // Tecla presionada: asignación, impulso (Espacio) o golpe en un carril.
+  function handleKeydown(event) {
+    // Ignora la repetición automática del sistema al mantener una tecla.
+    if (event.repeat) {
+      const repeatedKey = normalizeKey(event.key);
+      if (bindingLane !== null || event.code === 'Space' || laneKeys.includes(repeatedKey)) event.preventDefault();
+      return;
+    }
+ 
+    if (bindingLane !== null) { handleBinding(event); return; }
+ 
     if (event.code === 'Space') {
       event.preventDefault();
       activateBoost();
       return;
     }
-    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-    const lane = laneKeys.indexOf(key);
+ 
+    const lane = laneKeys.indexOf(normalizeKey(event.key));
     if (lane !== -1) {
       event.preventDefault();
+      heldLaneKeys.add(lane);
       pressLane(lane);
     }
-  });
-
-  // Botones del menú de opciones para capturar o restaurar teclas.
-  document.querySelectorAll('.key-bind').forEach(button => button.addEventListener('click',() => {
-    bindingLane = Number(button.dataset.bindLane);
-    refreshKeyButtons();
-    setFeedback(`PULSA UNA TECLA PARA ${laneNames[bindingLane].toUpperCase()}`,'#ffd65a');
-  }));
-  document.querySelector('#defaultKeys').addEventListener('click',() => {
-    laneKeys = [...defaultLaneKeys];
-    bindingLane = null;
-    refreshKeyButtons();
-    setFeedback('FLECHAS RESTAURADAS');
-  });
-
-  // Velocidad, controles principales y botón de impulso.
-  document.querySelector('#difficulty').addEventListener('change',event => { leadMs = Number(event.target.value); });
-  document.querySelector('#startButton').addEventListener('click',() => {
-    optionsMenu.open = false;
-    start();
-  });
-  document.querySelector('#resetButton').addEventListener('click',() => {
-    optionsMenu.open = false;
-    reset();
-  });
-
-  // Carga el audio seleccionado y cierra el menú de opciones.
-  document.querySelector('#audioFile').addEventListener('change',event => {
-    const file = event.target.files[0];
-    if (!file) return;
-    if (audioUrl) URL.revokeObjectURL(audioUrl);
-    audioUrl = URL.createObjectURL(file);
-    if (audio) audio.pause();
-    audio = new Audio(audioUrl);
-    document.querySelector('#audioName').textContent = file.name;
-    optionsMenu.open = false;
-    reset();
-  });
-
-  // Carga un mapa JSON en español o conserva compatibilidad con campos anteriores.
-  document.querySelector('#chartFile').addEventListener('change',async event => {
-    const file = event.target.files[0];
-    if (!file) return;
+  }
+ 
+  // Tecla soltada: si había una nota sostenida, la completa o la rompe según el tiempo.
+  function handleKeyup(event) {
+    const lane = laneKeys.indexOf(normalizeKey(event.key));
+    if (lane === -1) return;
+    heldLaneKeys.delete(lane);
+ 
+    const note = notes.find(item => item.holding && item.lane === lane);
+    if (!note) return;
+ 
+    const time = songClock();
+    if (time >= note.holdUntil) finishHold(note, time);
+    else failHold(note, time);
+  }
+ 
+  /* ==========================================================================
+     14. CARGA DE MAPA
+     ========================================================================== */
+ 
+  // Lee el JSON elegido por el jugador y lo usa como mapa.
+  async function loadChart(file) {
     try {
-      const parsed = JSON.parse(await file.text());
-      const list = parsed.notas ?? parsed.notes;
-      const timeOf = note => note.tiempoMs ?? note.timeMs;
-      const laneOf = note => note.carril ?? note.lane;
-      if (!Array.isArray(list) || list.some(note =>
-        !Number.isFinite(+timeOf(note)) || !Number.isInteger(+laneOf(note)) ||
-        +laneOf(note) < 0 || +laneOf(note) > 3
-      )) throw new Error('Formato de notas incorrecto');
-      chart = {
-        offsetMs:Number(parsed.desfaseMs ?? parsed.offsetMs ?? chartDefault.offsetMs),
-        notes:list.map(note => ({
-          timeMs:Number(timeOf(note)),
-          lane:Number(laneOf(note)),
-          boost:Boolean(note.impulso ?? note.boost)
-        }))
-      };
-      resetNotes();
-      reset();
-      optionsMenu.open = false;
+      chart = parseChart(JSON.parse(await file.text()));
+      selectedChart = chart;
+      reset(); // ya reconstruye las notas
       setFeedback(`MAPA CARGADO: ${chart.notes.length} NOTAS`);
     } catch (error) {
-      setFeedback('NO SE PUDO LEER EL MAPA','#ff687e');
+      setFeedback('NO SE PUDO LEER EL MAPA', '#ff687e');
       console.error(error);
     }
-  });
-
-  // Prepara el mapa, controles y medidor al abrir la página.
-  refreshKeyButtons();
-  resetNotes();
-  updateScore(0);
-  updateBoostUI(0);
+  }
+ 
+  /* ==========================================================================
+     15. EVENTOS Y ARRANQUE
+     ========================================================================== */
+ 
+  // Volumen guardado en el navegador (solo afecta a los tonos de acierto y fallo).
+  function setupVolume() {
+    let savedVolume = NaN;
+    try { savedVolume = Number(localStorage.getItem('ritmo-volume')); } catch (error) {}
+    if (Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 100) {
+      volumeControl.value = String(savedVolume);
+    }
+    feedbackVolume = Number(volumeControl.value) / 100;
+    volumeValue.value = `${volumeControl.value}%`;
+ 
+    volumeControl.addEventListener('input', event => {
+      feedbackVolume = Number(event.target.value) / 100;
+      volumeValue.value = `${event.target.value}%`;
+      try { localStorage.setItem('ritmo-volume', event.target.value); } catch (error) {}
+    });
+  }
+ 
+  function bindEvents() {
+    document.addEventListener('keydown', handleKeydown);
+    document.addEventListener('keyup', handleKeyup);
+ 
+    // Botones de configuración: esperar una tecla o restaurar las flechas.
+    document.querySelectorAll('.key-bind').forEach(button => button.addEventListener('click', () => {
+      bindingLane = Number(button.dataset.bindLane);
+      refreshKeyButtons();
+      setFeedback(`PULSA UNA TECLA PARA ${LANE_NAMES[bindingLane].toUpperCase()}`, '#ffd65a');
+    }));
+    $('#defaultKeys').addEventListener('click', () => {
+      laneKeys = [...DEFAULT_LANE_KEYS];
+      bindingLane = null;
+      refreshKeyButtons();
+      setFeedback('FLECHAS RESTAURADAS');
+    });
+ 
+    // Velocidad de las notas y reinicio.
+    $('#difficulty').addEventListener('change', event => { leadMs = Number(event.target.value); });
+    $('#resetButton').addEventListener('click', reset);
+ 
+    // Eventos que dispara el menú: historia, práctica y salir.
+    document.addEventListener('rhythm:start', () => {
+      chart = selectedChart;
+      prepareFeedbackAudio();
+      start();
+    });
+    document.addEventListener('rhythm:practice', () => {
+      chart = createPracticeChart();
+      prepareFeedbackAudio();
+      start();
+    });
+    document.addEventListener('rhythm:stop', () => {
+      chart = selectedChart;
+      reset();
+    });
+ 
+    // Cargar un mapa JSON.
+    $('#chartFile').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (file) loadChart(file);
+    });
+  }
+ 
+  // Prepara el mapa, las teclas y los marcadores al abrir la página.
+  function init() {
+    setupVolume();
+    bindEvents();
+    refreshKeyButtons();
+    resetNotes();
+    updateScore(0);
+    updateBoostUI();
+    requestAnimationFrame(frame);
+  }
+ 
+  init();
 })();
+ 

@@ -6,16 +6,47 @@
   <title>Prueba de mecánica - Juego de ritmo</title>
   <link rel="stylesheet" href="style.css">
   <script src="game.js" defer></script>
+  <script src="menu.js" defer></script>
 </head>
 <body>
   <main class="app">
     <header class="topbar">
       <a class="brand" href="#" aria-label="Demo de ritmo">RITMO<span>///</span></a>
-      <h1 class="page-title">PRUEBA DE MECÁNICA</h1>
-      <details class="options-menu" id="optionsMenu">
-        <summary>⚙ OPCIONES</summary>
-        <div class="options-panel">
-          <h2>Opciones de juego</h2>
+      <h1 class="page-title">INTERFAZ TEMPORAL</h1>
+    </header>
+
+    <section class="start-screen" id="startScreen" aria-label="Menú de inicio">
+      <div class="start-card" id="mainMenu">
+        <h2>INTERFAZ TEMPORAL</h2>
+        <nav class="start-menu-buttons" aria-label="Menú principal">
+          <button id="startButton" type="button">STORY MODE</button>
+          <button id="practiceButton" type="button">PRÁCTICA</button>
+          <button id="creditsButton" type="button">CRÉDITOS</button>
+          <button id="openSettingsButton" type="button">CONFIGURACIÓN</button>
+        </nav>
+      </div>
+      <div class="story-intro" id="storyIntro" aria-live="polite" hidden>
+        <p id="storySceneLabel" class="story-scene-label"></p>
+        <h2 id="storySceneTitle"></h2>
+        <p id="storySceneText"></p>
+        <button id="skipStoryIntro" class="story-skip" type="button">SALTAR INTRO ▶</button>
+      </div>
+      <div class="start-card credits-panel" id="creditsPanel" hidden>
+        <p class="start-eyebrow">RITMO ///</p>
+        <h2>CRÉDITOS</h2>
+        <p>Demo web de juego musical con cuatro carriles.</p>
+        <p>Proyecto: Prueba de mecánica.</p>
+        <button id="backFromCredits" class="credits-back" type="button">VOLVER</button>
+      </div>
+      <section class="settings-screen" id="settingsScreen" aria-label="Configuración" hidden>
+        <header class="settings-header">
+          <button id="backFromSettings" class="settings-back" type="button">← VOLVER</button>
+          <h2>CONFIGURACIÓN</h2>
+        </header>
+        <div class="settings-content">
+          <label class="option-label volume-label" for="volumeControl"><span>VOLUMEN DE EFECTOS</span><output id="volumeValue" for="volumeControl">20%</output></label>
+          <input id="volumeControl" class="volume-control" type="range" min="0" max="100" value="20">
+
           <label class="option-label" for="difficulty">VELOCIDAD DE LAS NOTAS</label>
           <select id="difficulty" class="difficulty">
             <option value="2600">Lenta</option>
@@ -25,15 +56,10 @@
 
           <section class="menu-game-controls" aria-label="Control de partida">
             <h3>PARTIDA</h3>
-            <div class="controls">
-              <button id="startButton" class="primary" type="button">▶ &nbsp; EMPEZAR</button>
-              <button id="resetButton" class="secondary" type="button">↺ &nbsp; REINICIAR</button>
-            </div>
+            <div class="controls"><button id="resetButton" class="secondary" type="button">↺ &nbsp; REINICIAR</button></div>
           </section>
 
           <div class="file-controls">
-            <label class="file-label" for="audioFile">CANCIÓN MP3 <span id="audioName">elige un archivo</span></label>
-            <input id="audioFile" type="file" accept="audio/*">
             <label class="file-label" for="chartFile">MAPA DE NOTAS JSON <span>cargar otro mapa</span></label>
             <input id="chartFile" type="file" accept="application/json,.json">
           </div>
@@ -47,8 +73,8 @@
             <button id="defaultKeys" type="button" class="default-keys">Restaurar flechas</button>
           </section>
         </div>
-      </details>
-    </header>
+      </section>
+    </section>
 
     <section class="game-main">
       <div class="concert-lights" aria-hidden="true"></div>
@@ -63,8 +89,8 @@
             <div class="lane-glow"></div>
             <div class="hit-line"></div>
             <div class="receptors">
-              <div class="receptor" data-lane="0" aria-label="Carril 1"></div><div class="receptor" data-lane="1" aria-label="Carril 2"></div>
-              <div class="receptor" data-lane="2" aria-label="Carril 3"></div><div class="receptor" data-lane="3" aria-label="Carril 4"></div>
+              <div class="receptor" data-lane="0" aria-label="Carril 1: izquierda"><span aria-hidden="true">←</span></div><div class="receptor" data-lane="1" aria-label="Carril 2: abajo"><span aria-hidden="true">↓</span></div>
+              <div class="receptor" data-lane="2" aria-label="Carril 3: arriba"><span aria-hidden="true">↑</span></div><div class="receptor" data-lane="3" aria-label="Carril 4: derecha"><span aria-hidden="true">→</span></div>
             </div>
           </div>
           <div id="notes" class="notes"></div>
