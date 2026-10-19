@@ -99,7 +99,6 @@ button, select { font: inherit; }
   color: #f8efff;
   background-color: #12142d;
   background-image:
-    linear-gradient(180deg, transparent 68%, #2c164c 68% 72%, transparent 72%),
     repeating-linear-gradient(0deg, transparent 0 14px, #57e7f20d 15px 16px),
     repeating-linear-gradient(90deg, transparent 0 14px, #57e7f20d 15px 16px),
     radial-gradient(ellipse at 18% 80%, #ff4db830, transparent 37%),
@@ -135,11 +134,21 @@ button, select { font: inherit; }
   text-align: left;
 }
 .start-eyebrow { margin: 0 0 7px; color: #50e7f2; font-size: 12px; font-weight: 1000; letter-spacing: 3px; }
-.start-card h2 {
-  margin: 0 0 22px;
+
+.start-card h1 {
+  margin: 0 0 2px;
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(28px, 5vw, 43px);
+  font-size: clamp(100px, 20vw, 100px);
+  letter-spacing: 1px;
+  -webkit-text-stroke: 1px #171018;
+  text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
+}
+.start-card h2 {
+  margin: 0 3 22px;
+  color: #fff9e8;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(117px, 200vw, 100px);
   letter-spacing: 1px;
   -webkit-text-stroke: 1px #171018;
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;

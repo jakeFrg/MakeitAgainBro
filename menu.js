@@ -8,12 +8,14 @@
 
   // Escenas de la introducción del modo historia: se muestran una tras otra.
   const STORY_SCENES = [
-    {label:'CAPÍTULO 01',     title:'LA CIUDAD PERDIÓ SU RITMO',        text:'Las luces se apagaron. El escenario quedó en silencio.'},
-    {label:'SEÑAL DETECTADA', title:'LA PISTA VUELVE A ENCENDERSE',     text:'Cuatro carriles marcan el camino. Prepárate para seguirlos.'},
-    {label:'INICIO INMINENTE', title:'¿LISTO PARA JUGAR?',              text:'La partida comenzará después de esta introducción.'}
+    {label:'CAPÍTULO 01', title:'¿DONDE ESTOY?', text:'Acabas de despertar en tu habitación pero no se siente igual... '},
+    {label:'CAPÍTULO 01', title:'1986!!', text:'Ves el calenndario y ves que dice 1986, abres la ventana y ves luces de neon y musica de Federico Mercurio...'},
+    {label:'CAPÍTULO 01', title:'NO TIENES NADA', text:'Te das cuenta de que no tienes un centavo y decides salir a volverte a ganar el público. '},
+    {label:'CAPÍTULO 01', title:'¿LISTO PARA VOLVER?', text:'Vuelves a cantar pero ahora debes ganarte a cada uno del público.'}
+
   ];
-  const SCENE_DURATION_MS  = 1600; // tiempo que se ve cada escena
-  const SCENE_ANIMATION_MS = 420;  // duración de la animación de entrada
+  const SCENE_DURATION_MS  = 5000; // tiempo que se ve cada escena
+  const SCENE_ANIMATION_MS = 500;  // duración de la animación de entrada
 
   /* ==========================================================================
      2. ELEMENTOS DE LA PÁGINA
@@ -161,6 +163,7 @@
   $('#practiceButton').addEventListener('click', startPractice);
   $('#creditsButton').addEventListener('click', openCredits);
   $('#openSettingsButton').addEventListener('click', openSettings);
+
 
   // Botones para saltar la introducción o volver al menú.
   $('#skipStoryIntro').addEventListener('click', beginStoryGame);

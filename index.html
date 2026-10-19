@@ -12,17 +12,18 @@
   <main class="app">
     <header class="topbar">
       <a class="brand" href="#" aria-label="Demo de ritmo">RITMO<span>///</span></a>
-      <h1 class="page-title">INTERFAZ TEMPORAL</h1>
+      <h1 class="page-title">MAKE IT AGAIN BRO!</h1>
     </header>
 
     <section class="start-screen" id="startScreen" aria-label="Menú de inicio">
       <div class="start-card" id="mainMenu">
-        <h2>INTERFAZ TEMPORAL</h2>
+        <h2>MAKE IT AGAIN BRO!</h2>
         <nav class="start-menu-buttons" aria-label="Menú principal">
-          <button id="startButton" type="button">STORY MODE</button>
+          <button id="startButton" type="button">MODO HISTORIA</button>
           <button id="practiceButton" type="button">PRÁCTICA</button>
           <button id="creditsButton" type="button">CRÉDITOS</button>
           <button id="openSettingsButton" type="button">CONFIGURACIÓN</button>
+          <button id="exitButton" type="button">SALIR :(</button>
         </nav>
       </div>
       <div class="story-intro" id="storyIntro" aria-live="polite" hidden>
@@ -32,10 +33,11 @@
         <button id="skipStoryIntro" class="story-skip" type="button">SALTAR INTRO ▶</button>
       </div>
       <div class="start-card credits-panel" id="creditsPanel" hidden>
-        <p class="start-eyebrow">RITMO ///</p>
-        <h2>CRÉDITOS</h2>
-        <p>Demo web de juego musical con cuatro carriles.</p>
-        <p>Proyecto: Prueba de mecánica.</p>
+        <p class="start-eyebrow">Make It Again Bro!</p>
+        <h1>CRÉDITOS</h1>
+        <p>Mauricio Pérez Fragoso</p>
+        <p>Pablo Campuzano Muñoz</p>
+        <p>Ian Sánchez Campuzano</p>
         <button id="backFromCredits" class="credits-back" type="button">VOLVER</button>
       </div>
       <section class="settings-screen" id="settingsScreen" aria-label="Configuración" hidden>
@@ -49,9 +51,9 @@
 
           <label class="option-label" for="difficulty">VELOCIDAD DE LAS NOTAS</label>
           <select id="difficulty" class="difficulty">
-            <option value="2600">Lenta</option>
+            <option value="2600">Fácil</option>
             <option value="1800" selected>Normal</option>
-            <option value="1100">Rápida</option>
+            <option value="1100">Difícil</option>
           </select>
 
           <section class="menu-game-controls" aria-label="Control de partida">
