@@ -6,7 +6,7 @@
      1. CONFIGURACIÓN
      ========================================================================== */
 
-  // Escenas de la introducción del modo historia: se muestran una tras otra.
+  // Escenas de la introducción del modo historia. 
   const STORY_SCENES = [
     {label:'CAPÍTULO 01', title:'¿DONDE ESTOY?', text:'Acabas de despertar en tu habitación pero no se siente igual... '},
     {label:'CAPÍTULO 01', title:'1986!!', text:'Ves el calenndario y ves que dice 1986, abres la ventana y ves luces de neon y musica de Federico Mercurio...'},
@@ -15,7 +15,7 @@
 
   ];
   const SCENE_DURATION_MS  = 5000; // tiempo que se ve cada escena
-  const SCENE_ANIMATION_MS = 500;  // duración de la animación de entrada
+  const SCENE_ANIMATION_MS = 500;  // duración de la animación de cambio de escena
 
   /* ==========================================================================
      2. ELEMENTOS DE LA PÁGINA
