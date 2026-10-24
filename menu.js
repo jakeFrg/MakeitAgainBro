@@ -1,4 +1,4 @@
-// Maneja el menú principal, la introducción de historia, los créditos, la configuración y la práctica.
+// Maneja el menú principal, la introducción de historia, los créditos, las opciones, el leaderboard y la práctica.
 (() => {
   'use strict';
 
@@ -6,16 +6,29 @@
      1. CONFIGURACIÓN
      ========================================================================== */
 
-  // Escenas de la introducción del modo historia. 
+  // Escenas de la introducción del modo historia: se muestran una tras otra.
   const STORY_SCENES = [
-    {label:'CAPÍTULO 01', title:'¿DONDE ESTOY?', text:'Acabas de despertar en tu habitación pero no se siente igual... '},
-    {label:'CAPÍTULO 01', title:'1986!!', text:'Ves el calenndario y ves que dice 1986, abres la ventana y ves luces de neon y musica de Federico Mercurio...'},
-    {label:'CAPÍTULO 01', title:'NO TIENES NADA', text:'Te das cuenta de que no tienes un centavo y decides salir a volverte a ganar el público. '},
-    {label:'CAPÍTULO 01', title:'¿LISTO PARA VOLVER?', text:'Vuelves a cantar pero ahora debes ganarte a cada uno del público.'}
-
+    {label:'CAPÍTULO 01', title:'¿DÓNDE ESTOY?',          text:'Acabas de despertar en tu habitación pero no se siente igual...'},
+    {label:'CAPÍTULO 01', title:'1986!!',                 text:'Ves el calendario y ves que dice 1986, abres la ventana y ves luces de neón y música de Federico Mercurio...'},
+    {label:'CAPÍTULO 01', title:'NO TIENES NADA',         text:'Te das cuenta de que no tienes un centavo y decides salir a volverte a ganar el público.'},
+    {label:'CAPÍTULO 01', title:'¿LISTO PARA VOLVER?',    text:'Vuelves a cantar pero ahora debes ganarte a cada uno del público.'}
   ];
   const SCENE_DURATION_MS  = 5000; // tiempo que se ve cada escena
   const SCENE_ANIMATION_MS = 500;  // duración de la animación de cambio de escena
+
+  // Texto del botón de la introducción: saltar mientras corre, empezar al llegar a la última escena.
+  const SKIP_LABEL  = 'SALTAR INTRO ▶';
+  const START_LABEL = 'EMPEZAR CANCIÓN ▶';
+
+  const MENU_MUSIC_VOLUME = 0.4;
+
+  // Secciones del menú de opciones: id de su página y título que se muestra.
+  const OPTION_PAGES = {
+    audio:      {id:'optionAudio',      label:'AUDIO'},
+    difficulty: {id:'optionDifficulty', label:'DIFICULTAD'},
+    song:       {id:'optionSong',       label:'CANCIÓN Y MAPA'},
+    controls:   {id:'optionControls',   label:'CONTROLES'}
+  };
 
   /* ==========================================================================
      2. ELEMENTOS DE LA PÁGINA
@@ -23,36 +36,30 @@
 
   const $ = selector => document.querySelector(selector);
 
-  const startScreen    = $('#startScreen');
-  const mainMenu       = $('#mainMenu');
-  const creditsPanel   = $('#creditsPanel');
-  const settingsScreen = $('#settingsScreen');
+  // Pantalla de inicio y sus paneles.
+  const startScreen       = $('#startScreen');
+  const mainMenu          = $('#mainMenu');
+  const creditsPanel      = $('#creditsPanel');
+  const settingsScreen    = $('#settingsScreen');
   const leaderboardScreen = $('#leaderboardScreen');
-  const optionsMenu = $('#optionsMenu');
-  const backToOptions = $('#backToOptions');
-  const optionsTitle = $('#optionsTitle');
-  const optionPages = Array.from(document.querySelectorAll('.option-page'));
-  const storyIntro     = $('#storyIntro');
+  const storyIntro        = $('#storyIntro');
+  const panels = [mainMenu, creditsPanel, settingsScreen, leaderboardScreen, storyIntro];
+
+  // Introducción de historia.
+  const storyLabel     = $('#storySceneLabel');
+  const storyTitle     = $('#storySceneTitle');
+  const storyText      = $('#storySceneText');
   const skipStoryIntro = $('#skipStoryIntro');
 
-  const storyLabel = $('#storySceneLabel');
-  const storyTitle = $('#storySceneTitle');
-  const storyText  = $('#storySceneText');
-
+  // Opciones.
   const backFromSettings = $('#backFromSettings');
-  const musicaMenu = $('#musicaMenu');
-  musicaMenu.volume = 0.4;
-  
-  function reproducirMusicaMenu() {
-    musicaMenu.play().catch(error => {
-      console.log('No se pudo reproducir la música:', error);
-    });
-  }
+  const optionsMenu      = $('#optionsMenu');
+  const backToOptions    = $('#backToOptions');
+  const optionsTitle     = $('#optionsTitle');
+  const optionPages      = Array.from(document.querySelectorAll('.option-page'));
 
-  function detenerMusicaMenu() {
-    musicaMenu.pause();
-    musicaMenu.currentTime = 0;
-  }
+  // Música del menú.
+  const menuMusic = $('#musicaMenu');
 
   /* ==========================================================================
      3. ESTADO
@@ -62,46 +69,55 @@
   let sceneIndex = 0;  // escena que toca mostrar
 
   /* ==========================================================================
-     4. NAVEGACIÓN ENTRE PANELES
+     4. MÚSICA DEL MENÚ
+     ========================================================================== */
+
+  // Reproduce la música del menú (el navegador puede bloquearla hasta que haya un clic).
+  function playMenuMusic() {
+    menuMusic.play().catch(error => {
+      console.log('No se pudo reproducir la música:', error);
+    });
+  }
+
+  // Detiene la música del menú y la regresa al inicio.
+  function stopMenuMusic() {
+    menuMusic.pause();
+    menuMusic.currentTime = 0;
+  }
+
+  /* ==========================================================================
+     5. NAVEGACIÓN ENTRE PANELES
      ========================================================================== */
 
   // Muestra solo el panel indicado y oculta los demás.
   function showOnly(panel) {
-    for (const item of [mainMenu, creditsPanel, settingsScreen, leaderboardScreen, storyIntro]) {
-      item.hidden = item !== panel;
-    }
+    for (const item of panels) item.hidden = item !== panel;
   }
 
-  // Vuelve al menú principal y cancela la introducción si estaba en marcha.
+  // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone la música.
   function showMainMenu() {
     clearTimeout(storyTimer);
     startScreen.hidden = false;
     showOnly(mainMenu);
-    reproducirMusicaMenu();
+    playMenuMusic();
   }
 
   /* ==========================================================================
-     5. MODO HISTORIA
+     6. MODO HISTORIA
      ========================================================================== */
 
-  // Termina la introducción, oculta el menú y avisa al juego para empezar.
+  // Cierra la introducción y el menú, y avisa al juego para empezar.
   function beginStoryGame() {
     clearTimeout(storyTimer);
-    detenerMusicaMenu();
+    stopMenuMusic();
     storyIntro.hidden = true;
     startScreen.hidden = true;
     document.body.classList.remove('practice-mode');
     document.dispatchEvent(new Event('rhythm:start'));
   }
 
-  // Muestra la escena actual con una animación y programa la siguiente; al acabar, inicia el juego.
+  // Muestra la escena actual con una animación; en la última, el botón cambia a "EMPEZAR CANCIÓN".
   function showStoryScene() {
-    if (sceneIndex >= STORY_SCENES.length) {
-      skipStoryIntro.textContent = 'EMPEZAR CANCIÓN ▶';
-      storyText.textContent = 'Pulsa el botón para iniciar la canción y la partida.';
-      return;
-    }
-
     const scene = STORY_SCENES[sceneIndex];
     storyIntro.dataset.scene = String(sceneIndex); // el CSS cambia el color según la escena
     storyLabel.textContent = scene.label;
@@ -117,27 +133,27 @@
     if (sceneIndex < STORY_SCENES.length) {
       storyTimer = setTimeout(showStoryScene, SCENE_DURATION_MS);
     } else {
-      // El clic inicia el audio dentro de un gesto del usuario, como exigen los navegadores.
-      skipStoryIntro.textContent = 'EMPEZAR CANCIÓN ▶';
+      // La partida no empieza sola: el clic inicia el audio, como exigen los navegadores.
+      skipStoryIntro.textContent = START_LABEL;
     }
   }
 
   // Empieza la introducción desde la primera escena.
   function startStoryIntro() {
-    detenerMusicaMenu();
+    stopMenuMusic();
     showOnly(storyIntro);
     sceneIndex = 0;
-    skipStoryIntro.textContent = 'SALTAR INTRO ▶';
+    skipStoryIntro.textContent = SKIP_LABEL;
     showStoryScene();
   }
 
   /* ==========================================================================
-     6. PRÁCTICA
+     7. PRÁCTICA
      ========================================================================== */
 
   // Oculta el menú y avisa al juego para empezar con notas aleatorias.
   function startPractice() {
-    detenerMusicaMenu();
+    stopMenuMusic();
     startScreen.hidden = true;
     document.body.classList.add('practice-mode'); // el CSS oculta la barra de impulso
     document.dispatchEvent(new Event('rhythm:practice'));
@@ -151,20 +167,18 @@
   }
 
   /* ==========================================================================
-     7. CRÉDITOS Y CONFIGURACIÓN
+     8. CRÉDITOS, OPCIONES Y LEADERBOARD
      ========================================================================== */
 
   function openCredits() {
     showOnly(creditsPanel);
   }
 
-  // Abre la configuración y pone el foco en el botón de volver.
-  function openSettings() {
-    showOptionsHome();
-    showOnly(settingsScreen);
-    backFromSettings.focus();
+  function openLeaderboard() {
+    showOnly(leaderboardScreen);
   }
 
+  // Muestra el menú de secciones de opciones y oculta todas las páginas.
   function showOptionsHome() {
     optionsMenu.hidden = false;
     backToOptions.hidden = true;
@@ -172,22 +186,28 @@
     optionsTitle.textContent = 'OPCIONES';
   }
 
-  function openOptionPage(name, label) {
-    optionsMenu.hidden = true;
-    optionPages.forEach(page => { page.hidden = page.id !== `option${name}`; });
-    backToOptions.hidden = false;
-    optionsTitle.textContent = label;
+  // Abre las opciones (siempre en el menú de secciones) y pone el foco en el botón de volver.
+  function openSettings() {
+    showOptionsHome();
+    showOnly(settingsScreen);
+    backFromSettings.focus();
   }
 
-  function openLeaderboard() {
-    showOnly(leaderboardScreen);
+  // Abre una sección de opciones (audio, dificultad, canción o controles).
+  function openOptionPage(name) {
+    const page = OPTION_PAGES[name];
+    optionsMenu.hidden = true;
+    optionPages.forEach(item => { item.hidden = item.id !== page.id; });
+    backToOptions.hidden = false;
+    optionsTitle.textContent = page.label;
   }
 
   /* ==========================================================================
-     8. TECLA ESCAPE
+     9. TECLA ESCAPE
      ========================================================================== */
 
-  // Escape cierra la configuración o la introducción; en práctica sale al menú.
+  // Escape retrocede un paso: dentro de una sección de opciones vuelve a las opciones;
+  // en opciones, leaderboard o introducción vuelve al menú; en práctica sale al menú.
   function handleEscape(event) {
     if (event.key !== 'Escape') return;
 
@@ -211,41 +231,47 @@
   }
 
   /* ==========================================================================
-     9. EVENTOS
+     10. EVENTOS Y ARRANQUE
      ========================================================================== */
 
-  // Botones del menú principal.
-  // Inicia la música del menú con la primera interacción del usuario.
-  document.addEventListener('click', function iniciarMusicaMenu() {
-    if (!startScreen.hidden && musicaMenu.paused) {
-      reproducirMusicaMenu();
-    }
-  }, { once: true });
+  function bindEvents() {
+    // La música del menú empieza con el primer clic (los navegadores no permiten audio sin interacción).
+    document.addEventListener('click', function startMenuMusicOnFirstClick() {
+      if (!startScreen.hidden && menuMusic.paused) playMenuMusic();
+    }, {once:true});
 
-  $('#startButton').addEventListener('click', startStoryIntro);
-  $('#practiceButton').addEventListener('click', startPractice);
-  $('#creditsButton').addEventListener('click', openCredits);
-  $('#openSettingsButton').addEventListener('click', openSettings);
-  $('#openLeaderboardButton').addEventListener('click', openLeaderboard);
-  document.querySelectorAll('[data-option-page]').forEach(button => {
-    button.addEventListener('click', () => {
-      const name = button.dataset.optionPage;
-      const labels = {audio:'AUDIO', difficulty:'DIFICULTAD', song:'CANCIÓN Y MAPA', controls:'CONTROLES'};
-      openOptionPage(name[0].toUpperCase() + name.slice(1), labels[name]);
+    // Botones del menú principal.
+    $('#startButton').addEventListener('click', startStoryIntro);
+    $('#practiceButton').addEventListener('click', startPractice);
+    $('#openLeaderboardButton').addEventListener('click', openLeaderboard);
+    $('#creditsButton').addEventListener('click', openCredits);
+    $('#openSettingsButton').addEventListener('click', openSettings);
+
+    // Botón de reiniciar: sale de la práctica y vuelve al menú (game.js también reinicia la partida).
+    $('#resetButton').addEventListener('click', () => {
+      document.body.classList.remove('practice-mode');
+      showMainMenu();
     });
-  });
-  backToOptions.addEventListener('click', showOptionsHome);
-  $('#resetButton').addEventListener('click', () => {
-    document.body.classList.remove('practice-mode');
-    showMainMenu();
-  });
 
+    // Secciones de opciones y su botón de volver.
+    document.querySelectorAll('[data-option-page]').forEach(button => {
+      button.addEventListener('click', () => openOptionPage(button.dataset.optionPage));
+    });
+    backToOptions.addEventListener('click', showOptionsHome);
 
-  // Botones para saltar la introducción o volver al menú.
-  skipStoryIntro.addEventListener('click', beginStoryGame);
-  $('#backFromCredits').addEventListener('click', showMainMenu);
-  backFromSettings.addEventListener('click', showMainMenu);
-  $('#backFromLeaderboard').addEventListener('click', showMainMenu);
+    // Botones para saltar la introducción o volver al menú.
+    skipStoryIntro.addEventListener('click', beginStoryGame);
+    $('#backFromCredits').addEventListener('click', showMainMenu);
+    backFromSettings.addEventListener('click', showMainMenu);
+    $('#backFromLeaderboard').addEventListener('click', showMainMenu);
 
-  document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleEscape);
+  }
+
+  function init() {
+    menuMusic.volume = MENU_MUSIC_VOLUME;
+    bindEvents();
+  }
+
+  init();
 })();

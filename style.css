@@ -1,4 +1,11 @@
-﻿/* --------------------------------------------------------------------------
+﻿/* ==========================================================================
+   Estilos del juego de ritmo.
+   Orden: base · barra superior · pantalla de inicio · opciones y leaderboard ·
+          zona de juego · escenario y notas · HUD inferior · celular.
+   Los colores principales se cambian en :root.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
    1. Variables y base
    -------------------------------------------------------------------------- */
 
@@ -135,6 +142,7 @@ button, select { font: inherit; }
 }
 .start-eyebrow { margin: 0 0 7px; color: #50e7f2; font-size: 12px; font-weight: 1000; letter-spacing: 3px; }
 
+/* Título de los créditos (h1) y del menú principal (h2), con borde y sombra de color. */
 .start-card h1 {
   margin: 0 0 2px;
   color: #fff9e8;
@@ -145,10 +153,10 @@ button, select { font: inherit; }
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
 }
 .start-card h2 {
-  margin: 0 3 22px;
+  margin: 0 3 22px; /* inválido (falta una unidad): el navegador lo ignora */
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(117px, 200vw, 100px);
+  font-size: clamp(117px, 200vw, 100px); /* el mínimo (117px) es mayor que el máximo: queda fijo en 117px */
   letter-spacing: 1px;
   -webkit-text-stroke: 1px #171018;
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
@@ -175,6 +183,8 @@ button, select { font: inherit; }
   transform: translateX(9px) rotate(-1deg);
   outline: none;
 }
+
+/* Botón "Reiniciar partida" fijo en la esquina inferior izquierda de la pantalla de inicio. */
 #resetButton.menu-reset-button {
   position: absolute;
   z-index: 2;
@@ -255,10 +265,10 @@ button, select { font: inherit; }
 .story-skip:hover, .story-skip:focus-visible { color: #12142d; background: #50e7f2; outline: none; }
 
 /* --------------------------------------------------------------------------
-   4. Pantalla de configuración
+   4. Opciones y leaderboard
    -------------------------------------------------------------------------- */
 
-/* Caja de configuración con desplazamiento si no cabe en pantalla. */
+/* Caja de opciones y leaderboard, con desplazamiento si no cabe en pantalla. */
 .settings-screen {
   position: relative;
   z-index: 1;
@@ -300,12 +310,15 @@ button, select { font: inherit; }
   cursor: pointer;
 }
 .settings-back:hover, .settings-back:focus-visible { color: #211831; background: #51e0d0; outline: none; }
+.settings-sub-back { margin-bottom: 12px; } /* botón "← OPCIONES" dentro de una sección */
 
-/* Colores propios de la configuración (anulan los estilos generales de abajo). */
+/* Colores propios de las opciones (anulan los estilos generales de más abajo). */
 .settings-content .key-settings { border-color: #e663b5; background: #2b203b; }
 .settings-content .key-settings strong { color: #51e0d0; }
 .settings-content .key-bind, .settings-content .difficulty { border-color: #bd77ae; background: #35263f; color: #fff6db; }
 .settings-content .default-keys { border-color: #f0b944; color: #ffdf70; }
+
+/* Menú de secciones (Audio, Dificultad, Canción y mapa, Controles) y sus páginas. */
 .options-menu { display: grid; gap: 9px; }
 .options-menu[hidden], .option-page[hidden] { display: none; }
 .options-menu button {
@@ -318,14 +331,22 @@ button, select { font: inherit; }
   cursor: pointer;
 }
 .options-menu button:hover, .options-menu button:focus-visible { border-color: var(--cyan); color: var(--cyan); outline: none; }
-.settings-sub-back { margin-bottom: 12px; }
 .settings-group { margin: 14px 0; padding-bottom: 14px; border-bottom: 1px solid #4a4056; }
 .settings-group > h3 { margin: 0 0 10px; color: var(--cyan); font-size: 10px; letter-spacing: 1px; }
 .settings-group .file-controls + .file-controls { margin-top: 14px; }
+
+/* Leaderboard: progreso guardado del jugador y lista de mejores partidas. */
 .profile-progress { margin-top: 16px; padding: 12px; border: 2px solid #b45d96; background: #191523; }
 .profile-progress h3 { margin: 0 0 9px; color: #51e0d0; font-size: 11px; letter-spacing: 1px; }
 .profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
-.profile-grid > div { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; color: #b8afc2; font-size: 9px; }
+.profile-grid > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  color: #b8afc2;
+  font-size: 9px;
+}
 .profile-grid strong { color: #fff6db; font-size: 12px; font-variant-numeric: tabular-nums; }
 .leaderboard-list { display: grid; gap: 6px; margin: 12px 0 0; padding-left: 26px; color: var(--gold); }
 .leaderboard-list li { padding: 7px 8px; border: 1px solid #4a4056; color: #b8afc2; font-size: 10px; }
@@ -338,7 +359,7 @@ button, select { font: inherit; }
 .volume-label output { color: var(--gold); font-size: 11px; letter-spacing: 0; }
 .volume-control { width: 100%; margin: 2px 0 8px; accent-color: var(--pink); cursor: pointer; }
 
-/* Etiquetas de campos y selector de velocidad de notas. */
+/* Etiquetas de campos y selector de dificultad. */
 .option-label, .file-label {
   display: block;
   margin: 12px 0 6px;
@@ -354,7 +375,7 @@ button, select { font: inherit; }
   border: 1px solid #60566a;
 }
 
-/* Carga del mapa de notas (JSON). */
+/* Carga de canción y mapa de notas (JSON). */
 .file-controls { display: grid; gap: 5px; }
 .file-label span { display: block; margin-top: 4px; color: var(--cyan); font-size: 11px; letter-spacing: 0; }
 .file-controls input { width: 100%; color: #ddd; font-size: 11px; }
@@ -557,6 +578,7 @@ button, select { font: inherit; }
 .receptor[data-lane="2"] { --note-color: #a989ff; }
 .receptor[data-lane="3"] { --note-color: #ffd65a; }
 .receptor.active { transform: scale(1.12); background: var(--note-color); color: #17131a; }
+/* Tecla personalizada: letra más pequeña para que quepa en el receptor. */
 .receptor.custom-key span {
   max-width: 100%;
   overflow: hidden;
@@ -640,6 +662,46 @@ button, select { font: inherit; }
 }
 .stage-message small { font-size: 9px; }
 
+/* Resumen centrado en la pista al terminar el nivel (borde rojo si es derrota). */
+.stage-message.results {
+  top: 50%;
+  left: 50%;
+  width: min(92%, 460px);
+  padding: 16px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--cyan);
+  border-radius: 8px;
+  background: #090914ed;
+  color: white;
+  box-shadow: 0 0 24px #50e7f244;
+  line-height: 1.8;
+}
+.stage-message.results.defeat { border-color: #ff687e; box-shadow: 0 0 24px #ff687e55; }
+
+/* Aviso para activar el audio cuando el navegador lo bloquea (tiene un botón clicable). */
+.stage-message.audio-prompt {
+  top: 50%;
+  left: 50%;
+  width: min(92%, 380px);
+  padding: 16px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  background: #090914ed;
+  color: white;
+  box-shadow: 0 0 24px #ffd65a44;
+  pointer-events: auto;
+}
+.stage-message.audio-prompt button {
+  margin-top: 10px;
+  padding: 10px 16px;
+  border: 1px solid var(--gold);
+  background: #29202a;
+  color: var(--gold);
+  font-weight: bold;
+  cursor: pointer;
+}
+
 /* --------------------------------------------------------------------------
    7. Barra de impulso y HUD inferior
    -------------------------------------------------------------------------- */
@@ -685,7 +747,7 @@ body.practice-mode .impulse-hud { display: none; }
   align-items: center;
 }
 
-/* Puntos en la esquina izquierda. */
+/* Puntos en la esquina izquierda, con mejor puntaje y récord de combo debajo. */
 .points-inline { grid-column: 1; align-self: start; margin-top: 8px; text-align: left; }
 .points-inline .stat-label { font-size: 8px; }
 .points-inline strong { justify-content: flex-start; font-size: 17px; }
@@ -733,24 +795,31 @@ body.practice-mode .impulse-hud { display: none; }
   opacity: 0;
 }
 
-/* La barra de desempeño y la precisión se actualizan durante la partida. */
+/* Barra de desempeño y precisión: cambia de color según el nivel (data-level). */
 .performance-status { grid-column: 1 / -1; grid-row: 2; width: min(100%, 620px); justify-self: center; }
 .performance-heading { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
 .performance-heading .stat-label { margin-left: auto; }
 .performance-heading .stat-label:first-child { margin-left: 0; }
 .performance-heading strong { color: var(--cyan); font-size: 11px; font-variant-numeric: tabular-nums; }
-.performance-meter { height: 10px; overflow: hidden; border: 1px solid #60566a; border-radius: 999px; background: #0c0b14; }
-.performance-fill { width: 100%; height: 100%; border-radius: inherit; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); transition: width .2s ease, background-color .2s ease; }
+.performance-meter {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid #60566a;
+  border-radius: 999px;
+  background: #0c0b14;
+}
+.performance-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan);
+  transition: width .2s ease, background-color .2s ease;
+}
 .performance-meter[data-level="medium"] .performance-fill { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
 .performance-meter[data-level="low"] .performance-fill { background: #ff687e; box-shadow: 0 0 10px #ff687e; }
 
-/* El resumen aparece centrado en la pista al terminar el nivel. */
-.stage-message.results { top: 50%; left: 50%; width: min(92%, 460px); padding: 16px; transform: translate(-50%, -50%); border: 1px solid var(--cyan); border-radius: 8px; background: #090914ed; color: white; box-shadow: 0 0 24px #50e7f244; line-height: 1.8; }
-.stage-message.results.defeat { border-color: #ff687e; box-shadow: 0 0 24px #ff687e55; }
-.stage-message.audio-prompt { top: 50%; left: 50%; width: min(92%, 380px); padding: 16px; transform: translate(-50%, -50%); border: 1px solid var(--gold); border-radius: 8px; background: #090914ed; color: white; box-shadow: 0 0 24px #ffd65a44; pointer-events: auto; }
-.stage-message.audio-prompt button { margin-top: 10px; padding: 10px 16px; border: 1px solid var(--gold); background: #29202a; color: var(--gold); font-weight: bold; cursor: pointer; }
-
-/* Botones de partida. */
+/* Botones de partida (el HTML actual ya no los usa). */
 .controls { grid-column: 1 / -1; display: flex; justify-content: center; gap: 9px; }
 .controls button { min-width: 132px; padding: 10px 14px; border: 0; font-weight: bold; cursor: pointer; }
 .controls button:disabled { opacity: .5; cursor: not-allowed; }

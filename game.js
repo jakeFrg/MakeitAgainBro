@@ -1,10 +1,10 @@
 ﻿(() => {
   'use strict';
- 
+
   /* ==========================================================================
      1. CONFIGURACIÓN
      ========================================================================== */
- 
+
   // Mapa de respaldo para jugar sin cargar un JSON. "boost: true" = gema especial.
   const DEFAULT_CHART = {
     offsetMs: 0,
@@ -20,51 +20,88 @@
       {timeMs:15000,lane:2},{timeMs:15500,lane:1,boost:true},{timeMs:15750,lane:3},{timeMs:16000,lane:0}
     ]
   };
- 
+
   // Teclas por carril (Espacio queda reservado para el impulso), nombres y colores.
   const DEFAULT_LANE_KEYS = ['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'];
   const LANE_NAMES  = ['Carril 1', 'Carril 2', 'Carril 3', 'Carril 4'];
   const LANE_COLORS = ['#50e7f2', '#ff4db8', '#a989ff', '#ffd65a'];
- 
+
   // Posición horizontal (%) de cada carril arriba de la pista; abajo se calcula con laneBottomX().
   const TOP_LANE_CENTERS = [35, 45, 55, 65];
- 
+
+  // Acierto e impulso.
   const HIT_WINDOW_MS = 150;                // margen máximo de acierto para notas separadas
   const BOOST_COST = 25;                    // energía mínima (%) para activar el impulso
   const BOOST_DURATION_MS = 8000;           // duración máxima del impulso con la barra llena
   const SPECIAL_CHARGE_AMOUNT = 25;         // energía (%) que da una gema especial
   const SPECIAL_CHARGE_DURATION_MS = 1200;  // la energía se suma poco a poco durante este tiempo
- 
+
+  // Dificultades: velocidad de caída, separación mínima entre notas y ajustes del modo práctica.
+  const DIFFICULTIES = {
+    easy:   {leadMs:2850, minGapMs:550, practiceCount:45,  practiceMinGapMs:900, practiceMaxGapMs:1400},
+    normal: {leadMs:2500, minGapMs:300, practiceCount:75,  practiceMinGapMs:650, practiceMaxGapMs:1150},
+    hard:   {leadMs:1800, minGapMs:180, practiceCount:100, practiceMinGapMs:350, practiceMaxGapMs:750}
+  };
+
+  // Desempeño: barra de vida del jugador (llega a 0 = derrota).
+  const MAX_PERFORMANCE = 100;
+  const MISS_PERFORMANCE_PENALTY = 10;
+  const PERFORMANCE_RECOVERY = {excellent:5, good:3, okay:2, poor:1, hold:5};
+
+  // Claves de guardado en el navegador (localStorage).
+  const BEST_SCORE_KEY = 'ritmo-best-score-v1';
+  const PLAYER_PROFILE_KEY = 'ritmo-player-profile-v1';
+  const PLAYER_LEADERBOARD_KEY = 'ritmo-local-leaderboard-v1';
+  const LANE_KEYS_STORAGE_KEY = 'ritmo-lane-keys-v1';
+  const DIFFICULTY_STORAGE_KEY = 'ritmo-difficulty-v1';
+  const EFFECTS_VOLUME_KEY = 'ritmo-volume';
+  const MUSIC_VOLUME_KEY = 'ritmo-music-volume';
+
+  // Perfil inicial del jugador (también define qué campos se leen del guardado).
+  const EMPTY_PLAYER_PROFILE = {
+    bestScore:0, totalScore:0, popularity:50, levelsCompleted:0, gamesPlayed:0,
+    totalHits:0, totalMisses:0, bestCombo:0, lastScore:0, lastAccuracy:0,
+    lastPerformance:100, performanceSum:0, performanceRuns:0
+  };
+
   /* ==========================================================================
      2. ELEMENTOS DE LA PÁGINA
      ========================================================================== */
- 
+
   const $ = selector => document.querySelector(selector);
- 
+
+  // Pista y marcador.
   const stage            = $('#stage');
   const notesBox         = $('#notes');
+  const clockEl          = $('#clock');
+  const feedback         = $('#feedback');
+  const message          = $('#stageMessage');
+  const judgementDisplay = $('#judgementDisplay');
   const scoreEl          = $('#score');
   const comboEl          = $('#combo');
   const multiplierEl     = $('#comboMultiplier');
   const bestComboEl      = $('#bestCombo');
   const bestScoreEl      = $('#bestScore');
   const accuracyEl       = $('#accuracy');
+  const receptors        = Array.from(document.querySelectorAll('.receptor'));
+
+  // Barras de desempeño e impulso.
   const performanceMeter = $('#performanceMeter');
   const performanceFill  = $('#performanceFill');
   const performanceValue = $('#performanceValue');
-  const profilePopularity = $('#profilePopularity');
-  const profileLevels = $('#profileLevels');
-  const profileTotalScore = $('#profileTotalScore');
-  const profileAccuracy = $('#profileAccuracy');
-  const profileAveragePerformance = $('#profileAveragePerformance');
-  const leaderboardList = $('#leaderboardList');
-  const clockEl          = $('#clock');
-  const feedback         = $('#feedback');
-  const message          = $('#stageMessage');
-  const judgementDisplay = $('#judgementDisplay');
   const boostFill        = $('#boostFill');
   const boostStatus      = $('#boostStatus');
   const boostMeter       = $('.boost-meter');
+
+  // Perfil del jugador y ranking.
+  const profilePopularity         = $('#profilePopularity');
+  const profileLevels             = $('#profileLevels');
+  const profileTotalScore         = $('#profileTotalScore');
+  const profileAccuracy           = $('#profileAccuracy');
+  const profileAveragePerformance = $('#profileAveragePerformance');
+  const leaderboardList           = $('#leaderboardList');
+
+  // Opciones, canción y volúmenes.
   const difficultySelect = $('#difficulty');
   const songAudio        = $('#songAudio');
   const songFileInput    = $('#songFile');
@@ -73,66 +110,108 @@
   const musicVolumeValue = $('#musicVolumeValue');
   const volumeControl    = $('#volumeControl');
   const volumeValue      = $('#volumeValue');
-  // Música del nivel
-  const musicaNivel = $('#musicaNivel');
-  musicaNivel.volume = 0.6;
-  function detenerMusicaNivel() {
-  musicaNivel.pause();
-  musicaNivel.currentTime = 0;
-}
-  const receptors        = Array.from(document.querySelectorAll('.receptor'));
- 
+  const levelMusic       = $('#musicaNivel');
+
   /* ==========================================================================
      3. ESTADO
      ========================================================================== */
- 
+
   // Mapa
   let chart = DEFAULT_CHART;          // mapa que se está jugando
   let selectedChart = DEFAULT_CHART;  // mapa elegido por el jugador (se restaura al salir de práctica)
-  let chartLoadVersion = 0;            // impide que una carga tardía reemplace el mapa más reciente
+  let chartLoadVersion = 0;           // impide que una carga tardía reemplace el mapa más reciente
   let notes = [];
   let notesByLane = [[], [], [], []]; // búsqueda rápida de notas pendientes por carril
- 
+
   // Teclas
   let laneKeys = [...DEFAULT_LANE_KEYS];
   let bindingLane = null;             // carril esperando una nueva tecla
   const heldLaneKeys = new Set();     // carriles con la tecla mantenida
- 
+
   // Reloj de la partida
   let running = false;
-  let preRoll = false;                // cuenta previa antes de la primera nota
+  let preRoll = false;                // cuenta previa (ya no se activa en esta versión)
   let startedAt = 0;
   let preRollStartedAt = 0;
   let pausedAt = 0;
-  let songStarted = false;
+  let songStarted = false;            // true cuando el MP3 ya empezó y manda el reloj
   let songObjectUrl = '';
-  const DIFFICULTIES = {
-    easy:   {leadMs:2850, minGapMs:550, practiceCount:45, practiceMinGapMs:900, practiceMaxGapMs:1400},
-    normal: {leadMs:2500, minGapMs:300, practiceCount:75, practiceMinGapMs:650, practiceMaxGapMs:1150},
-    hard:   {leadMs:1800, minGapMs:180, practiceCount:100,practiceMinGapMs:350, practiceMaxGapMs:750}
-  };
   let leadMs = DIFFICULTIES.normal.leadMs; // tiempo de caída según la dificultad elegida
- 
-  // Puntuación e impulso
+
+  // Puntuación de la partida
   let score = 0;
   let combo = 0;
   let bestCombo = 0;
   let hits = 0;
   let misses = 0;
-  let playerPerformance = 100;
-  const MAX_PERFORMANCE = 100;
-  const MISS_PERFORMANCE_PENALTY = 10;
-  const PERFORMANCE_RECOVERY = {excellent:5, good:3, okay:2, poor:1, hold:5};
-  const BEST_SCORE_KEY = 'ritmo-best-score-v1';
-  const PLAYER_PROFILE_KEY = 'ritmo-player-profile-v1';
-  const PLAYER_LEADERBOARD_KEY = 'ritmo-local-leaderboard-v1';
-  const LANE_KEYS_STORAGE_KEY = 'ritmo-lane-keys-v1';
-  const DIFFICULTY_STORAGE_KEY = 'ritmo-difficulty-v1';
-  const EMPTY_PLAYER_PROFILE = {
-    bestScore:0, totalScore:0, popularity:50, levelsCompleted:0, gamesPlayed:0,
-    totalHits:0, totalMisses:0, bestCombo:0, lastScore:0, lastAccuracy:0,
-    lastPerformance:100, performanceSum:0, performanceRuns:0
-  };
+  let playerPerformance = MAX_PERFORMANCE;
+
+  // Progreso guardado
+  let playerProfile = readPlayerProfile();
+  let playerLeaderboard = readLocalLeaderboard();
+  let bestScore = playerProfile.bestScore;
+  let profileSaveTimer = 0;
+
+  // Impulso
+  let energy = 0;                     // energía del impulso (0 a 100)
+  let pendingEnergy = [];             // cargas de gemas especiales aún sumándose
+  let boostActiveUntil = -1;          // momento en que termina el impulso (-1 = inactivo)
+  let boostLastTickAt = -1;
+
+  // Efectos
+  let judgementAnimation = null;
+  const receptorFlashTimers = [0, 0, 0, 0];
+  let feedbackAudioContext = null;
+  let feedbackOscillator = null;
+  let feedbackGain = null;
+  let feedbackVolume = 0.2;
+
+  /* ==========================================================================
+     4. UTILIDADES
+     ========================================================================== */
+
+  // Teclas de un solo carácter se guardan en minúscula.
+  const normalizeKey = key => (key.length === 1 ? key.toLowerCase() : key);
+
+  // Etiqueta corta de una tecla para los botones de asignación.
+  function keyLabel(key) {
+    const labels = {ArrowLeft:'←', ArrowDown:'↓', ArrowUp:'↑', ArrowRight:'→'};
+    return labels[key] || (key.length === 1 ? key.toUpperCase() : key);
+  }
+
+  function formatTime(ms) {
+    const seconds = Math.max(0, Math.floor(ms / 1000));
+    return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+  }
+
+  // Tiempo de la partida en ms; si hay MP3 sonando, él manda el reloj.
+  function chartTime() {
+    if (!running) return pausedAt;
+    if (preRoll) return performance.now() - preRollStartedAt - leadMs;
+    if (songStarted) return songAudio.currentTime * 1000;
+    return performance.now() - startedAt;
+  }
+
+  // Tiempo de la canción: reloj de la partida más el desfase del mapa.
+  const songClock = () => chartTime() + (chart.offsetMs || 0);
+
+  // Posición horizontal (%) de un carril en la parte baja de la pista.
+  const laneBottomX = lane => 2 + (lane + 0.5) * 24;
+
+  // ¿Está activo el modo práctica? (la práctica no guarda estadísticas).
+  const isPracticeMode = () => document.body.classList.contains('practice-mode');
+
+  // Detiene la música de fondo del nivel y la regresa al inicio.
+  function stopLevelMusic() {
+    levelMusic.pause();
+    levelMusic.currentTime = 0;
+  }
+
+  /* ==========================================================================
+     5. PROGRESO GUARDADO (perfil, mejor puntuación y ranking)
+     ========================================================================== */
+
+  // Lee el perfil guardado; ignora valores inválidos.
   function readPlayerProfile() {
     try {
       const saved = JSON.parse(localStorage.getItem(PLAYER_PROFILE_KEY) || '{}');
@@ -146,103 +225,23 @@
       return {...EMPTY_PLAYER_PROFILE};
     }
   }
-  let playerProfile = readPlayerProfile();
+
+  // Lee el ranking local guardado.
   function readLocalLeaderboard() {
     try {
       const records = JSON.parse(localStorage.getItem(PLAYER_LEADERBOARD_KEY) || '[]');
       return Array.isArray(records) ? records.filter(record => record && Number.isFinite(Number(record.score))) : [];
     } catch (error) { return []; }
   }
-  let playerLeaderboard = readLocalLeaderboard();
-  playerProfile.popularity = Math.min(100, playerProfile.popularity);
-  let profileSaveTimer = 0;
-  let bestScore = playerProfile.bestScore;
-  try { bestScore = Math.max(bestScore, Number(localStorage.getItem(BEST_SCORE_KEY)) || 0); } catch (error) {}
-  playerProfile.bestScore = bestScore;
-  let energy = 0;                     // energía del impulso (0 a 100)
-  let pendingEnergy = [];             // cargas de gemas especiales aún sumándose
-  let boostActiveUntil = -1;          // momento en que termina el impulso (-1 = inactivo)
-  let boostLastTickAt = -1;
- 
-  // Efectos
-  let judgementAnimation = null;
-  const receptorFlashTimers = [0, 0, 0, 0];
-  let feedbackAudioContext = null;
-  let feedbackOscillator = null;
-  let feedbackGain = null;
-  let feedbackVolume = 0.2;
- 
-  /* ==========================================================================
-     4. UTILIDADES
-     ========================================================================== */
- 
-  // Teclas de un solo carácter se guardan en minúscula.
-  const normalizeKey = key => (key.length === 1 ? key.toLowerCase() : key);
- 
-  // Etiqueta corta de una tecla para los botones de asignación.
-  function keyLabel(key) {
-    const labels = {ArrowLeft:'←', ArrowDown:'↓', ArrowUp:'↑', ArrowRight:'→'};
-    return labels[key] || (key.length === 1 ? key.toUpperCase() : key);
-  }
- 
-  function formatTime(ms) {
-    const seconds = Math.max(0, Math.floor(ms / 1000));
-    return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-  }
- 
-  // Tiempo de la partida en ms; negativo durante la cuenta previa.
-  function chartTime() {
-    if (!running) return pausedAt;
-    if (preRoll) return performance.now() - preRollStartedAt - leadMs;
-    if (songStarted) return songAudio.currentTime * 1000;
-    return performance.now() - startedAt;
-  }
- 
-  // Tiempo de la canción: reloj de la partida más el desfase del mapa.
-  const songClock = () => chartTime() + (chart.offsetMs || 0);
- 
-  // Posición horizontal (%) de un carril en la parte baja de la pista.
-  const laneBottomX = lane => 2 + (lane + 0.5) * 24;
- 
-  /* ==========================================================================
-     5. INTERFAZ (mensajes, puntos, impulso, teclas)
-     ========================================================================== */
- 
-  // Mensaje de texto del juego (LISTO, FALLO, etc.).
-  function setFeedback(text, color = 'var(--cyan)') {
-    feedback.textContent = text;
-    feedback.style.color = color;
-  }
- 
-  // Muestra un instante la calidad del golpe (EXCELENTE, MALO...) con una animación.
-  function showJudgement(label, color) {
-    judgementDisplay.textContent = label;
-    judgementDisplay.style.color = color;
-    if (judgementAnimation) judgementAnimation.cancel();
-    judgementAnimation = judgementDisplay.animate([
-      {opacity:0, transform:'scale(4) translateY(5px)', offset:0},
-      {opacity:1, transform:'scale(3) translateY(0)', offset:.18},
-      {opacity:1, transform:'scale(.67) translateY(0)', offset:.35},
-      {opacity:0, transform:'scale(1) translateY(-4px)', offset:1}
-    ], {duration:950, easing:'ease-out', fill:'forwards'});
-  }
- 
-  // Nivel de combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.
-  function comboTier() {
-    if (combo >= 30) return 8;
-    if (combo >= 20) return 4;
-    if (combo >= 10) return 2;
-    return 1;
-  }
- 
-  const isBoostActive = time => boostActiveUntil >= 0 && time < boostActiveUntil;
- 
-  // Multiplicador total: nivel de combo (x2 más si el impulso está activo).
-  function currentMultiplier(time = songClock()) {
-    return comboTier() * (isBoostActive(time) ? 2 : 1);
+
+  // Ajusta la popularidad y recupera la mejor puntuación guardada (se llama al arrancar).
+  function loadStoredProgress() {
+    playerProfile.popularity = Math.min(100, playerProfile.popularity);
+    try { bestScore = Math.max(bestScore, Number(localStorage.getItem(BEST_SCORE_KEY)) || 0); } catch (error) {}
+    playerProfile.bestScore = bestScore;
   }
 
-  // Guarda el perfil localmente; agrupa varias actualizaciones cercanas para evitar escrituras por cuadro.
+  // Guarda perfil, mejor puntuación y ranking; agrupa guardados cercanos para no escribir en cada cuadro.
   function savePlayerProfile(immediate = false) {
     if (profileSaveTimer) clearTimeout(profileSaveTimer);
     const save = () => {
@@ -257,37 +256,45 @@
     else profileSaveTimer = setTimeout(save, 180);
   }
 
-  // Muestra los datos que sobrevivirán al cerrar y volver a abrir el juego.
-  function updateProfileUI() {
-    profilePopularity.textContent = `${Math.round(playerProfile.popularity)}%`;
-    profileLevels.textContent = String(playerProfile.levelsCompleted);
-    profileTotalScore.textContent = String(playerProfile.totalScore).padStart(6, '0');
-    const attempts = playerProfile.totalHits + playerProfile.totalMisses;
-    profileAccuracy.textContent = `${attempts ? Math.round(playerProfile.totalHits / attempts * 100) : 0}%`;
-    const average = playerProfile.performanceRuns
-      ? Math.round(playerProfile.performanceSum / playerProfile.performanceRuns)
-      : 0;
-    profileAveragePerformance.textContent = `${average}%`;
-    leaderboardList.replaceChildren();
-    if (!playerLeaderboard.length) {
-      const empty = document.createElement('li');
-      empty.className = 'leaderboard-empty';
-      empty.textContent = 'Aún no hay partidas guardadas.';
-      leaderboardList.appendChild(empty);
-      return;
-    }
-    playerLeaderboard.slice(0, 5).forEach((record, index) => {
-      const item = document.createElement('li');
-      item.append(`${record.date || 'Partida'} · `);
-      const scoreLabel = document.createElement('strong');
-      scoreLabel.textContent = `${Number(record.score).toLocaleString('es-MX')} pts`;
-      item.append(scoreLabel, ` · ${Number(record.accuracy) || 0}% precisión · combo ${Number(record.bestCombo) || 0}`);
-      item.setAttribute('aria-label', `Puesto ${index + 1}: ${scoreLabel.textContent}, precisión ${Number(record.accuracy) || 0} por ciento`);
-      leaderboardList.appendChild(item);
-    });
+  /* ==========================================================================
+     6. INTERFAZ (mensajes, puntos, barras, perfil, teclas)
+     ========================================================================== */
+
+  // Mensaje de texto del juego (LISTO, FALLO, etc.).
+  function setFeedback(text, color = 'var(--cyan)') {
+    feedback.textContent = text;
+    feedback.style.color = color;
   }
- 
-  // Refresca puntos, combo y multiplicador en pantalla.
+
+  // Muestra un instante la calidad del golpe (EXCELENTE, MALO...) con una animación.
+  function showJudgement(label, color) {
+    judgementDisplay.textContent = label;
+    judgementDisplay.style.color = color;
+    if (judgementAnimation) judgementAnimation.cancel();
+    judgementAnimation = judgementDisplay.animate([
+      {opacity:0, transform:'scale(4) translateY(5px)', offset:0},
+      {opacity:1, transform:'scale(3) translateY(0)', offset:.18},
+      {opacity:1, transform:'scale(.67) translateY(0)', offset:.35},
+      {opacity:0, transform:'scale(1) translateY(-4px)', offset:1}
+    ], {duration:950, easing:'ease-out', fill:'forwards'});
+  }
+
+  // Nivel de combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.
+  function comboTier() {
+    if (combo >= 30) return 8;
+    if (combo >= 20) return 4;
+    if (combo >= 10) return 2;
+    return 1;
+  }
+
+  const isBoostActive = time => boostActiveUntil >= 0 && time < boostActiveUntil;
+
+  // Multiplicador total: nivel de combo (x2 más si el impulso está activo).
+  function currentMultiplier(time = songClock()) {
+    return comboTier() * (isBoostActive(time) ? 2 : 1);
+  }
+
+  // Refresca puntos, combo, multiplicador, mejores marcas y precisión.
   function updateScore(time = songClock()) {
     scoreEl.textContent = String(score).padStart(6, '0');
     comboEl.textContent = String(combo);
@@ -307,7 +314,38 @@
     savePlayerProfile();
   }
 
-  // Actualiza desempeño en tiempo real; sus límites están definidos por MAX_PERFORMANCE.
+  // Muestra el perfil guardado y las 5 mejores partidas del ranking.
+  function updateProfileUI() {
+    profilePopularity.textContent = `${Math.round(playerProfile.popularity)}%`;
+    profileLevels.textContent = String(playerProfile.levelsCompleted);
+    profileTotalScore.textContent = String(playerProfile.totalScore).padStart(6, '0');
+    const attempts = playerProfile.totalHits + playerProfile.totalMisses;
+    profileAccuracy.textContent = `${attempts ? Math.round(playerProfile.totalHits / attempts * 100) : 0}%`;
+    const average = playerProfile.performanceRuns
+      ? Math.round(playerProfile.performanceSum / playerProfile.performanceRuns)
+      : 0;
+    profileAveragePerformance.textContent = `${average}%`;
+
+    leaderboardList.replaceChildren();
+    if (!playerLeaderboard.length) {
+      const empty = document.createElement('li');
+      empty.className = 'leaderboard-empty';
+      empty.textContent = 'Aún no hay partidas guardadas.';
+      leaderboardList.appendChild(empty);
+      return;
+    }
+    playerLeaderboard.slice(0, 5).forEach((record, index) => {
+      const item = document.createElement('li');
+      item.append(`${record.date || 'Partida'} · `);
+      const scoreLabel = document.createElement('strong');
+      scoreLabel.textContent = `${Number(record.score).toLocaleString('es-MX')} pts`;
+      item.append(scoreLabel, ` · ${Number(record.accuracy) || 0}% precisión · combo ${Number(record.bestCombo) || 0}`);
+      item.setAttribute('aria-label', `Puesto ${index + 1}: ${scoreLabel.textContent}, precisión ${Number(record.accuracy) || 0} por ciento`);
+      leaderboardList.appendChild(item);
+    });
+  }
+
+  // Refresca la barra de desempeño (verde, amarilla o roja según el nivel).
   function updatePerformance() {
     const value = Math.max(0, Math.min(MAX_PERFORMANCE, playerPerformance));
     performanceFill.style.width = `${value}%`;
@@ -316,27 +354,6 @@
     performanceMeter.dataset.level = value >= 60 ? 'high' : value >= 30 ? 'medium' : 'low';
   }
 
-  // Un acierto recupera desempeño según su precisión, sin superar el máximo.
-  function recoverPerformance(amount) {
-    playerPerformance = Math.min(MAX_PERFORMANCE, playerPerformance + amount);
-    updatePerformance();
-  }
-
-  // Errores de tecla, notas omitidas y notas sostenidas interrumpidas usan la misma penalización.
-  function registerMiss(time, feedbackText = 'FALLO') {
-    if (!running) return;
-    misses++;
-    if (!document.body.classList.contains('practice-mode')) playerProfile.totalMisses++;
-    combo = 0;
-    score = Math.max(0, score - 25);
-    playerPerformance = Math.max(0, playerPerformance - MISS_PERFORMANCE_PENALTY);
-    updatePerformance();
-    updateScore(time);
-    setFeedback(feedbackText, '#ff687e');
-    // Si el desempeño llega a cero, la partida termina inmediatamente.
-    if (playerPerformance <= 0) finishLevel('defeat');
-  }
- 
   // Refresca el relleno y el porcentaje de la barra de impulso.
   function updateBoostUI() {
     const percent = Math.max(0, Math.min(100, energy));
@@ -344,8 +361,8 @@
     boostMeter.setAttribute('aria-valuenow', String(Math.round(percent)));
     boostStatus.textContent = `${Math.round(percent)}%`;
   }
- 
-  // Muestra en cada botón la tecla asignada a su carril.
+
+  // Muestra la tecla de cada carril en los botones de configuración y en los receptores.
   function refreshKeyButtons() {
     document.querySelectorAll('.key-bind').forEach(button => {
       const lane = Number(button.dataset.bindLane);
@@ -361,11 +378,11 @@
       receptor.setAttribute('aria-label', `${LANE_NAMES[lane]}: tecla ${keyLabel(laneKeys[lane])}`);
     });
   }
- 
+
   /* ==========================================================================
-     6. SONIDO DE ACIERTO Y FALLO
+     7. SONIDO DE ACIERTO Y FALLO
      ========================================================================== */
- 
+
   // Prepara un único oscilador reutilizable (no reproduce música).
   function prepareFeedbackAudio() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -388,7 +405,7 @@
       feedbackGain = null;
     }
   }
- 
+
   // Tono corto: agudo si aciertas, grave si fallas.
   function playFeedbackTone(success) {
     if (!feedbackAudioContext || !feedbackOscillator || !feedbackGain || feedbackVolume <= 0) return;
@@ -400,12 +417,12 @@
     gain.exponentialRampToValueAtTime(feedbackVolume * 0.035, now + 0.012);
     gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
   }
- 
+
   /* ==========================================================================
-     7. NOTAS Y MAPAS
+     8. NOTAS Y MAPAS
      ========================================================================== */
- 
-  // Crea los elementos de las notas a partir del mapa (normales, sostenidas y especiales).
+
+  // Crea los elementos de las notas a partir del mapa y calcula la ventana de acierto de cada una.
   function resetNotes() {
     notesBox.replaceChildren();
     notes = chart.notes.map((note, index) => {
@@ -433,7 +450,7 @@
     notesByLane = [[], [], [], []];
     for (const note of notes) notesByLane[note.lane].push(note);
 
-    // Calcula una ventana independiente por carril para que dos notas cercanas no se roben el golpe.
+    // Ventana propia por nota: si dos notas del mismo carril están cerca, la ventana se reduce.
     for (const laneNotes of notesByLane) {
       for (let index = 0; index < laneNotes.length; index++) {
         const note = laneNotes[index];
@@ -446,7 +463,12 @@
       }
     }
   }
- 
+
+  // Parámetros de la dificultad elegida en el selector (normal si el valor no existe).
+  function getDifficultyConfig() {
+    return DIFFICULTIES[difficultySelect.value] || DIFFICULTIES.normal;
+  }
+
   // Modo práctica: genera una cantidad y una separación de notas según la dificultad.
   function createPracticeChart() {
     const difficulty = getDifficultyConfig();
@@ -463,12 +485,7 @@
     return {offsetMs: 0, notes: practiceNotes};
   }
 
-  // Devuelve los parámetros del selector de dificultad.
-  function getDifficultyConfig() {
-    return DIFFICULTIES[difficultySelect.value] || DIFFICULTIES.normal;
-  }
-
-  // En dificultades menores conserva espacios amplios entre notas del mismo mapa.
+  // En dificultades menores quita notas muy pegadas (las especiales y sostenidas siempre se conservan).
   function applyDifficulty(sourceChart) {
     const minGapMs = getDifficultyConfig().minGapMs;
     if (!minGapMs) return {...sourceChart, notes: [...sourceChart.notes]};
@@ -484,19 +501,19 @@
     });
     return {...sourceChart, notes: notesForLevel};
   }
- 
+
   // Lee un JSON (campos en español o inglés), lo valida y devuelve un mapa listo para usar.
   function parseChart(parsed) {
     const list = parsed.notas ?? parsed.notes;
     const timeOf = note => note.tiempoMs ?? note.timeMs;
     const laneOf = note => note.carril ?? note.lane;
- 
+
     const invalid = !Array.isArray(list) || list.some(note =>
       !Number.isFinite(+timeOf(note)) || !Number.isInteger(+laneOf(note)) ||
       +laneOf(note) < 0 || +laneOf(note) > 3
     );
     if (invalid) throw new Error('Formato de notas incorrecto');
- 
+
     return {
       offsetMs: Number(parsed.desfaseMs ?? parsed.offsetMs ?? DEFAULT_CHART.offsetMs),
       notes: list.map(note => ({
@@ -507,11 +524,11 @@
       }))
     };
   }
- 
+
   /* ==========================================================================
-     8. IMPULSO (energía)
+     9. IMPULSO (energía)
      ========================================================================== */
- 
+
   // Suma poco a poco la energía de las gemas especiales y, con el impulso activo, la va gastando.
   function advanceEnergy(time) {
     const charging = [];
@@ -523,7 +540,7 @@
       if (elapsed < SPECIAL_CHARGE_DURATION_MS) charging.push(charge);
     }
     pendingEnergy = charging;
- 
+
     if (boostActiveUntil >= 0) {
       const elapsed = Math.max(0, time - boostLastTickAt);
       energy = Math.max(0, energy - elapsed * 100 / BOOST_DURATION_MS);
@@ -540,7 +557,7 @@
       }
     }
   }
- 
+
   // Activa el impulso (tecla Espacio): necesita al menos 25% y dura según la energía acumulada.
   function activateBoost() {
     const time = songClock();
@@ -556,7 +573,7 @@
     updateScore(time);
     setFeedback('¡IMPULSO ACTIVADO!', '#ffd65a');
   }
- 
+
   // Resetea todo lo relacionado con el impulso.
   function clearBoostState() {
     energy = 0;
@@ -565,9 +582,44 @@
     boostLastTickAt = -1;
     stage.classList.remove('boost-active');
   }
- 
+
   /* ==========================================================================
-     9. CONTROL DE PARTIDA
+     10. ACIERTOS, FALLOS Y DESEMPEÑO
+     ========================================================================== */
+
+  // Un acierto recupera desempeño según su precisión, sin superar el máximo.
+  function recoverPerformance(amount) {
+    playerPerformance = Math.min(MAX_PERFORMANCE, playerPerformance + amount);
+    updatePerformance();
+  }
+
+  // Cuenta un acierto: sube combo y estadísticas (la práctica no guarda en el perfil).
+  function registerHit() {
+    combo++;
+    bestCombo = Math.max(bestCombo, combo);
+    hits++;
+    if (!isPracticeMode()) {
+      playerProfile.totalHits++;
+      playerProfile.bestCombo = Math.max(playerProfile.bestCombo, bestCombo);
+    }
+  }
+
+  // Fallo (tecla sin nota, nota omitida o sostenida rota): quita combo, puntos y desempeño; con 0 hay derrota.
+  function registerMiss(time, feedbackText = 'FALLO') {
+    if (!running) return;
+    misses++;
+    if (!isPracticeMode()) playerProfile.totalMisses++;
+    combo = 0;
+    score = Math.max(0, score - 25);
+    playerPerformance = Math.max(0, playerPerformance - MISS_PERFORMANCE_PENALTY);
+    updatePerformance();
+    updateScore(time);
+    setFeedback(feedbackText, '#ff687e');
+    if (playerPerformance <= 0) finishLevel('defeat');
+  }
+
+  /* ==========================================================================
+     11. CONTROL DE PARTIDA
      ========================================================================== */
 
   // Si el navegador bloquea la reproducción automática, pide un clic para activar el audio.
@@ -589,11 +641,11 @@
     }, {once:true});
     setFeedback('PULSA PARA ACTIVAR LA CANCIÓN', '#ffd65a');
   }
- 
-  // Empieza una ronda: reinicia puntos, impulso y notas, y arranca la cuenta previa.
+
+  // Empieza una ronda: reinicia puntos, impulso y notas; en historia arranca la canción.
   function start() {
     if (running) return;
-    const musicRound = !document.body.classList.contains('practice-mode');
+    const musicRound = !isPracticeMode();
     clearBoostState();
     heldLaneKeys.clear();
     songAudio.pause();
@@ -613,8 +665,7 @@
     updatePerformance();
     resetNotes();
     updateBoostUI();
-    message.classList.remove('results', 'defeat');
-    message.classList.remove('audio-prompt');
+    message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
     setFeedback(musicRound ? '¡A JUGAR!' : 'PREPÁRATE');
 
@@ -629,11 +680,11 @@
       }
     }
   }
- 
+
   // Detiene la partida y deja todo en su estado inicial.
   function reset() {
     running = false;
-    detenerMusicaNivel();
+    stopLevelMusic();
     preRoll = false;
     songStarted = false;
     songAudio.pause();
@@ -653,49 +704,50 @@
     resetNotes();
     updateBoostUI();
     message.textContent = '';
-    message.classList.remove('results', 'defeat');
-    message.classList.remove('audio-prompt');
+    message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
     setFeedback('LISTO');
   }
- 
-  /* ==========================================================================
-     10. NOTAS SOSTENIDAS
-     ========================================================================== */
- 
-  // Completa una nota sostenida: suma puntos (y energía si es especial).
-  function finishHold(note, time) {
-    note.holding = false;
-    note.hit = true;
-    note.element.remove();
-    combo++;
-    bestCombo = Math.max(bestCombo, combo);
-    hits++;
-    if (!document.body.classList.contains('practice-mode')) {
-      playerProfile.totalHits++;
-      playerProfile.bestCombo = Math.max(playerProfile.bestCombo, bestCombo);
-    }
-    score += 200 * currentMultiplier(time);
-    recoverPerformance(PERFORMANCE_RECOVERY.hold);
-    if (note.boost) pendingEnergy.push({startedAt: time, appliedMs: 0, amount: SPECIAL_CHARGE_AMOUNT});
-    updateScore(time);
-    updateBoostUI();
-    showJudgement('EXCELENTE', '#50e7f2');
-    setFeedback('¡NOTA SOSTENIDA!');
-    playFeedbackTone(true);
-  }
- 
-  // Soltar la tecla antes de tiempo rompe la nota y reinicia el combo.
-  function failHold(note, time) {
-    note.holding = false;
-    note.missed = true;
-    note.element.remove();
-    registerMiss(time, 'SOLTASTE LA TECLA ANTES DE TIEMPO');
-    showJudgement('FALLO', '#ff687e');
-    playFeedbackTone(false);
+
+  // Guarda la partida en el perfil y el ranking, y ajusta la popularidad (no se usa en práctica).
+  function saveRunToProfile(outcome, accuracy) {
+    playerLeaderboard.push({
+      score: Math.max(0, score), accuracy, bestCombo,
+      date: new Date().toLocaleDateString('es-MX')
+    });
+    playerLeaderboard.sort((a, b) => Number(b.score) - Number(a.score));
+    playerLeaderboard = playerLeaderboard.slice(0, 10);
+
+    playerProfile.gamesPlayed++;
+    playerProfile.totalScore += Math.max(0, score);
+    playerProfile.lastScore = score;
+    playerProfile.lastAccuracy = accuracy;
+    playerProfile.lastPerformance = playerPerformance;
+    playerProfile.performanceSum += playerPerformance;
+    playerProfile.performanceRuns++;
+    playerProfile.bestCombo = Math.max(playerProfile.bestCombo, bestCombo);
+    if (outcome !== 'defeat') playerProfile.levelsCompleted++;
+
+    const rating = accuracy * 0.7 + playerPerformance * 0.3;
+    const popularityChange = outcome === 'defeat' ? -4 : Math.round((rating - 50) / 10);
+    playerProfile.popularity = Math.max(0, Math.min(100, playerProfile.popularity + popularityChange));
+
+    updateProfileUI();
+    savePlayerProfile(true);
   }
 
-  // Consolida las estadísticas y muestra el resultado de victoria o derrota.
+  // Muestra sobre la pista la pantalla de resultados (victoria o derrota).
+  function showResults(outcome, accuracy, grade) {
+    message.classList.add('results');
+    message.classList.toggle('defeat', outcome === 'defeat');
+    const title = outcome === 'defeat' ? 'DERROTA' : 'NIVEL COMPLETADO';
+    const reason = outcome === 'defeat' ? '<small>DESEMPEÑO AGOTADO</small><br>' : '';
+    message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small><br><small>REINICIA PARA JUGAR OTRA VEZ</small>`;
+    message.hidden = false;
+    setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
+  }
+
+  // Termina la partida: detiene todo, calcula precisión y rango, guarda y muestra resultados.
   function finishLevel(outcome = 'victory') {
     if (!running) return;
     pausedAt = chartTime();
@@ -706,54 +758,59 @@
     heldLaneKeys.clear();
     clearBoostState();
     updateBoostUI();
+
     const attempts = hits + misses;
     const accuracy = attempts ? Math.round(hits / attempts * 100) : 0;
     const grade = accuracy >= 95 ? 'S' : accuracy >= 85 ? 'A' : accuracy >= 70 ? 'B' : accuracy >= 50 ? 'C' : 'D';
+
     updateScore(pausedAt);
-    if (!document.body.classList.contains('practice-mode')) {
-      playerLeaderboard.push({
-        score: Math.max(0, score), accuracy, bestCombo,
-        date: new Date().toLocaleDateString('es-MX')
-      });
-      playerLeaderboard.sort((a, b) => Number(b.score) - Number(a.score));
-      playerLeaderboard = playerLeaderboard.slice(0, 10);
-      playerProfile.gamesPlayed++;
-      playerProfile.totalScore += Math.max(0, score);
-      playerProfile.lastScore = score;
-      playerProfile.lastAccuracy = accuracy;
-      playerProfile.lastPerformance = playerPerformance;
-      playerProfile.performanceSum += playerPerformance;
-      playerProfile.performanceRuns++;
-      playerProfile.bestCombo = Math.max(playerProfile.bestCombo, bestCombo);
-      if (outcome !== 'defeat') playerProfile.levelsCompleted++;
-      const rating = accuracy * 0.7 + playerPerformance * 0.3;
-      const popularityChange = outcome === 'defeat' ? -4 : Math.round((rating - 50) / 10);
-      playerProfile.popularity = Math.max(0, Math.min(100, playerProfile.popularity + popularityChange));
-      updateProfileUI();
-      savePlayerProfile(true);
-    }
-    message.classList.add('results');
-    message.classList.toggle('defeat', outcome === 'defeat');
-    const title = outcome === 'defeat' ? 'DERROTA' : 'NIVEL COMPLETADO';
-    const reason = outcome === 'defeat' ? '<small>DESEMPEÑO AGOTADO</small><br>' : '';
-    message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small><br><small>REINICIA PARA JUGAR OTRA VEZ</small>`;
-    message.hidden = false;
-    setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
+    if (!isPracticeMode()) saveRunToProfile(outcome, accuracy);
+    showResults(outcome, accuracy, grade);
   }
- 
+
   /* ==========================================================================
-     11. GOLPES
+     12. NOTAS SOSTENIDAS
      ========================================================================== */
- 
-  // Califica el golpe según el error de tiempo (menos error = más puntos).
+
+  // Completa una nota sostenida: suma puntos (y energía si es especial).
+  function finishHold(note, time) {
+    note.holding = false;
+    note.hit = true;
+    note.element.remove();
+    registerHit();
+    score += 200 * currentMultiplier(time);
+    recoverPerformance(PERFORMANCE_RECOVERY.hold);
+    if (note.boost) pendingEnergy.push({startedAt: time, appliedMs: 0, amount: SPECIAL_CHARGE_AMOUNT});
+    updateScore(time);
+    updateBoostUI();
+    showJudgement('EXCELENTE', '#50e7f2');
+    setFeedback('¡NOTA SOSTENIDA!');
+    playFeedbackTone(true);
+  }
+
+  // Soltar la tecla antes de tiempo rompe la nota y cuenta como fallo.
+  function failHold(note, time) {
+    note.holding = false;
+    note.missed = true;
+    note.element.remove();
+    registerMiss(time, 'SOLTASTE LA TECLA ANTES DE TIEMPO');
+    showJudgement('FALLO', '#ff687e');
+    playFeedbackTone(false);
+  }
+
+  /* ==========================================================================
+     13. GOLPES
+     ========================================================================== */
+
+  // Califica el golpe según el error de tiempo (menos error = más puntos y más desempeño).
   function getJudgement(timingError, hitWindowMs = HIT_WINDOW_MS) {
     const normalizedError = timingError * HIT_WINDOW_MS / hitWindowMs;
     if (normalizedError <= 35)  return {label:'EXCELENTE', points:150, recovery:PERFORMANCE_RECOVERY.excellent, color:'#a989ff'};
-    if (normalizedError <= 75)  return {label:'BUENO',     points:120, recovery:PERFORMANCE_RECOVERY.good, color:'#50e7f2'};
-    if (normalizedError <= 115) return {label:'BIEN',      points:90,  recovery:PERFORMANCE_RECOVERY.okay, color:'#ffd65a'};
+    if (normalizedError <= 75)  return {label:'BUENO',     points:120, recovery:PERFORMANCE_RECOVERY.good,      color:'#50e7f2'};
+    if (normalizedError <= 115) return {label:'BIEN',      points:90,  recovery:PERFORMANCE_RECOVERY.okay,      color:'#ffd65a'};
     return {label:'MALO', points:50, recovery:PERFORMANCE_RECOVERY.poor, color:'#ff687e'};
   }
- 
+
   // Ilumina un instante el receptor del carril pulsado.
   function flashReceptor(lane) {
     const receptor = receptors[lane];
@@ -764,16 +821,13 @@
       receptorFlashTimers[lane] = 0;
     }, 100);
   }
- 
-  // Busca la nota pendiente más cercana del carril y evalúa si el jugador acertó.
-  function pressLane(lane) {
-    if (!running) return;
-    const time = songClock();
- 
+
+  // Busca (con búsqueda binaria) la nota pendiente más cercana del carril dentro de su ventana de acierto.
+  function findHitCandidate(lane, time) {
     let candidate = null;
     let timingError = Infinity;
     const laneNotes = notesByLane[lane];
-    // Busca solo dentro del margen máximo, aun si el mapa tiene cientos de notas.
+
     let low = 0;
     let high = laneNotes.length;
     const earliest = time - HIT_WINDOW_MS;
@@ -782,6 +836,7 @@
       if (laneNotes[middle].timeMs < earliest) low = middle + 1;
       else high = middle;
     }
+
     for (let index = low; index < laneNotes.length; index++) {
       const note = laneNotes[index];
       if (note.timeMs > time + HIT_WINDOW_MS) break;
@@ -793,9 +848,17 @@
         timingError = error;
       }
     }
- 
+    return {candidate, timingError};
+  }
+
+  // Evalúa una pulsación: fallo, inicio de nota sostenida o acierto normal.
+  function pressLane(lane) {
+    if (!running) return;
+    const time = songClock();
+    const {candidate, timingError} = findHitCandidate(lane, time);
+
     flashReceptor(lane);
- 
+
     // Fallo: no había nota al alcance.
     if (!candidate) {
       registerMiss(time);
@@ -803,7 +866,7 @@
       playFeedbackTone(false);
       return;
     }
- 
+
     // Nota sostenida: empieza a contar mientras mantienes la tecla.
     if (candidate.holdMs > 0) {
       candidate.hit = true;
@@ -814,17 +877,11 @@
       showJudgement('MANTÉN', '#50e7f2');
       return;
     }
- 
+
     // Nota normal: suma puntos según precisión y multiplicador de combo.
     candidate.hit = true;
     candidate.element.remove();
-    combo++;
-    bestCombo = Math.max(bestCombo, combo);
-    hits++;
-    if (!document.body.classList.contains('practice-mode')) {
-      playerProfile.totalHits++;
-      playerProfile.bestCombo = Math.max(playerProfile.bestCombo, bestCombo);
-    }
+    registerHit();
     const multiplier = currentMultiplier(time);
     const judgement = getJudgement(timingError, candidate.hitWindowMs ?? HIT_WINDOW_MS);
     score += judgement.points * multiplier;
@@ -836,11 +893,11 @@
     setFeedback(candidate.boost ? '¡GEMA ESPECIAL! +25% DE IMPULSO' : '¡ACIERTO!');
     playFeedbackTone(true);
   }
- 
+
   /* ==========================================================================
-     12. BUCLE DE ANIMACIÓN
+     14. BUCLE DE ANIMACIÓN
      ========================================================================== */
- 
+
   // Nota sostenida en curso: queda en la línea de golpe y su cola se acorta.
   function updateHeldNote(note, songTime, hitY, travel) {
     const remaining = note.holdUntil - songTime;
@@ -851,11 +908,11 @@
     note.element.style.top = `${hitY}px`;
     note.element.style.setProperty('--hold-length', `${Math.max(12, Math.min(travel, remaining / leadMs * travel))}px`);
   }
- 
+
   // Nota que cae: la marca como fallada si pasó, o la coloca en la pista según su tiempo.
   function updateFallingNote(note, time, songTime, hitY, entryY, travel) {
     if (note.hit || note.missed) return;
- 
+
     const untilHit = note.timeMs - (chart.offsetMs || 0) - time;
     if (untilHit < -(note.hitWindowMs ?? HIT_WINDOW_MS)) {
       note.missed = true;
@@ -864,10 +921,10 @@
       showJudgement('MALO', '#ff687e');
       return;
     }
- 
+
     note.element.hidden = untilHit > leadMs;
     if (note.element.hidden) return;
- 
+
     // La nota se estrecha arriba y se alinea con su receptor al llegar abajo.
     const y = hitY - (untilHit / leadMs) * travel;
     const progress = Math.max(0, Math.min(1, (y - entryY) / travel));
@@ -879,40 +936,41 @@
       note.element.style.setProperty('--hold-length', `${Math.max(24, Math.min(travel, note.holdMs / leadMs * travel))}px`);
     }
   }
- 
-  // Se ejecuta en cada cuadro: avanza la cuenta previa, el reloj, la energía y las notas.
-  function frame(now) {
+
+  // Se ejecuta en cada cuadro: avanza reloj, energía y notas, y termina el nivel cuando no quedan notas.
+  function frame() {
     requestAnimationFrame(frame);
     if (!running) return;
- 
+
     const time = chartTime();
     const songTime = time + (chart.offsetMs || 0);
     clockEl.textContent = formatTime(time);
     advanceEnergy(songTime);
     updateBoostUI();
- 
+
     // Geometría de la pista: las notas entran al 40% de la altura y llegan a la línea de golpe.
     const height = stage.clientHeight;
     const hitY = height - 76;
     const entryY = height * 0.4;
     const travel = hitY - entryY;
- 
+
     for (const note of notes) {
       if (note.holding) updateHeldNote(note, songTime, hitY, travel);
       else updateFallingNote(note, time, songTime, hitY, entryY, travel);
-      if (!running) break;
+      if (!running) break; // una derrota pudo terminar la partida a mitad del recorrido
     }
+
     if (!preRoll && notes.every(note => note.missed || (note.hit && !note.holding))) finishLevel();
   }
- 
+
   /* ==========================================================================
-     13. TECLADO
+     15. TECLADO
      ========================================================================== */
- 
+
   // Captura la nueva tecla de un carril; Escape cancela y Espacio está reservado.
   function handleBinding(event) {
     event.preventDefault();
- 
+
     if (event.key === 'Escape') {
       bindingLane = null;
       refreshKeyButtons();
@@ -923,20 +981,20 @@
       setFeedback('ESPACIO ESTA RESERVADO PARA IMPULSO', '#ffd65a');
       return;
     }
- 
+
     const newKey = normalizeKey(event.key);
     if (laneKeys.some((key, index) => key === newKey && index !== bindingLane)) {
       setFeedback('ESA TECLA YA ESTA ASIGNADA', '#ff687e');
       return;
     }
- 
+
     laneKeys[bindingLane] = newKey;
     try { localStorage.setItem(LANE_KEYS_STORAGE_KEY, JSON.stringify(laneKeys)); } catch (error) {}
     bindingLane = null;
     refreshKeyButtons();
     setFeedback(`TECLA ASIGNADA: ${keyLabel(newKey)}`);
   }
- 
+
   // Tecla presionada: asignación, impulso (Espacio) o golpe en un carril.
   function handleKeydown(event) {
     // Ignora la repetición automática del sistema al mantener una tecla.
@@ -945,15 +1003,15 @@
       if (bindingLane !== null || event.code === 'Space' || laneKeys.includes(repeatedKey)) event.preventDefault();
       return;
     }
- 
+
     if (bindingLane !== null) { handleBinding(event); return; }
- 
+
     if (event.code === 'Space') {
       event.preventDefault();
       activateBoost();
       return;
     }
- 
+
     const lane = laneKeys.indexOf(normalizeKey(event.key));
     if (lane !== -1) {
       event.preventDefault();
@@ -961,25 +1019,25 @@
       pressLane(lane);
     }
   }
- 
+
   // Tecla soltada: si había una nota sostenida, la completa o la rompe según el tiempo.
   function handleKeyup(event) {
     const lane = laneKeys.indexOf(normalizeKey(event.key));
     if (lane === -1) return;
     heldLaneKeys.delete(lane);
- 
+
     const note = notes.find(item => item.holding && item.lane === lane);
     if (!note) return;
- 
+
     const time = songClock();
     if (time >= note.holdUntil) finishHold(note, time);
     else failHold(note, time);
   }
- 
+
   /* ==========================================================================
-     14. CARGA DE MAPA
+     16. CARGA DE MAPA Y CANCIÓN
      ========================================================================== */
- 
+
   // Lee el JSON elegido por el jugador y lo usa como mapa.
   async function loadChart(file) {
     const version = ++chartLoadVersion;
@@ -1015,52 +1073,6 @@
       console.warn('Se usará el mapa integrado de respaldo:', error);
     }
   }
- 
-  /* ==========================================================================
-     15. EVENTOS Y ARRANQUE
-     ========================================================================== */
- 
-  // Volumen guardado en el navegador (solo afecta a los tonos de acierto y fallo).
-  function setupVolume() {
-    let savedVolume = NaN;
-    try { savedVolume = Number(localStorage.getItem('ritmo-volume')); } catch (error) {}
-    if (Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 100) {
-      volumeControl.value = String(savedVolume);
-    }
-    feedbackVolume = Number(volumeControl.value) / 100;
-    volumeValue.value = `${volumeControl.value}%`;
- 
-    volumeControl.addEventListener('input', event => {
-      feedbackVolume = Number(event.target.value) / 100;
-      volumeValue.value = `${event.target.value}%`;
-      try { localStorage.setItem('ritmo-volume', event.target.value); } catch (error) {}
-    });
-
-    let savedMusicVolume = NaN;
-    try { savedMusicVolume = Number(localStorage.getItem('ritmo-music-volume')); } catch (error) {}
-    if (Number.isFinite(savedMusicVolume) && savedMusicVolume >= 0 && savedMusicVolume <= 100) {
-      musicVolume.value = String(savedMusicVolume);
-    }
-    songAudio.volume = Number(musicVolume.value) / 100;
-    musicVolumeValue.value = `${musicVolume.value}%`;
-    musicVolume.addEventListener('input', event => {
-      songAudio.volume = Number(event.target.value) / 100;
-      musicVolumeValue.value = `${event.target.value}%`;
-      try { localStorage.setItem('ritmo-music-volume', event.target.value); } catch (error) {}
-    });
-  }
-
-  // Restaura controles y dificultad entre sesiones del navegador.
-  function loadSavedOptions() {
-    try {
-      const savedKeys = JSON.parse(localStorage.getItem(LANE_KEYS_STORAGE_KEY) || 'null');
-      if (Array.isArray(savedKeys) && savedKeys.length === 4 && savedKeys.every(key => typeof key === 'string') && new Set(savedKeys).size === 4) {
-        laneKeys = savedKeys;
-      }
-      const savedDifficulty = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
-      if (savedDifficulty && DIFFICULTIES[savedDifficulty]) difficultySelect.value = savedDifficulty;
-    } catch (error) {}
-  }
 
   // Permite sustituir el MP3 incluido por un archivo local del jugador.
   function loadSongFile(file) {
@@ -1072,12 +1084,56 @@
     songName.textContent = file.name;
     setFeedback(`CANCIÓN CARGADA: ${file.name}`);
   }
- 
+
+  /* ==========================================================================
+     17. OPCIONES GUARDADAS, EVENTOS Y ARRANQUE
+     ========================================================================== */
+
+  // Lee un volumen guardado (0 a 100); devuelve NaN si no hay ninguno.
+  function readSavedVolume(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw === null ? NaN : Number(raw);
+    } catch (error) { return NaN; }
+  }
+
+  // Conecta un deslizador de volumen: restaura su valor guardado y guarda cada cambio.
+  function setupVolumeSlider(slider, output, storageKey, apply) {
+    const saved = readSavedVolume(storageKey);
+    if (Number.isFinite(saved) && saved >= 0 && saved <= 100) slider.value = String(saved);
+    apply(Number(slider.value) / 100);
+    output.value = `${slider.value}%`;
+
+    slider.addEventListener('input', event => {
+      apply(Number(event.target.value) / 100);
+      output.value = `${event.target.value}%`;
+      try { localStorage.setItem(storageKey, event.target.value); } catch (error) {}
+    });
+  }
+
+  // Volumen de efectos (tonos de acierto y fallo) y de la música.
+  function setupVolume() {
+    setupVolumeSlider(volumeControl, volumeValue, EFFECTS_VOLUME_KEY, value => { feedbackVolume = value; });
+    setupVolumeSlider(musicVolume, musicVolumeValue, MUSIC_VOLUME_KEY, value => { songAudio.volume = value; });
+  }
+
+  // Restaura teclas y dificultad guardadas entre sesiones.
+  function loadSavedOptions() {
+    try {
+      const savedKeys = JSON.parse(localStorage.getItem(LANE_KEYS_STORAGE_KEY) || 'null');
+      if (Array.isArray(savedKeys) && savedKeys.length === 4 && savedKeys.every(key => typeof key === 'string') && new Set(savedKeys).size === 4) {
+        laneKeys = savedKeys;
+      }
+      const savedDifficulty = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
+      if (savedDifficulty && DIFFICULTIES[savedDifficulty]) difficultySelect.value = savedDifficulty;
+    } catch (error) {}
+  }
+
   function bindEvents() {
     window.addEventListener('pagehide', () => savePlayerProfile(true));
     document.addEventListener('keydown', handleKeydown);
     document.addEventListener('keyup', handleKeyup);
- 
+
     // Botones de configuración: esperar una tecla o restaurar las flechas.
     document.querySelectorAll('.key-bind').forEach(button => button.addEventListener('click', () => {
       bindingLane = Number(button.dataset.bindLane);
@@ -1091,14 +1147,14 @@
       refreshKeyButtons();
       setFeedback('FLECHAS RESTAURADAS');
     });
- 
+
     // La dificultad ajusta a la vez la caída, la densidad del mapa y la práctica.
     difficultySelect.addEventListener('change', () => {
       leadMs = getDifficultyConfig().leadMs;
       try { localStorage.setItem(DIFFICULTY_STORAGE_KEY, difficultySelect.value); } catch (error) {}
     });
     $('#resetButton').addEventListener('click', reset);
- 
+
     // Eventos que dispara el menú: historia, práctica y salir.
     document.addEventListener('rhythm:start', () => {
       leadMs = getDifficultyConfig().leadMs;
@@ -1116,22 +1172,25 @@
       chart = selectedChart;
       reset();
     });
- 
-    // Cargar un mapa JSON.
+
+    // Cargar un mapa JSON o una canción propia.
     $('#chartFile').addEventListener('change', event => {
       const file = event.target.files[0];
       if (file) loadChart(file);
     });
-
     songFileInput.addEventListener('change', event => {
       const file = event.target.files[0];
       if (file) loadSongFile(file);
     });
+
+    // Al terminar la canción, termina el nivel.
     songAudio.addEventListener('ended', () => { if (running) finishLevel(); });
   }
- 
-  // Prepara el mapa, las teclas y los marcadores al abrir la página.
+
+  // Prepara progreso, opciones, mapa, marcadores y bucle al abrir la página.
   function init() {
+    levelMusic.volume = 0.6;
+    loadStoredProgress();
     loadSavedOptions();
     leadMs = getDifficultyConfig().leadMs;
     setupVolume();
@@ -1143,6 +1202,6 @@
     requestAnimationFrame(frame);
     loadBundledChart();
   }
- 
+
   init();
 })();

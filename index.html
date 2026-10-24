@@ -4,22 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MAKE IT AGAIN BRO!</title>
+
+  <!-- Estilos y scripts (defer: se ejecutan cuando la página ya cargó). game.js = juego, menu.js = menús. -->
   <link rel="stylesheet" href="style.css">
   <script src="game.js" defer></script>
   <script src="menu.js" defer></script>
 </head>
 <body>
-  <!-- Música del menú -->
-  <audio id="musicaMenu" src="Musica/menu.mp3" loop preload="auto"></audio>  
-  <!-- Música del nivel1 -->
+
+  <!-- ===== AUDIO (no se ve; lo controlan game.js y menu.js) ===== -->
+  <!-- Música del menú, en bucle. -->
+  <audio id="musicaMenu" src="Musica/menu.mp3" loop preload="auto"></audio>
+  <!-- Música del nivel 1. -->
   <audio id="musicaNivel" src="Musica/HazloOtraVez.mp3" preload="auto"></audio>
+  <!-- Canción de la partida: su reloj guía las notas. Se puede cambiar desde Opciones. -->
+  <audio id="songAudio" src="Game%20Over%20Baby.mp3" preload="auto" hidden></audio>
+
   <main class="app">
+
+    <!-- ===== BARRA SUPERIOR: marca y título ===== -->
     <header class="topbar">
       <a class="brand" href="#" aria-label="Demo de ritmo">RITMO<span>///</span></a>
       <h1 class="page-title">MAKE IT AGAIN BRO!</h1>
     </header>
 
+    <!-- ===== PANTALLA DE INICIO: menú, historia, créditos, opciones y leaderboard.
+               menu.js muestra un panel a la vez con el atributo "hidden". ===== -->
     <section class="start-screen" id="startScreen" aria-label="Menú de inicio">
+
+      <!-- Menú principal. -->
       <div class="start-card" id="mainMenu">
         <h2>MAKE IT AGAIN BRO!</h2>
         <nav class="start-menu-buttons" aria-label="Menú principal">
@@ -31,13 +44,19 @@
           <button id="exitButton" type="button">SALIR :(</button>
         </nav>
       </div>
+
+      <!-- Reinicia la partida. -->
       <button id="resetButton" class="menu-reset-button" type="button">↺ REINICIAR PARTIDA</button>
+
+      <!-- Introducción del modo historia: menu.js rellena el texto de cada escena. -->
       <div class="story-intro" id="storyIntro" aria-live="polite" hidden>
         <p id="storySceneLabel" class="story-scene-label"></p>
         <h2 id="storySceneTitle"></h2>
         <p id="storySceneText"></p>
         <button id="skipStoryIntro" class="story-skip" type="button">SALTAR INTRO ▶</button>
       </div>
+
+      <!-- Créditos. -->
       <div class="start-card credits-panel" id="creditsPanel" hidden>
         <p class="start-eyebrow">Make It Again Bro!</p>
         <h1>CRÉDITOS</h1>
@@ -46,20 +65,26 @@
         <p>Ian Sánchez Campuzano</p>
         <button id="backFromCredits" class="credits-back" type="button">VOLVER</button>
       </div>
+
+      <!-- Opciones: un menú de secciones y una página por sección (data-option-page enlaza cada botón con su página). -->
       <section class="settings-screen" id="settingsScreen" aria-label="Opciones" hidden>
         <header class="settings-header">
           <button id="backFromSettings" class="settings-back" type="button">← VOLVER</button>
           <h2 id="optionsTitle">OPCIONES</h2>
         </header>
+
         <div class="settings-content">
+          <!-- Botones que abren cada sección. -->
           <nav id="optionsMenu" class="options-menu" aria-label="Secciones de opciones">
             <button type="button" data-option-page="audio">AUDIO</button>
             <button type="button" data-option-page="difficulty">DIFICULTAD</button>
             <button type="button" data-option-page="song">CANCIÓN Y MAPA</button>
             <button type="button" data-option-page="controls">CONTROLES</button>
           </nav>
+          <!-- Vuelve del interior de una sección al menú de opciones. -->
           <button id="backToOptions" class="settings-back settings-sub-back" type="button" hidden>← OPCIONES</button>
 
+          <!-- Sección: volumen de efectos y de la canción. -->
           <section class="settings-group option-page" id="optionAudio" aria-label="Audio" hidden>
             <h3>AUDIO</h3>
             <label class="option-label volume-label" for="volumeControl"><span>VOLUMEN DE EFECTOS</span><output id="volumeValue" for="volumeControl">20%</output></label>
@@ -69,6 +94,7 @@
             <input id="musicVolume" class="volume-control" type="range" min="0" max="100" value="70">
           </section>
 
+          <!-- Sección: dificultad (velocidad y cantidad de notas). Los valores deben ser easy, normal o hard. -->
           <section class="settings-group option-page" id="optionDifficulty" aria-label="Dificultad" hidden>
             <h3>DIFICULTAD</h3>
             <select id="difficulty" class="difficulty">
@@ -78,6 +104,7 @@
             </select>
           </section>
 
+          <!-- Sección: cambiar la canción (MP3) o cargar otro mapa de notas (JSON). -->
           <section class="settings-group option-page" id="optionSong" aria-label="Canción y mapa" hidden>
             <h3>CANCIÓN Y MAPA</h3>
             <div class="file-controls">
@@ -91,6 +118,7 @@
             </div>
           </section>
 
+          <!-- Sección: asignar una tecla a cada carril (data-bind-lane = carril de 0 a 3). -->
           <section class="settings-group option-page" id="optionControls" aria-label="Controles" hidden>
             <h3>CONTROLES</h3>
             <div class="key-settings" aria-label="Asignación de teclas">
@@ -102,9 +130,10 @@
               <button id="defaultKeys" type="button" class="default-keys">Restaurar flechas</button>
             </div>
           </section>
-
         </div>
       </section>
+
+      <!-- Leaderboard local: progreso del jugador y sus 5 mejores partidas (las rellena game.js). -->
       <section class="settings-screen leaderboard-screen" id="leaderboardScreen" aria-label="Leaderboard local" hidden>
         <header class="settings-header">
           <button id="backFromLeaderboard" class="settings-back" type="button">← VOLVER</button>
@@ -126,40 +155,60 @@
       </section>
     </section>
 
+    <!-- ===== ZONA DE JUEGO ===== -->
     <section class="game-main">
+      <!-- Luces decorativas de fondo. -->
       <div class="concert-lights" aria-hidden="true"></div>
+
+      <!-- Mensajes de resultado (PERFECTO, FALLO...); oculto a la vista pero leído por lectores de pantalla. -->
       <section class="scoreboard visually-hidden" aria-label="Estado de la partida">
         <div id="feedback" class="feedback" aria-live="polite">LISTO</div>
       </section>
 
+      <!-- Pista de juego. -->
       <section class="game-card" aria-label="Pista de juego">
+        <!-- Reloj de la partida (solo para lectores de pantalla). -->
         <span id="clock" class="visually-hidden">00:00</span>
+
         <div class="stage" id="stage">
+          <!-- Pista trapezoidal con la línea de golpe y los receptores (flechas fijas, uno por carril). -->
           <div class="highway" id="highway" aria-label="Pista de cuatro carriles">
             <div class="lane-glow"></div>
             <div class="hit-line"></div>
             <div class="receptors">
-              <div class="receptor" data-lane="0" aria-label="Carril 1: izquierda"><span aria-hidden="true">←</span></div><div class="receptor" data-lane="1" aria-label="Carril 2: abajo"><span aria-hidden="true">↓</span></div>
-              <div class="receptor" data-lane="2" aria-label="Carril 3: arriba"><span aria-hidden="true">↑</span></div><div class="receptor" data-lane="3" aria-label="Carril 4: derecha"><span aria-hidden="true">→</span></div>
+              <div class="receptor" data-lane="0" aria-label="Carril 1: izquierda"><span aria-hidden="true">←</span></div>
+              <div class="receptor" data-lane="1" aria-label="Carril 2: abajo"><span aria-hidden="true">↓</span></div>
+              <div class="receptor" data-lane="2" aria-label="Carril 3: arriba"><span aria-hidden="true">↑</span></div>
+              <div class="receptor" data-lane="3" aria-label="Carril 4: derecha"><span aria-hidden="true">→</span></div>
             </div>
           </div>
+
+          <!-- Capa vacía: game.js crea y mueve aquí las notas. -->
           <div id="notes" class="notes"></div>
+
+          <!-- Líneas de perspectiva (borde de la pista y divisores de carriles). -->
           <svg class="perspective-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
             <path class="track-border" d="M300 400 H700 M300 400 L20 1000 M700 400 L980 1000 M20 1000 H980" />
             <path class="lane-dividers" d="M400 400 L260 1000 M500 400 V1000 M600 400 L740 1000" />
           </svg>
+
+          <!-- Barra de impulso sobre la pista (#boostStatus guarda el porcentaje para lectores de pantalla). -->
           <div class="impulse-hud" aria-label="Barra de impulso">
             <div class="boost-meter" role="progressbar" aria-label="Carga de impulso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
               <div id="boostFill" class="boost-fill"></div>
             </div>
             <span id="boostStatus" class="visually-hidden">0%</span>
           </div>
+
+          <!-- Mensaje sobre la pista (resultados, aviso para activar el audio). -->
           <div class="stage-message" id="stageMessage" hidden></div>
         </div>
       </section>
 
+      <!-- Panel bajo la pista: puntos, combo, resultado del golpe y desempeño. -->
       <section class="power-controls" aria-label="Impulso y controles de partida">
         <div class="boost-hud">
+          <!-- Puntos de la partida y récords. -->
           <div class="score-block points-inline">
             <span class="stat-label">PUNTOS</span><strong id="score">000000</strong>
             <div class="score-records">
@@ -167,10 +216,16 @@
               <div><span class="stat-label">RÉCORD COMBO</span><strong id="bestCombo">0</strong></div>
             </div>
           </div>
+
+          <!-- Combo actual y multiplicador (x1, x2, x4, x8). -->
           <div class="combo-block combo-orb" aria-label="Combo">
             <strong><span id="combo">0</span><span id="comboMultiplier" class="multiplier">x1</span></strong>
           </div>
+
+          <!-- Calidad del último golpe (EXCELENTE, BUENO, MALO...). -->
           <div id="judgementDisplay" class="judgement-display" aria-live="polite"></div>
+
+          <!-- Desempeño (vida) y precisión; si el desempeño llega a 0, pierdes. -->
           <div class="performance-status" aria-label="Desempeño actual">
             <div class="performance-heading">
               <span class="stat-label">DESEMPEÑO</span><strong id="performanceValue">100%</strong>
@@ -184,6 +239,5 @@
       </section>
     </section>
   </main>
-  <audio id="songAudio" src="Game%20Over%20Baby.mp3" preload="auto" hidden></audio>
 </body>
 </html>
