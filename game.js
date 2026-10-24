@@ -55,6 +55,13 @@
   const boostMeter       = $('.boost-meter');
   const volumeControl    = $('#volumeControl');
   const volumeValue      = $('#volumeValue');
+  // Música del nivel
+  const musicaNivel = $('#musicaNivel');
+  musicaNivel.volume = 0.6;
+  function detenerMusicaNivel() {
+  musicaNivel.pause();
+  musicaNivel.currentTime = 0;
+}
   const receptors        = Array.from(document.querySelectorAll('.receptor'));
  
   /* ==========================================================================
@@ -362,6 +369,7 @@
   // Empieza una ronda: reinicia puntos, impulso y notas, y arranca la cuenta previa.
   function start() {
     if (running) return;
+    detenerMusicaNivel();
     clearBoostState();
     heldLaneKeys.clear();
     preRoll = true;
@@ -381,6 +389,7 @@
   // Detiene la partida y deja todo en su estado inicial.
   function reset() {
     running = false;
+    detenerMusicaNivel();
     preRoll = false;
     pausedAt = 0;
     score = 0;
@@ -557,9 +566,19 @@
     // Termina la cuenta previa y empieza el tiempo real de la canción.
     if (preRoll && now - preRollStartedAt >= leadMs) {
       preRoll = false;
-      startedAt = performance.now();
-      setFeedback('¡A JUGAR!');
-    }
+
+    // Comenzar la música del nivel
+    musicaNivel.currentTime = 0;
+
+    // Sincronizar el reloj con el inicio de la música
+    startedAt = performance.now();
+
+    musicaNivel.play().catch(error => {
+      console.error('No se pudo reproducir la música:', error);
+    });
+
+    setFeedback('¡A JUGAR!');
+  }
  
     const time = chartTime();
     const songTime = time + (chart.offsetMs || 0);
