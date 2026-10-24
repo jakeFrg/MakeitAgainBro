@@ -21,11 +21,13 @@
         <nav class="start-menu-buttons" aria-label="Menú principal">
           <button id="startButton" type="button">MODO HISTORIA</button>
           <button id="practiceButton" type="button">PRÁCTICA</button>
+          <button id="openLeaderboardButton" type="button">LEADERBOARD</button>
           <button id="creditsButton" type="button">CRÉDITOS</button>
-          <button id="openSettingsButton" type="button">CONFIGURACIÓN</button>
+          <button id="openSettingsButton" type="button">OPCIONES</button>
           <button id="exitButton" type="button">SALIR :(</button>
         </nav>
       </div>
+      <button id="resetButton" class="menu-reset-button" type="button">↺ REINICIAR PARTIDA</button>
       <div class="story-intro" id="storyIntro" aria-live="polite" hidden>
         <p id="storySceneLabel" class="story-scene-label"></p>
         <h2 id="storySceneTitle"></h2>
@@ -40,39 +42,81 @@
         <p>Ian Sánchez Campuzano</p>
         <button id="backFromCredits" class="credits-back" type="button">VOLVER</button>
       </div>
-      <section class="settings-screen" id="settingsScreen" aria-label="Configuración" hidden>
+      <section class="settings-screen" id="settingsScreen" aria-label="Opciones" hidden>
         <header class="settings-header">
           <button id="backFromSettings" class="settings-back" type="button">← VOLVER</button>
-          <h2>CONFIGURACIÓN</h2>
+          <h2 id="optionsTitle">OPCIONES</h2>
         </header>
         <div class="settings-content">
-          <label class="option-label volume-label" for="volumeControl"><span>VOLUMEN DE EFECTOS</span><output id="volumeValue" for="volumeControl">20%</output></label>
-          <input id="volumeControl" class="volume-control" type="range" min="0" max="100" value="20">
+          <nav id="optionsMenu" class="options-menu" aria-label="Secciones de opciones">
+            <button type="button" data-option-page="audio">AUDIO</button>
+            <button type="button" data-option-page="difficulty">DIFICULTAD</button>
+            <button type="button" data-option-page="song">CANCIÓN Y MAPA</button>
+            <button type="button" data-option-page="controls">CONTROLES</button>
+          </nav>
+          <button id="backToOptions" class="settings-back settings-sub-back" type="button" hidden>← OPCIONES</button>
 
-          <label class="option-label" for="difficulty">VELOCIDAD DE LAS NOTAS</label>
-          <select id="difficulty" class="difficulty">
-            <option value="2600">Fácil</option>
-            <option value="1800" selected>Normal</option>
-            <option value="1100">Difícil</option>
-          </select>
+          <section class="settings-group option-page" id="optionAudio" aria-label="Audio" hidden>
+            <h3>AUDIO</h3>
+            <label class="option-label volume-label" for="volumeControl"><span>VOLUMEN DE EFECTOS</span><output id="volumeValue" for="volumeControl">20%</output></label>
+            <input id="volumeControl" class="volume-control" type="range" min="0" max="100" value="20">
 
-          <section class="menu-game-controls" aria-label="Control de partida">
-            <h3>PARTIDA</h3>
-            <div class="controls"><button id="resetButton" class="secondary" type="button">↺ &nbsp; REINICIAR</button></div>
+            <label class="option-label volume-label" for="musicVolume"><span>VOLUMEN DE LA CANCIÓN</span><output id="musicVolumeValue" for="musicVolume">70%</output></label>
+            <input id="musicVolume" class="volume-control" type="range" min="0" max="100" value="70">
           </section>
 
-          <div class="file-controls">
-            <label class="file-label" for="chartFile">MAPA DE NOTAS JSON <span>cargar otro mapa</span></label>
-            <input id="chartFile" type="file" accept="application/json,.json">
-          </div>
+          <section class="settings-group option-page" id="optionDifficulty" aria-label="Dificultad" hidden>
+            <h3>DIFICULTAD</h3>
+            <select id="difficulty" class="difficulty">
+              <option value="easy">Fácil — pocas notas, lento</option>
+              <option value="normal" selected>Normal — ritmo moderado</option>
+              <option value="hard">Difícil — todas las notas, rápido</option>
+            </select>
+          </section>
 
-          <section class="key-settings" aria-label="Asignación de teclas">
-            <strong>ASIGNAR TECLAS</strong>
-            <div class="key-row"><span>Carril 1</span><button type="button" class="key-bind" data-bind-lane="0">←</button></div>
-            <div class="key-row"><span>Carril 2</span><button type="button" class="key-bind" data-bind-lane="1">↓</button></div>
-            <div class="key-row"><span>Carril 3</span><button type="button" class="key-bind" data-bind-lane="2">↑</button></div>
-            <div class="key-row"><span>Carril 4</span><button type="button" class="key-bind" data-bind-lane="3">→</button></div>
-            <button id="defaultKeys" type="button" class="default-keys">Restaurar flechas</button>
+          <section class="settings-group option-page" id="optionSong" aria-label="Canción y mapa" hidden>
+            <h3>CANCIÓN Y MAPA</h3>
+            <div class="file-controls">
+              <label class="file-label" for="songFile">CANCIÓN MP3 <span>cambiar canción</span></label>
+              <div class="song-file-name" id="songName">Game Over Baby.mp3</div>
+              <input id="songFile" type="file" accept="audio/*,.mp3">
+            </div>
+            <div class="file-controls">
+              <label class="file-label" for="chartFile">MAPA DE NOTAS JSON <span>cargar otro mapa</span></label>
+              <input id="chartFile" type="file" accept="application/json,.json">
+            </div>
+          </section>
+
+          <section class="settings-group option-page" id="optionControls" aria-label="Controles" hidden>
+            <h3>CONTROLES</h3>
+            <div class="key-settings" aria-label="Asignación de teclas">
+              <strong>ASIGNAR TECLAS</strong>
+              <div class="key-row"><span>Carril 1</span><button type="button" class="key-bind" data-bind-lane="0">←</button></div>
+              <div class="key-row"><span>Carril 2</span><button type="button" class="key-bind" data-bind-lane="1">↓</button></div>
+              <div class="key-row"><span>Carril 3</span><button type="button" class="key-bind" data-bind-lane="2">↑</button></div>
+              <div class="key-row"><span>Carril 4</span><button type="button" class="key-bind" data-bind-lane="3">→</button></div>
+              <button id="defaultKeys" type="button" class="default-keys">Restaurar flechas</button>
+            </div>
+          </section>
+
+        </div>
+      </section>
+      <section class="settings-screen leaderboard-screen" id="leaderboardScreen" aria-label="Leaderboard local" hidden>
+        <header class="settings-header">
+          <button id="backFromLeaderboard" class="settings-back" type="button">← VOLVER</button>
+          <h2>LEADERBOARD LOCAL</h2>
+        </header>
+        <div class="settings-content">
+          <section class="profile-progress" aria-label="Progreso guardado del jugador">
+            <h3>PROGRESO GUARDADO</h3>
+            <div class="profile-grid">
+              <div><span>POPULARIDAD</span><strong id="profilePopularity">50%</strong></div>
+              <div><span>NIVELES COMPLETADOS</span><strong id="profileLevels">0</strong></div>
+              <div><span>PUNTUACIÓN ACUMULADA</span><strong id="profileTotalScore">000000</strong></div>
+              <div><span>PRECISIÓN GLOBAL</span><strong id="profileAccuracy">0%</strong></div>
+              <div><span>DESEMPEÑO MEDIO</span><strong id="profileAveragePerformance">0%</strong></div>
+            </div>
+            <ol id="leaderboardList" class="leaderboard-list" aria-label="Mejores partidas guardadas"></ol>
           </section>
         </div>
       </section>
@@ -112,14 +156,30 @@
 
       <section class="power-controls" aria-label="Impulso y controles de partida">
         <div class="boost-hud">
-          <div class="score-block points-inline"><span class="stat-label">PUNTOS</span><strong id="score">000000</strong></div>
+          <div class="score-block points-inline">
+            <span class="stat-label">PUNTOS</span><strong id="score">000000</strong>
+            <div class="score-records">
+              <div><span class="stat-label">MEJOR PUNTAJE</span><strong id="bestScore">000000</strong></div>
+              <div><span class="stat-label">RÉCORD COMBO</span><strong id="bestCombo">0</strong></div>
+            </div>
+          </div>
           <div class="combo-block combo-orb" aria-label="Combo">
             <strong><span id="combo">0</span><span id="comboMultiplier" class="multiplier">x1</span></strong>
           </div>
           <div id="judgementDisplay" class="judgement-display" aria-live="polite"></div>
+          <div class="performance-status" aria-label="Desempeño actual">
+            <div class="performance-heading">
+              <span class="stat-label">DESEMPEÑO</span><strong id="performanceValue">100%</strong>
+              <span class="stat-label">PRECISIÓN</span><strong id="accuracy">100%</strong>
+            </div>
+            <div id="performanceMeter" class="performance-meter" role="progressbar" aria-label="Desempeño restante" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" data-level="high">
+              <div id="performanceFill" class="performance-fill"></div>
+            </div>
+          </div>
         </div>
       </section>
     </section>
   </main>
+  <audio id="songAudio" src="Game%20Over%20Baby.mp3" preload="auto" hidden></audio>
 </body>
 </html>

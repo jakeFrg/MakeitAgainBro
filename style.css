@@ -175,6 +175,23 @@ button, select { font: inherit; }
   transform: translateX(9px) rotate(-1deg);
   outline: none;
 }
+#resetButton.menu-reset-button {
+  position: absolute;
+  z-index: 2;
+  left: 24px;
+  bottom: 24px;
+  margin: 0;
+  padding: 9px 12px;
+  border: 2px solid var(--cyan);
+  color: var(--cyan);
+  background: #17152be8;
+  font: 900 13px "Courier New", monospace;
+  letter-spacing: 1px;
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
+#resetButton.menu-reset-button:hover,
+#resetButton.menu-reset-button:focus-visible { color: #101329; background: var(--cyan); }
 
 /* Panel de créditos y su botón de volver. */
 .credits-panel > p:not(.start-eyebrow) { margin: 10px 0; color: #dedaf2; font-weight: 700; }
@@ -289,16 +306,37 @@ button, select { font: inherit; }
 .settings-content .key-settings strong { color: #51e0d0; }
 .settings-content .key-bind, .settings-content .difficulty { border-color: #bd77ae; background: #35263f; color: #fff6db; }
 .settings-content .default-keys { border-color: #f0b944; color: #ffdf70; }
+.options-menu { display: grid; gap: 9px; }
+.options-menu[hidden], .option-page[hidden] { display: none; }
+.options-menu button {
+  padding: 14px 16px;
+  border: 2px solid #bd77ae;
+  color: #fff6db;
+  background: #2b203b;
+  font: 900 15px "Courier New", monospace;
+  text-align: left;
+  cursor: pointer;
+}
+.options-menu button:hover, .options-menu button:focus-visible { border-color: var(--cyan); color: var(--cyan); outline: none; }
+.settings-sub-back { margin-bottom: 12px; }
+.settings-group { margin: 14px 0; padding-bottom: 14px; border-bottom: 1px solid #4a4056; }
+.settings-group > h3 { margin: 0 0 10px; color: var(--cyan); font-size: 10px; letter-spacing: 1px; }
+.settings-group .file-controls + .file-controls { margin-top: 14px; }
+.profile-progress { margin-top: 16px; padding: 12px; border: 2px solid #b45d96; background: #191523; }
+.profile-progress h3 { margin: 0 0 9px; color: #51e0d0; font-size: 11px; letter-spacing: 1px; }
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.profile-grid > div { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; color: #b8afc2; font-size: 9px; }
+.profile-grid strong { color: #fff6db; font-size: 12px; font-variant-numeric: tabular-nums; }
+.leaderboard-list { display: grid; gap: 6px; margin: 12px 0 0; padding-left: 26px; color: var(--gold); }
+.leaderboard-list li { padding: 7px 8px; border: 1px solid #4a4056; color: #b8afc2; font-size: 10px; }
+.leaderboard-list li strong { color: #fff6db; font-size: 12px; }
+.leaderboard-empty { list-style: none; margin-left: -26px; }
 
 /* Volumen: deslizador y porcentaje.
    Nota: .option-label (más abajo) también define display y gana a este flex. */
 .volume-label { display: flex; align-items: center; justify-content: space-between; }
 .volume-label output { color: var(--gold); font-size: 11px; letter-spacing: 0; }
 .volume-control { width: 100%; margin: 2px 0 8px; accent-color: var(--pink); cursor: pointer; }
-
-/* Bloque "Partida" con el botón de reiniciar. */
-.menu-game-controls { margin: 14px 0 4px; padding: 12px 0 0; border-top: 1px solid #4a4056; }
-.menu-game-controls h3 { margin: 0 0 8px; color: var(--cyan); font-size: 10px; letter-spacing: 1px; }
 
 /* Etiquetas de campos y selector de velocidad de notas. */
 .option-label, .file-label {
@@ -320,6 +358,7 @@ button, select { font: inherit; }
 .file-controls { display: grid; gap: 5px; }
 .file-label span { display: block; margin-top: 4px; color: var(--cyan); font-size: 11px; letter-spacing: 0; }
 .file-controls input { width: 100%; color: #ddd; font-size: 11px; }
+.song-file-name { overflow: hidden; color: #fff6db; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Reasignación de teclas; el botón en espera se resalta. */
 .key-settings {
@@ -518,6 +557,14 @@ button, select { font: inherit; }
 .receptor[data-lane="2"] { --note-color: #a989ff; }
 .receptor[data-lane="3"] { --note-color: #ffd65a; }
 .receptor.active { transform: scale(1.12); background: var(--note-color); color: #17131a; }
+.receptor.custom-key span {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 2px;
+  font-size: clamp(10px, 1.5vw, 16px);
+  text-overflow: clip;
+  white-space: nowrap;
+}
 
 /* Capa donde JavaScript crea y mueve las notas. */
 .notes { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
@@ -642,6 +689,10 @@ body.practice-mode .impulse-hud { display: none; }
 .points-inline { grid-column: 1; align-self: start; margin-top: 8px; text-align: left; }
 .points-inline .stat-label { font-size: 8px; }
 .points-inline strong { justify-content: flex-start; font-size: 17px; }
+.score-records { display: flex; gap: 12px; margin-top: 4px; }
+.score-records > div { display: grid; gap: 3px; }
+.score-records .stat-label { font-size: 7px; }
+.score-records strong { font-size: 12px; }
 
 /* Óvalo central con el combo y el multiplicador. */
 .combo-orb {
@@ -682,6 +733,23 @@ body.practice-mode .impulse-hud { display: none; }
   opacity: 0;
 }
 
+/* La barra de desempeño y la precisión se actualizan durante la partida. */
+.performance-status { grid-column: 1 / -1; grid-row: 2; width: min(100%, 620px); justify-self: center; }
+.performance-heading { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.performance-heading .stat-label { margin-left: auto; }
+.performance-heading .stat-label:first-child { margin-left: 0; }
+.performance-heading strong { color: var(--cyan); font-size: 11px; font-variant-numeric: tabular-nums; }
+.performance-meter { height: 10px; overflow: hidden; border: 1px solid #60566a; border-radius: 999px; background: #0c0b14; }
+.performance-fill { width: 100%; height: 100%; border-radius: inherit; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); transition: width .2s ease, background-color .2s ease; }
+.performance-meter[data-level="medium"] .performance-fill { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+.performance-meter[data-level="low"] .performance-fill { background: #ff687e; box-shadow: 0 0 10px #ff687e; }
+
+/* El resumen aparece centrado en la pista al terminar el nivel. */
+.stage-message.results { top: 50%; left: 50%; width: min(92%, 460px); padding: 16px; transform: translate(-50%, -50%); border: 1px solid var(--cyan); border-radius: 8px; background: #090914ed; color: white; box-shadow: 0 0 24px #50e7f244; line-height: 1.8; }
+.stage-message.results.defeat { border-color: #ff687e; box-shadow: 0 0 24px #ff687e55; }
+.stage-message.audio-prompt { top: 50%; left: 50%; width: min(92%, 380px); padding: 16px; transform: translate(-50%, -50%); border: 1px solid var(--gold); border-radius: 8px; background: #090914ed; color: white; box-shadow: 0 0 24px #ffd65a44; pointer-events: auto; }
+.stage-message.audio-prompt button { margin-top: 10px; padding: 10px 16px; border: 1px solid var(--gold); background: #29202a; color: var(--gold); font-weight: bold; cursor: pointer; }
+
 /* Botones de partida. */
 .controls { grid-column: 1 / -1; display: flex; justify-content: center; gap: 9px; }
 .controls button { min-width: 132px; padding: 10px 14px; border: 0; font-weight: bold; cursor: pointer; }
@@ -708,6 +776,7 @@ body.practice-mode .impulse-hud { display: none; }
   .impulse-hud { left: 18%; right: 18%; bottom: 10%; }
   .boost-meter { height: 12px; }
   .combo-orb { width: 86px; height: 66px; transform: translateY(24px); }
+  .performance-heading { flex-wrap: wrap; }
   .points-inline strong { font-size: 15px; }
   .controls { grid-column: auto; }
   .controls button { min-width: 0; flex: 1; }

@@ -27,7 +27,13 @@
   const mainMenu       = $('#mainMenu');
   const creditsPanel   = $('#creditsPanel');
   const settingsScreen = $('#settingsScreen');
+  const leaderboardScreen = $('#leaderboardScreen');
+  const optionsMenu = $('#optionsMenu');
+  const backToOptions = $('#backToOptions');
+  const optionsTitle = $('#optionsTitle');
+  const optionPages = Array.from(document.querySelectorAll('.option-page'));
   const storyIntro     = $('#storyIntro');
+  const skipStoryIntro = $('#skipStoryIntro');
 
   const storyLabel = $('#storySceneLabel');
   const storyTitle = $('#storySceneTitle');
@@ -48,7 +54,7 @@
 
   // Muestra solo el panel indicado y oculta los demás.
   function showOnly(panel) {
-    for (const item of [mainMenu, creditsPanel, settingsScreen, storyIntro]) {
+    for (const item of [mainMenu, creditsPanel, settingsScreen, leaderboardScreen, storyIntro]) {
       item.hidden = item !== panel;
     }
   }
@@ -76,7 +82,8 @@
   // Muestra la escena actual con una animación y programa la siguiente; al acabar, inicia el juego.
   function showStoryScene() {
     if (sceneIndex >= STORY_SCENES.length) {
-      beginStoryGame();
+      skipStoryIntro.textContent = 'EMPEZAR CANCIÓN ▶';
+      storyText.textContent = 'Pulsa el botón para iniciar la canción y la partida.';
       return;
     }
 
@@ -92,13 +99,19 @@
     ], {duration:SCENE_ANIMATION_MS, easing:'ease-out'});
 
     sceneIndex++;
-    storyTimer = setTimeout(showStoryScene, SCENE_DURATION_MS);
+    if (sceneIndex < STORY_SCENES.length) {
+      storyTimer = setTimeout(showStoryScene, SCENE_DURATION_MS);
+    } else {
+      // El clic inicia el audio dentro de un gesto del usuario, como exigen los navegadores.
+      skipStoryIntro.textContent = 'EMPEZAR CANCIÓN ▶';
+    }
   }
 
   // Empieza la introducción desde la primera escena.
   function startStoryIntro() {
     showOnly(storyIntro);
     sceneIndex = 0;
+    skipStoryIntro.textContent = 'SALTAR INTRO ▶';
     showStoryScene();
   }
 
@@ -130,8 +143,27 @@
 
   // Abre la configuración y pone el foco en el botón de volver.
   function openSettings() {
+    showOptionsHome();
     showOnly(settingsScreen);
     backFromSettings.focus();
+  }
+
+  function showOptionsHome() {
+    optionsMenu.hidden = false;
+    backToOptions.hidden = true;
+    optionPages.forEach(page => { page.hidden = true; });
+    optionsTitle.textContent = 'OPCIONES';
+  }
+
+  function openOptionPage(name, label) {
+    optionsMenu.hidden = true;
+    optionPages.forEach(page => { page.hidden = page.id !== `option${name}`; });
+    backToOptions.hidden = false;
+    optionsTitle.textContent = label;
+  }
+
+  function openLeaderboard() {
+    showOnly(leaderboardScreen);
   }
 
   /* ==========================================================================
@@ -142,7 +174,14 @@
   function handleEscape(event) {
     if (event.key !== 'Escape') return;
 
-    if (!settingsScreen.hidden || !storyIntro.hidden) {
+    if (!settingsScreen.hidden) {
+      event.preventDefault();
+      if (backToOptions.hidden) showMainMenu();
+      else showOptionsHome();
+      return;
+    }
+
+    if (!leaderboardScreen.hidden || !storyIntro.hidden) {
       event.preventDefault();
       showMainMenu();
       return;
@@ -163,12 +202,26 @@
   $('#practiceButton').addEventListener('click', startPractice);
   $('#creditsButton').addEventListener('click', openCredits);
   $('#openSettingsButton').addEventListener('click', openSettings);
+  $('#openLeaderboardButton').addEventListener('click', openLeaderboard);
+  document.querySelectorAll('[data-option-page]').forEach(button => {
+    button.addEventListener('click', () => {
+      const name = button.dataset.optionPage;
+      const labels = {audio:'AUDIO', difficulty:'DIFICULTAD', song:'CANCIÓN Y MAPA', controls:'CONTROLES'};
+      openOptionPage(name[0].toUpperCase() + name.slice(1), labels[name]);
+    });
+  });
+  backToOptions.addEventListener('click', showOptionsHome);
+  $('#resetButton').addEventListener('click', () => {
+    document.body.classList.remove('practice-mode');
+    showMainMenu();
+  });
 
 
   // Botones para saltar la introducción o volver al menú.
-  $('#skipStoryIntro').addEventListener('click', beginStoryGame);
+  skipStoryIntro.addEventListener('click', beginStoryGame);
   $('#backFromCredits').addEventListener('click', showMainMenu);
   backFromSettings.addEventListener('click', showMainMenu);
+  $('#backFromLeaderboard').addEventListener('click', showMainMenu);
 
   document.addEventListener('keydown', handleEscape);
 })();
