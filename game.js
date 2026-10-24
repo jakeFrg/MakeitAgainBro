@@ -73,6 +73,13 @@
   const musicVolumeValue = $('#musicVolumeValue');
   const volumeControl    = $('#volumeControl');
   const volumeValue      = $('#volumeValue');
+  // Música del nivel
+  const musicaNivel = $('#musicaNivel');
+  musicaNivel.volume = 0.6;
+  function detenerMusicaNivel() {
+  musicaNivel.pause();
+  musicaNivel.currentTime = 0;
+}
   const receptors        = Array.from(document.querySelectorAll('.receptor'));
  
   /* ==========================================================================
@@ -213,10 +220,10 @@
     judgementDisplay.style.color = color;
     if (judgementAnimation) judgementAnimation.cancel();
     judgementAnimation = judgementDisplay.animate([
-      {opacity:0, transform:'scale(.72) translateY(5px)', offset:0},
-      {opacity:1, transform:'scale(1.08) translateY(0)', offset:.18},
-      {opacity:1, transform:'scale(1) translateY(0)', offset:.35},
-      {opacity:0, transform:'scale(.96) translateY(-4px)', offset:1}
+      {opacity:0, transform:'scale(4) translateY(5px)', offset:0},
+      {opacity:1, transform:'scale(3) translateY(0)', offset:.18},
+      {opacity:1, transform:'scale(.67) translateY(0)', offset:.35},
+      {opacity:0, transform:'scale(1) translateY(-4px)', offset:1}
     ], {duration:950, easing:'ease-out', fill:'forwards'});
   }
  
@@ -626,6 +633,7 @@
   // Detiene la partida y deja todo en su estado inicial.
   function reset() {
     running = false;
+    detenerMusicaNivel();
     preRoll = false;
     songStarted = false;
     songAudio.pause();

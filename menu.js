@@ -6,7 +6,7 @@
      1. CONFIGURACIÓN
      ========================================================================== */
 
-  // Escenas de la introducción del modo historia: se muestran una tras otra.
+  // Escenas de la introducción del modo historia. 
   const STORY_SCENES = [
     {label:'CAPÍTULO 01', title:'¿DONDE ESTOY?', text:'Acabas de despertar en tu habitación pero no se siente igual... '},
     {label:'CAPÍTULO 01', title:'1986!!', text:'Ves el calenndario y ves que dice 1986, abres la ventana y ves luces de neon y musica de Federico Mercurio...'},
@@ -15,7 +15,7 @@
 
   ];
   const SCENE_DURATION_MS  = 5000; // tiempo que se ve cada escena
-  const SCENE_ANIMATION_MS = 500;  // duración de la animación de entrada
+  const SCENE_ANIMATION_MS = 500;  // duración de la animación de cambio de escena
 
   /* ==========================================================================
      2. ELEMENTOS DE LA PÁGINA
@@ -40,6 +40,19 @@
   const storyText  = $('#storySceneText');
 
   const backFromSettings = $('#backFromSettings');
+  const musicaMenu = $('#musicaMenu');
+  musicaMenu.volume = 0.4;
+  
+  function reproducirMusicaMenu() {
+    musicaMenu.play().catch(error => {
+      console.log('No se pudo reproducir la música:', error);
+    });
+  }
+
+  function detenerMusicaMenu() {
+    musicaMenu.pause();
+    musicaMenu.currentTime = 0;
+  }
 
   /* ==========================================================================
      3. ESTADO
@@ -64,6 +77,7 @@
     clearTimeout(storyTimer);
     startScreen.hidden = false;
     showOnly(mainMenu);
+    reproducirMusicaMenu();
   }
 
   /* ==========================================================================
@@ -73,6 +87,7 @@
   // Termina la introducción, oculta el menú y avisa al juego para empezar.
   function beginStoryGame() {
     clearTimeout(storyTimer);
+    detenerMusicaMenu();
     storyIntro.hidden = true;
     startScreen.hidden = true;
     document.body.classList.remove('practice-mode');
@@ -109,6 +124,7 @@
 
   // Empieza la introducción desde la primera escena.
   function startStoryIntro() {
+    detenerMusicaMenu();
     showOnly(storyIntro);
     sceneIndex = 0;
     skipStoryIntro.textContent = 'SALTAR INTRO ▶';
@@ -121,6 +137,7 @@
 
   // Oculta el menú y avisa al juego para empezar con notas aleatorias.
   function startPractice() {
+    detenerMusicaMenu();
     startScreen.hidden = true;
     document.body.classList.add('practice-mode'); // el CSS oculta la barra de impulso
     document.dispatchEvent(new Event('rhythm:practice'));
@@ -198,6 +215,13 @@
      ========================================================================== */
 
   // Botones del menú principal.
+  // Inicia la música del menú con la primera interacción del usuario.
+  document.addEventListener('click', function iniciarMusicaMenu() {
+    if (!startScreen.hidden && musicaMenu.paused) {
+      reproducirMusicaMenu();
+    }
+  }, { once: true });
+
   $('#startButton').addEventListener('click', startStoryIntro);
   $('#practiceButton').addEventListener('click', startPractice);
   $('#creditsButton').addEventListener('click', openCredits);
