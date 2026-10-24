@@ -34,6 +34,19 @@
   const storyText  = $('#storySceneText');
 
   const backFromSettings = $('#backFromSettings');
+  const musicaMenu = $('#musicaMenu');
+  musicaMenu.volume = 0.4;
+  
+  function reproducirMusicaMenu() {
+    musicaMenu.play().catch(error => {
+      console.log('No se pudo reproducir la música:', error);
+    });
+  }
+
+  function detenerMusicaMenu() {
+    musicaMenu.pause();
+    musicaMenu.currentTime = 0;
+  }
 
   /* ==========================================================================
      3. ESTADO
@@ -58,6 +71,7 @@
     clearTimeout(storyTimer);
     startScreen.hidden = false;
     showOnly(mainMenu);
+    reproducirMusicaMenu();
   }
 
   /* ==========================================================================
@@ -67,6 +81,7 @@
   // Termina la introducción, oculta el menú y avisa al juego para empezar.
   function beginStoryGame() {
     clearTimeout(storyTimer);
+    detenerMusicaMenu();
     storyIntro.hidden = true;
     startScreen.hidden = true;
     document.body.classList.remove('practice-mode');
@@ -97,6 +112,7 @@
 
   // Empieza la introducción desde la primera escena.
   function startStoryIntro() {
+    detenerMusicaMenu();
     showOnly(storyIntro);
     sceneIndex = 0;
     showStoryScene();
@@ -108,6 +124,7 @@
 
   // Oculta el menú y avisa al juego para empezar con notas aleatorias.
   function startPractice() {
+    detenerMusicaMenu();
     startScreen.hidden = true;
     document.body.classList.add('practice-mode'); // el CSS oculta la barra de impulso
     document.dispatchEvent(new Event('rhythm:practice'));
@@ -159,6 +176,13 @@
      ========================================================================== */
 
   // Botones del menú principal.
+  // Inicia la música del menú con la primera interacción del usuario.
+  document.addEventListener('click', function iniciarMusicaMenu() {
+    if (!startScreen.hidden && musicaMenu.paused) {
+      reproducirMusicaMenu();
+    }
+  }, { once: true });
+
   $('#startButton').addEventListener('click', startStoryIntro);
   $('#practiceButton').addEventListener('click', startPractice);
   $('#creditsButton').addEventListener('click', openCredits);
