@@ -42,6 +42,32 @@ body {
 /* Botones y selectores heredan la fuente de la página. */
 button, select { font: inherit; }
 
+/* Intro inicial: una capa negra cubre la página hasta terminar el fade del logo. */
+.game-intro {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #000;
+}
+.game-intro[hidden] { display: none; }
+.game-intro-logo {
+  display: block;
+  width: min(72vw, 640px);
+  max-height: 72vh;
+  object-fit: contain;
+  opacity: 0;
+  animation: game-intro-fade 3s ease-in-out forwards;
+}
+@keyframes game-intro-fade {
+  0% { opacity: 0; }
+  33.333% { opacity: 1; }
+  66.667% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* Contenedor central de la página. */
 .app { width: min(100% - 32px, 1200px); margin: 0 auto; padding: 18px 0 14px; }
 
@@ -153,10 +179,11 @@ button, select { font: inherit; }
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
 }
 .start-card h2 {
-  margin: 0 3 22px; /* inválido (falta una unidad): el navegador lo ignora */
+  margin: 0 0 22px;
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(117px, 200vw, 100px); /* el mínimo (117px) es mayor que el máximo: queda fijo en 117px */
+  font-size: clamp(28px, 7.2vw, 80px);
+  line-height: .96;
   letter-spacing: 1px;
   -webkit-text-stroke: 1px #171018;
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
@@ -288,15 +315,17 @@ button, select { font: inherit; }
 .settings-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: clamp(8px, 2vw, 16px);
   margin-bottom: 18px;
   padding-bottom: 13px;
   border-bottom: 2px dashed #f0b944;
 }
 .settings-header h2 {
+  min-width: 0;
   margin: 0;
   color: #51e0d0;
-  font-size: clamp(19px, 4vw, 27px);
+  font-size: clamp(15px, 4vw, 27px);
+  overflow-wrap: anywhere;
   letter-spacing: 1px;
   text-shadow: 2px 2px #160e21;
 }
@@ -893,8 +922,16 @@ body.level-finished .combo-count-marker { visibility: hidden; }
 @media (max-width: 650px) {
   .app { width: calc(100% - 20px); padding-top: 10px; }
   .topbar { display: flex; flex-wrap: wrap; gap: 8px; }
-  .brand { font-size: 16px; }
-  .page-title { font-size: 13px; letter-spacing: .8px; }
+  .brand { font-size: clamp(13px, 3.5vw, 16px); }
+  .page-title { font-size: clamp(11px, 3vw, 13px); letter-spacing: .8px; }
+  .start-screen { padding: clamp(12px, 4vw, 24px); }
+  .start-card { width: 100%; padding: clamp(14px, 4vw, 32px); }
+  .start-card h2 { font-size: clamp(26px, 8vw, 52px); }
+  .start-menu-buttons button { font-size: clamp(25px, 7vw, 42px); }
+  .settings-screen { max-height: 88vh; padding: clamp(14px, 4vw, 24px); }
+  .settings-header { gap: 8px; margin-bottom: 12px; }
+  .settings-header h2 { font-size: clamp(14px, 4.5vw, 22px); }
+  .options-menu button { padding: 11px 12px; font-size: clamp(13px, 3.5vw, 15px); }
   .game-main { margin-top: 16px; }
   .feedback { min-width: 95px; font-size: 9px; }
   .score-block strong, .combo-block strong { font-size: 20px; }
