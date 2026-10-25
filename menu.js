@@ -20,7 +20,7 @@
   const SKIP_LABEL  = 'SALTAR INTRO ▶';
   const START_LABEL = 'EMPEZAR CANCIÓN ▶';
 
-  const MENU_MUSIC_VOLUME = 0.4;
+  const MENU_MUSIC_VOLUME_KEY = 'ritmo-menu-music-volume';
 
   // Secciones del menú de opciones: id de su página y título que se muestra.
   const OPTION_PAGES = {
@@ -60,6 +60,8 @@
 
   // Música del menú.
   const menuMusic = $('#musicaMenu');
+  const menuMusicVolume = $('#menuMusicVolume');
+  const menuMusicVolumeValue = $('#menuMusicVolumeValue');
 
   /* ==========================================================================
      3. ESTADO
@@ -269,7 +271,22 @@
   }
 
   function init() {
-    menuMusic.volume = MENU_MUSIC_VOLUME;
+    let savedVolume = NaN;
+    try {
+      const saved = localStorage.getItem(MENU_MUSIC_VOLUME_KEY);
+      if (saved !== null) savedVolume = Number(saved);
+    } catch (error) {}
+    if (Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 100) {
+      menuMusicVolume.value = String(savedVolume);
+    }
+    menuMusic.volume = Number(menuMusicVolume.value) / 100;
+    menuMusicVolumeValue.value = `${menuMusicVolume.value}%`;
+    menuMusicVolume.addEventListener('input', event => {
+      const value = Number(event.target.value);
+      menuMusic.volume = value / 100;
+      menuMusicVolumeValue.value = `${value}%`;
+      try { localStorage.setItem(MENU_MUSIC_VOLUME_KEY, String(value)); } catch (error) {}
+    });
     bindEvents();
   }
 

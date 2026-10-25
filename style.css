@@ -492,7 +492,7 @@ button, select { font: inherit; }
   position: relative;
   height: min(calc(100vh - 190px), 1080px);
   min-height: 520px;
-  overflow: hidden;
+  overflow: visible;
   perspective: 1000px;
   background: linear-gradient(#09091433, #07071044);
 }
@@ -693,6 +693,9 @@ button, select { font: inherit; }
   pointer-events: auto;
 }
 .stage-message.audio-prompt button {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
   margin-top: 10px;
   padding: 10px 16px;
   border: 1px solid var(--gold);
@@ -735,68 +738,119 @@ body.practice-mode .impulse-hud { display: none; }
   grid-template-columns: 1fr;
   gap: 12px;
   align-items: center;
-  margin: 0;
-  padding: 0 4px;
+  width: calc(96% + 4px);
+  margin: 0 calc(2% - 2px);
+  padding: 0;
   border: 0;
   background: transparent;
 }
 .boost-hud {
   display: grid;
-  grid-template-columns: minmax(90px, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: 8px 18px;
   align-items: center;
+  padding: 12px 16px;
+  border: 2px solid var(--cyan);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  background: linear-gradient(105deg, #0d0b18f2, #211634e8 55%, #0d0b18f2);
+  box-shadow: 0 0 7px #50e7f299, inset 0 0 18px #50e7f21a, 0 4px 18px #0005;
 }
 
-/* Puntos en la esquina izquierda, con mejor puntaje y récord de combo debajo. */
-.points-inline { grid-column: 1; align-self: start; margin-top: 8px; text-align: left; }
-.points-inline .stat-label { font-size: 8px; }
-.points-inline strong { justify-content: flex-start; font-size: 17px; }
-.score-records { display: flex; gap: 12px; margin-top: 4px; }
-.score-records > div { display: grid; gap: 3px; }
-.score-records .stat-label { font-size: 7px; }
-.score-records strong { font-size: 12px; }
+/* La puntuación queda fuera del carril, en la esquina inferior izquierda. */
+.points-inline {
+  position: fixed;
+  z-index: 4;
+  left: clamp(20px, 3vw, 56px);
+  bottom: clamp(78px, 11vh, 110px);
+  width: min(320px, calc(100vw - 40px));
+  margin: 0;
+  text-align: center;
+  pointer-events: none;
+}
+.points-inline .stat-label { font-size: 9px; }
+.points-inline > strong { justify-content: center; font-size: clamp(32px, 4.4vw, 52px); line-height: 1; letter-spacing: 1px; text-shadow: 0 0 14px #50e7f255; }
 
-/* Óvalo central con el combo y el multiplicador. */
+/* Círculo central con el multiplicador actual. */
 .combo-orb {
-  grid-column: 2;
-  width: 110px;
-  height: 82px;
-  transform: translateY(34px);
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: center;
+  width: 94px;
+  height: 94px;
+  align-self: center;
+  transform: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border: 1px solid #ff4db899;
+  border: 2px solid #a989ffbb;
   border-radius: 50%;
-  background: radial-gradient(circle, #342039, #17131d);
-  box-shadow: 0 0 13px #ff4db833;
+  background: radial-gradient(circle, #30285a, #100e1c);
+  box-shadow: 0 0 16px #a989ff55, inset 0 0 15px #50e7f222;
 }
-.combo-orb strong { gap: 7px; font-size: 27px; }
-.combo-orb #combo { font-size: 1em; }
-.combo-orb .multiplier { font-size: 17px; }
+.combo-orb strong { font-size: 27px; }
+.combo-orb .multiplier { font-size: 24px; }
 
-/* Texto del resultado del golpe (PERFECTO, FALLO...), a la derecha; empieza invisible. */
+/* Datos y barra de canción arriba de la puntuación. */
+.song-progress {
+  position: fixed;
+  z-index: 4;
+  left: clamp(20px, 3vw, 56px);
+  bottom: clamp(145px, 24vh, 220px);
+  display: grid;
+  gap: 6px;
+  width: min(320px, calc(100vw - 40px));
+  margin: 0;
+  padding: 5px 9px 7px;
+  border-left: 3px solid var(--cyan);
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(90deg, #151226e8, #100e1b99);
+}
+.song-progress-meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #c9c2d5; font-size: 10px; }
+.song-progress-meta strong { overflow: hidden; color: #fff; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.song-progress-meta span { flex: 0 0 auto; color: #a9a0bd; font-variant-numeric: tabular-nums; }
+.song-progress-bar { height: 8px; overflow: hidden; border: 1px solid #63567d; border-radius: 999px; background: #0a0912; }
+.song-progress-fill { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #50e7f2, #8f83ff, #ff4db8); box-shadow: 0 0 9px #a989ff99; transition: width .12s linear; }
+
+/* Juicio del golpe fuera del lado derecho de la pista. */
 .judgement-display {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
-  align-self: center;
-  position: relative;
-  width: 100%;
+  position: absolute;
+  z-index: 9;
+  right: -95px;
+  bottom: 52px;
+  width: 95px;
   min-height: 24px;
-  color: var(--cyan);
+  color: #ffd65a;
   text-align: center;
   font-size: clamp(14px, 2vw, 22px);
   font-weight: 900;
   letter-spacing: 1.5px;
-  text-shadow: 0 0 9px currentColor;
+  text-shadow: none;
   pointer-events: none;
   opacity: 0;
 }
 
+/* Conteo de aciertos fuera del lado izquierdo, junto a la flecha azul. */
+.combo-count-marker {
+  position: absolute;
+  z-index: 9;
+  left: -95px;
+  bottom: 52px;
+  width: 95px;
+  color: #ffd65a;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 5px #fff2b2, 0 0 13px #ffd65a, 0 0 24px #ff9f43;
+  pointer-events: none;
+}
+
 /* Barra de desempeño y precisión: cambia de color según el nivel (data-level). */
-.performance-status { grid-column: 1 / -1; grid-row: 2; width: min(100%, 620px); justify-self: center; }
+.performance-status { grid-column: 1; grid-row: 2; width: min(100%, 620px); justify-self: center; }
 .performance-heading { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
 .performance-heading .stat-label { margin-left: auto; }
 .performance-heading .stat-label:first-child { margin-left: 0; }
@@ -819,6 +873,11 @@ body.practice-mode .impulse-hud { display: none; }
 .performance-meter[data-level="medium"] .performance-fill { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
 .performance-meter[data-level="low"] .performance-fill { background: #ff687e; box-shadow: 0 0 10px #ff687e; }
 
+/* Al final, el resultado queda visible solo en el recuadro de la pista. */
+body.level-finished .points-inline,
+body.level-finished .judgement-display,
+body.level-finished .combo-count-marker { visibility: hidden; }
+
 /* Botones de partida (el HTML actual ya no los usa). */
 .controls { grid-column: 1 / -1; display: flex; justify-content: center; gap: 9px; }
 .controls button { min-width: 132px; padding: 10px 14px; border: 0; font-weight: bold; cursor: pointer; }
@@ -839,14 +898,27 @@ body.practice-mode .impulse-hud { display: none; }
   .game-main { margin-top: 16px; }
   .feedback { min-width: 95px; font-size: 9px; }
   .score-block strong, .combo-block strong { font-size: 20px; }
-  .stage { height: min(calc(100vh - 210px), 980px); min-height: 420px; }
+  .stage { height: min(calc(100vh - 210px), 980px); min-height: 420px; overflow: visible; }
   .power-controls { grid-template-columns: 1fr; }
-  .boost-hud { grid-template-columns: minmax(68px, 1fr) auto minmax(0, 1fr); gap: 7px; }
+  .power-controls { width: calc(96% + 4px); margin: 0 calc(2% - 2px); }
+  .boost-hud { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .boost-hud { padding: 9px 8px; }
   .impulse-hud { left: 18%; right: 18%; bottom: 10%; }
   .boost-meter { height: 12px; }
-  .combo-orb { width: 86px; height: 66px; transform: translateY(24px); }
+  .combo-orb { grid-column: 1; grid-row: 1; width: 68px; height: 68px; transform: none; }
+  .song-progress { position: relative; left: auto; bottom: auto; z-index: auto; width: calc(100% - 24px); max-width: 420px; margin: 8px 12px; }
+  .points-inline { position: relative; left: auto; bottom: auto; z-index: auto; width: auto; margin: 8px 12px; }
+  .performance-status { grid-column: 1; grid-row: 2; }
+  .judgement-display { right: -60px; bottom: 50px; width: 58px; font-size: 10px; }
+  .combo-count-marker { left: -60px; bottom: 50px; width: 58px; font-size: 18px; }
   .performance-heading { flex-wrap: wrap; }
-  .points-inline strong { font-size: 15px; }
+  .points-inline > strong { font-size: clamp(26px, 7vw, 36px); }
   .controls { grid-column: auto; }
   .controls button { min-width: 0; flex: 1; }
+}
+
+@media (min-width: 651px) and (max-width: 1200px) {
+  .stage { overflow: visible; }
+  .judgement-display { right: -84px; width: 84px; }
+  .combo-count-marker { left: -84px; width: 84px; }
 }

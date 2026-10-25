@@ -92,6 +92,9 @@
 
             <label class="option-label volume-label" for="musicVolume"><span>VOLUMEN DE LA CANCIÓN</span><output id="musicVolumeValue" for="musicVolume">70%</output></label>
             <input id="musicVolume" class="volume-control" type="range" min="0" max="100" value="70">
+
+            <label class="option-label volume-label" for="menuMusicVolume"><span>VOLUMEN DE LA MÚSICA DEL MENÚ</span><output id="menuMusicVolumeValue" for="menuMusicVolume">40%</output></label>
+            <input id="menuMusicVolume" class="volume-control" type="range" min="0" max="100" value="40">
           </section>
 
           <!-- Sección: dificultad (velocidad y cantidad de notas). Los valores deben ser easy, normal o hard. -->
@@ -200,30 +203,39 @@
             <span id="boostStatus" class="visually-hidden">0%</span>
           </div>
 
+          <!-- Calidad del golpe junto al receptor amarillo, fuera de la pista. -->
+          <div id="judgementDisplay" class="judgement-display" aria-live="polite"></div>
+          <!-- Aciertos consecutivos: el contador se reinicia al fallar. -->
+          <div id="combo" class="combo-count-marker" aria-label="Aciertos consecutivos">0</div>
+
           <!-- Mensaje sobre la pista (resultados, aviso para activar el audio). -->
           <div class="stage-message" id="stageMessage" hidden></div>
         </div>
       </section>
 
+      <!-- Barra musical y puntuación fuera de la pista, a la izquierda. -->
+      <div class="song-progress" aria-label="Progreso de la canción">
+        <div class="song-progress-meta">
+          <strong id="songProgressTitle">Game Over Baby</strong>
+          <span id="songProgressTime">00:00 / 00:00</span>
+        </div>
+        <div id="songProgressBar" class="song-progress-bar" role="progressbar" aria-label="Avance de la canción" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="songProgressFill" class="song-progress-fill"></div>
+        </div>
+      </div>
+      <div class="score-block points-inline">
+        <span class="stat-label">PUNTOS</span><strong id="score">000000</strong>
+        <span id="bestScore" class="visually-hidden">000000</span>
+        <span id="bestCombo" class="visually-hidden">0</span>
+      </div>
+
       <!-- Panel bajo la pista: puntos, combo, resultado del golpe y desempeño. -->
       <section class="power-controls" aria-label="Impulso y controles de partida">
         <div class="boost-hud">
-          <!-- Puntos de la partida y récords. -->
-          <div class="score-block points-inline">
-            <span class="stat-label">PUNTOS</span><strong id="score">000000</strong>
-            <div class="score-records">
-              <div><span class="stat-label">MEJOR PUNTAJE</span><strong id="bestScore">000000</strong></div>
-              <div><span class="stat-label">RÉCORD COMBO</span><strong id="bestCombo">0</strong></div>
-            </div>
+          <!-- El círculo muestra únicamente el multiplicador actual. -->
+          <div class="combo-block combo-orb" aria-label="Multiplicador actual">
+            <strong><span id="comboMultiplier" class="multiplier">x1</span></strong>
           </div>
-
-          <!-- Combo actual y multiplicador (x1, x2, x4, x8). -->
-          <div class="combo-block combo-orb" aria-label="Combo">
-            <strong><span id="combo">0</span><span id="comboMultiplier" class="multiplier">x1</span></strong>
-          </div>
-
-          <!-- Calidad del último golpe (EXCELENTE, BUENO, MALO...). -->
-          <div id="judgementDisplay" class="judgement-display" aria-live="polite"></div>
 
           <!-- Desempeño (vida) y precisión; si el desempeño llega a 0, pierdes. -->
           <div class="performance-status" aria-label="Desempeño actual">

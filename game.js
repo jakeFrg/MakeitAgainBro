@@ -106,6 +106,10 @@
   const songAudio        = $('#songAudio');
   const songFileInput    = $('#songFile');
   const songName         = $('#songName');
+  const songProgressTitle = $('#songProgressTitle');
+  const songProgressTime = $('#songProgressTime');
+  const songProgressBar = $('#songProgressBar');
+  const songProgressFill = $('#songProgressFill');
   const musicVolume      = $('#musicVolume');
   const musicVolumeValue = $('#musicVolumeValue');
   const volumeControl    = $('#volumeControl');
@@ -182,6 +186,19 @@
   function formatTime(ms) {
     const seconds = Math.max(0, Math.floor(ms / 1000));
     return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+  }
+
+  // Actualiza la barra inferior usando el reloj del MP3; si no hay duración disponible, usa el mapa.
+  function updateSongProgress(timeMs = 0) {
+    const chartDurationMs = chart.notes.reduce((latest, note) => Math.max(latest, Number(note.timeMs) || 0), 0);
+    const audioDurationMs = Number.isFinite(songAudio.duration) ? songAudio.duration * 1000 : 0;
+    const durationMs = audioDurationMs > 0 ? audioDurationMs : chartDurationMs;
+    const elapsedMs = songStarted ? songAudio.currentTime * 1000 : Math.max(0, timeMs);
+    const percent = durationMs > 0 ? Math.max(0, Math.min(100, elapsedMs / durationMs * 100)) : 0;
+    songProgressTitle.textContent = songName.textContent.replace(/\.[^.]+$/, '') || 'Canción';
+    songProgressTime.textContent = `${formatTime(elapsedMs)} / ${formatTime(durationMs)}`;
+    songProgressFill.style.width = `${percent}%`;
+    songProgressBar.setAttribute('aria-valuenow', String(Math.round(percent)));
   }
 
   // Tiempo de la partida en ms; si hay MP3 sonando, él manda el reloj.
@@ -272,11 +289,11 @@
     judgementDisplay.style.color = color;
     if (judgementAnimation) judgementAnimation.cancel();
     judgementAnimation = judgementDisplay.animate([
-      {opacity:0, transform:'scale(4) translateY(5px)', offset:0},
-      {opacity:1, transform:'scale(3) translateY(0)', offset:.18},
-      {opacity:1, transform:'scale(.67) translateY(0)', offset:.35},
-      {opacity:0, transform:'scale(1) translateY(-4px)', offset:1}
-    ], {duration:950, easing:'ease-out', fill:'forwards'});
+      {opacity:0, transform:'scale(.95) translateY(2px)', filter:'drop-shadow(0 0 0 currentColor)', offset:0},
+      {opacity:1, transform:'scale(1.07) translateY(0)', filter:'drop-shadow(0 0 10px currentColor)', offset:.2},
+      {opacity:1, transform:'scale(1) translateY(0)', filter:'drop-shadow(0 0 6px currentColor)', offset:.42},
+      {opacity:0, transform:'scale(1) translateY(-1px)', filter:'drop-shadow(0 0 0 currentColor)', offset:1}
+    ], {duration:760, easing:'ease-out', fill:'forwards'});
   }
 
   // Nivel de combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.
@@ -632,19 +649,21 @@
     songAudio.pause();
     message.classList.remove('results', 'defeat');
     message.classList.add('audio-prompt');
-    message.innerHTML = '<span>EL NAVEGADOR ESPERA TU CLIC PARA REPRODUCIR</span><br><button type="button">▶ ESCUCHAR Y EMPEZAR</button>';
+    message.innerHTML = '<span>EL NAVEGADOR ESPERA TU CLIC PARA REPRODUCIR</span><br><button id="retryAudioButton" type="button">▶ ESCUCHAR Y EMPEZAR</button>';
     message.hidden = false;
-    message.querySelector('button').addEventListener('click', () => {
-      message.hidden = true;
-      message.classList.remove('audio-prompt');
-      start();
+    message.querySelector('#retryAudioButton').addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      start({allowSilentFallback:true});
     }, {once:true});
+    message.querySelector('#retryAudioButton').focus();
     setFeedback('PULSA PARA ACTIVAR LA CANCIÓN', '#ffd65a');
   }
 
   // Empieza una ronda: reinicia puntos, impulso y notas; en historia arranca la canción.
-  function start() {
+  function start({allowSilentFallback = false} = {}) {
     if (running) return;
+    document.body.classList.remove('level-finished');
     const musicRound = !isPracticeMode();
     clearBoostState();
     heldLaneKeys.clear();
@@ -664,6 +683,7 @@
     updateScore(-leadMs);
     updatePerformance();
     resetNotes();
+    updateSongProgress(0);
     updateBoostUI();
     message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
@@ -672,11 +692,28 @@
     // Story Mode usa el audio como reloj maestro desde el inicio de la partida.
     if (musicRound) {
       try { songAudio.currentTime = 0; } catch (error) {}
-      const playback = songAudio.play();
-      if (playback && typeof playback.then === 'function') {
-        playback.then(() => { songStarted = true; }).catch(showAudioStartPrompt);
-      } else {
-        songStarted = true;
+      try {
+        const playback = songAudio.play();
+        if (playback && typeof playback.then === 'function') {
+          playback.then(() => { songStarted = true; }).catch(error => {
+            console.warn('No se pudo reproducir la canción:', error);
+            if (allowSilentFallback) {
+              songAudio.pause();
+              songStarted = false;
+              startedAt = performance.now();
+              setFeedback('JUGANDO SIN AUDIO', '#ffd65a');
+            } else showAudioStartPrompt();
+          });
+        } else {
+          songStarted = true;
+        }
+      } catch (error) {
+        console.warn('No se pudo reproducir la canción:', error);
+        if (allowSilentFallback) {
+          songStarted = false;
+          startedAt = performance.now();
+          setFeedback('JUGANDO SIN AUDIO', '#ffd65a');
+        } else showAudioStartPrompt();
       }
     }
   }
@@ -684,6 +721,7 @@
   // Detiene la partida y deja todo en su estado inicial.
   function reset() {
     running = false;
+    document.body.classList.remove('level-finished');
     stopLevelMusic();
     preRoll = false;
     songStarted = false;
@@ -703,6 +741,7 @@
     clockEl.textContent = '00:00';
     resetNotes();
     updateBoostUI();
+    updateSongProgress(0);
     message.textContent = '';
     message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
@@ -750,7 +789,9 @@
   // Termina la partida: detiene todo, calcula precisión y rango, guarda y muestra resultados.
   function finishLevel(outcome = 'victory') {
     if (!running) return;
+    document.body.classList.add('level-finished');
     pausedAt = chartTime();
+    updateSongProgress(pausedAt);
     running = false;
     preRoll = false;
     songAudio.pause();
@@ -945,6 +986,7 @@
     const time = chartTime();
     const songTime = time + (chart.offsetMs || 0);
     clockEl.textContent = formatTime(time);
+    updateSongProgress(time);
     advanceEnergy(songTime);
     updateBoostUI();
 
@@ -1082,6 +1124,7 @@
     songAudio.src = songObjectUrl;
     songAudio.load();
     songName.textContent = file.name;
+    updateSongProgress(0);
     setFeedback(`CANCIÓN CARGADA: ${file.name}`);
   }
 
