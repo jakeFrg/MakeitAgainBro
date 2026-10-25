@@ -72,11 +72,22 @@
      4. MÚSICA DEL MENÚ
      ========================================================================== */
 
-  // Reproduce la música del menú (el navegador puede bloquearla hasta que haya un clic).
+  // Reproduce la música del menú sin reiniciarla al cambiar entre pantallas del menú.
   function playMenuMusic() {
-    menuMusic.play().catch(error => {
-      console.log('No se pudo reproducir la música:', error);
+    if (!menuMusic.paused) return;
+
+    menuMusic.play().then(() => {
+      document.removeEventListener('pointerdown', unlockMenuMusic);
+      document.removeEventListener('keydown', unlockMenuMusic);
+    }).catch(() => {
+      // Si el navegador bloquea el autoplay, el primer gesto del usuario la habilita.
+      document.addEventListener('pointerdown', unlockMenuMusic);
+      document.addEventListener('keydown', unlockMenuMusic);
     });
+  }
+
+  function unlockMenuMusic() {
+    playMenuMusic();
   }
 
   // Detiene la música del menú y la regresa al inicio.
@@ -235,11 +246,6 @@
      ========================================================================== */
 
   function bindEvents() {
-    // La música del menú empieza con el primer clic (los navegadores no permiten audio sin interacción).
-    document.addEventListener('click', function startMenuMusicOnFirstClick() {
-      if (!startScreen.hidden && menuMusic.paused) playMenuMusic();
-    }, {once:true});
-
     // Botones del menú principal.
     $('#startButton').addEventListener('click', startStoryIntro);
     $('#practiceButton').addEventListener('click', startPractice);
@@ -271,6 +277,13 @@
   function init() {
     menuMusic.volume = MENU_MUSIC_VOLUME;
     bindEvents();
+    // Empieza durante la intro; si falla por las políticas del navegador, espera interacción.
+    playMenuMusic();
+
+    // El fondo se quita solo al acabar el fade-out, dejando visible el menú existente.
+    gameIntroLogo.addEventListener('animationend', () => {
+      gameIntro.hidden = true;
+    }, {once:true});
   }
 
   init();
