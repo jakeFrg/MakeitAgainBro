@@ -22,6 +22,17 @@
 
   const MENU_MUSIC_VOLUME_KEY = 'ritmo-menu-music-volume';
 
+  // Canciones del menú (los archivos de la carpeta Musica). El título es el que muestra la barra.
+  const MENU_TRACKS = [
+    {title:'Pro-digio',          src:'Musica/Pro-digio.mp3'},
+    {title:'Hazlo Otra Vez',     src:'Musica/HazloOtraVez.mp3'},
+    {title:'Me Gustan Loquitas', src:'Musica/MeGustanLoquitas.mp3'},
+    {title:'No Me Digas Que No', src:'Musica/NoMeDigasQueNo.mp3'}
+  ];
+  const MENU_MUSIC_ARTIST     = 'ElMiMAO$';
+  const NOW_PLAYING_VISIBLE_MS    = 4000; // la barra se queda visible este tiempo
+  const NOW_PLAYING_ANIMATION_MS  = 420;  // duración de la entrada y la salida
+
   // Secciones del menú de opciones: id de su página y título que se muestra.
   const OPTION_PAGES = {
     audio:      {id:'optionAudio',      label:'AUDIO'},
@@ -58,10 +69,15 @@
   const optionsTitle     = $('#optionsTitle');
   const optionPages      = Array.from(document.querySelectorAll('.option-page'));
 
-  // Música del menú.
+  // Música del menú y barra de la canción que suena.
   const menuMusic = $('#musicaMenu');
   const menuMusicVolume = $('#menuMusicVolume');
   const menuMusicVolumeValue = $('#menuMusicVolumeValue');
+  const menuNowPlaying = $('#menuNowPlaying');
+  const menuSongTitle = $('#menuSongTitle');
+  const menuSongArtist = $('#menuSongArtist');
+  const menuSongProgress = $('#menuSongProgress');
+  const menuSongProgressFill = $('#menuSongProgressFill');
 
   /* ==========================================================================
      3. ESTADO
@@ -70,17 +86,111 @@
   let storyTimer = 0;  // temporizador que avanza a la siguiente escena
   let sceneIndex = 0;  // escena que toca mostrar
 
+  let menuTrack = null;          // canción del menú que suena ahora
+  let introFinished = false;     // la barra solo puede aparecer al acabar la intro
+  let nowPlayingTimer = 0;       // oculta la barra tras unos segundos
+  let nowPlayingAnimation = null; // animación de entrada o salida en curso
+
   /* ==========================================================================
      4. MÚSICA DEL MENÚ
      ========================================================================== */
 
-  // Reproduce la música del menú sin reiniciarla al cambiar entre pantallas del menú.
-  function playMenuMusic() {
-    if (!menuMusic.paused) return;
+  // Elige una canción al azar; evita repetir la que acaba de sonar.
+  function pickRandomMenuTrack() {
+    let options = MENU_TRACKS;
+    if (menuTrack && MENU_TRACKS.length > 1) {
+      options = MENU_TRACKS.filter(track => track.src !== menuTrack.src);
+    }
+    return options[Math.floor(Math.random() * options.length)];
+  }
 
+  // Avance de la barra según el minuto actual de la canción.
+  function updateNowPlayingProgress() {
+    const duration = Number.isFinite(menuMusic.duration) ? menuMusic.duration : 0;
+    const percent = duration > 0 ? Math.max(0, Math.min(100, menuMusic.currentTime / duration * 100)) : 0;
+    menuSongProgressFill.style.width = `${percent}%`;
+    menuSongProgress.setAttribute('aria-valuenow', String(Math.round(percent)));
+  }
+
+  // Cambia el texto de la barra para la canción indicada.
+  function updateNowPlayingInfo(track) {
+    menuSongTitle.textContent = track.title;
+    menuSongArtist.textContent = MENU_MUSIC_ARTIST;
+  }
+
+  // Muestra la barra deslizándola desde la derecha; se oculta sola a los 4 segundos.
+  function showNowPlaying(track) {
+    if (!introFinished || startScreen.hidden || mainMenu.hidden) return;
+
+    updateNowPlayingInfo(track);
+    updateNowPlayingProgress();
+    clearTimeout(nowPlayingTimer);
+    if (nowPlayingAnimation) {
+      nowPlayingAnimation.cancel();
+      nowPlayingAnimation = null;
+    }
+
+    menuNowPlaying.hidden = false;
+    menuNowPlaying.setAttribute('aria-hidden', 'false');
+
+    const animation = menuNowPlaying.animate([
+      {transform:'translateX(calc(100% + 32px))', opacity:0},
+      {transform:'translateX(0)', opacity:1}
+    ], {duration:NOW_PLAYING_ANIMATION_MS, easing:'cubic-bezier(.2,.8,.25,1)', fill:'both'});
+
+    nowPlayingAnimation = animation;
+    animation.onfinish = () => {
+      if (nowPlayingAnimation !== animation) return;
+      nowPlayingTimer = setTimeout(hideNowPlaying, NOW_PLAYING_VISIBLE_MS);
+    };
+  }
+
+  // Oculta la barra deslizándola a la derecha (o al instante al salir del menú o parar la música).
+  function hideNowPlaying(instant = false) {
+    clearTimeout(nowPlayingTimer);
+    if (nowPlayingAnimation) {
+      nowPlayingAnimation.cancel();
+      nowPlayingAnimation = null;
+    }
+    if (menuNowPlaying.hidden) return;
+
+    if (instant) {
+      menuNowPlaying.hidden = true;
+      menuNowPlaying.setAttribute('aria-hidden', 'true');
+      return;
+    }
+
+    const animation = menuNowPlaying.animate([
+      {transform:'translateX(0)', opacity:1},
+      {transform:'translateX(calc(100% + 32px))', opacity:0}
+    ], {duration:NOW_PLAYING_ANIMATION_MS, easing:'ease-in', fill:'both'});
+
+    nowPlayingAnimation = animation;
+    animation.onfinish = () => {
+      if (nowPlayingAnimation !== animation) return;
+      menuNowPlaying.hidden = true;
+      menuNowPlaying.setAttribute('aria-hidden', 'true');
+      nowPlayingAnimation = null;
+    };
+  }
+
+  // Reproduce una canción del menú. Con newTrack=true cambia a otra aleatoria
+  // (al entrar al menú y cada vez que termina la anterior).
+  function playMenuMusic(newTrack = false) {
+    if (startScreen.hidden || !storyIntro.hidden) return;
+
+    if (newTrack || !menuTrack) {
+      menuTrack = pickRandomMenuTrack();
+      menuMusic.src = menuTrack.src;
+      menuSongProgressFill.style.width = '0%';
+      menuSongProgress.setAttribute('aria-valuenow', '0');
+    }
+
+    updateNowPlayingInfo(menuTrack);
     menuMusic.play().then(() => {
       document.removeEventListener('pointerdown', unlockMenuMusic);
       document.removeEventListener('keydown', unlockMenuMusic);
+      showNowPlaying(menuTrack);
     }).catch(() => {
       // Si el navegador bloquea el autoplay, el primer gesto del usuario la habilita.
       document.addEventListener('pointerdown', unlockMenuMusic);
@@ -89,13 +199,22 @@
   }
 
   function unlockMenuMusic() {
+    // Si ya se salió del menú, no arrancar música encima del juego.
+    if (startScreen.hidden || !storyIntro.hidden) {
+      document.removeEventListener('pointerdown', unlockMenuMusic);
+      document.removeEventListener('keydown', unlockMenuMusic);
+      return;
+    }
     playMenuMusic();
   }
 
-  // Detiene la música del menú y la regresa al inicio.
+  // Detiene la música del menú, la regresa al inicio y esconde su barra.
   function stopMenuMusic() {
     menuMusic.pause();
-    menuMusic.currentTime = 0;
+    try { menuMusic.currentTime = 0; } catch (error) {}
+    document.removeEventListener('pointerdown', unlockMenuMusic);
+    document.removeEventListener('keydown', unlockMenuMusic);
+    hideNowPlaying(true);
   }
 
   /* ==========================================================================
@@ -105,14 +224,16 @@
   // Muestra solo el panel indicado y oculta los demás.
   function showOnly(panel) {
     for (const item of panels) item.hidden = item !== panel;
+    // La barra musical solo se ve en el menú principal.
+    if (panel !== mainMenu) hideNowPlaying(true);
   }
 
-  // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone la música.
+  // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone otra canción.
   function showMainMenu() {
     clearTimeout(storyTimer);
     startScreen.hidden = false;
     showOnly(mainMenu);
-    playMenuMusic();
+    playMenuMusic(true);
   }
 
   /* ==========================================================================
@@ -273,6 +394,13 @@
     backFromSettings.addEventListener('click', showMainMenu);
     $('#backFromLeaderboard').addEventListener('click', showMainMenu);
 
+    // Música del menú: al terminar una canción empieza otra al azar y la barra avanza sola.
+    menuMusic.addEventListener('ended', () => {
+      if (!startScreen.hidden && storyIntro.hidden) playMenuMusic(true);
+    });
+    menuMusic.addEventListener('timeupdate', updateNowPlayingProgress);
+    menuMusic.addEventListener('loadedmetadata', updateNowPlayingProgress);
+
     document.addEventListener('keydown', handleEscape);
   }
 
@@ -295,11 +423,14 @@
     });
     bindEvents();
     // Empieza durante la intro; si falla por las políticas del navegador, espera interacción.
-    playMenuMusic();
+    playMenuMusic(true);
 
     // El fondo se quita solo al acabar el fade-out, dejando visible el menú existente.
     gameIntroLogo.addEventListener('animationend', () => {
       gameIntro.hidden = true;
+      introFinished = true;
+      // La barra aparece recién cuando terminó la intro, nunca durante ella.
+      if (menuTrack && !menuMusic.paused) showNowPlaying(menuTrack);
     }, {once:true});
   }
 

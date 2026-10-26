@@ -13,8 +13,8 @@
 <body>
 
   <!-- ===== AUDIO (no se ve; lo controlan game.js y menu.js) ===== -->
-  <!-- Música del menú, en bucle. -->
-  <audio id="musicaMenu" src="Musica/Pro-digio.mp3" loop preload="auto"></audio>
+  <!-- Música del menú: menu.js cambia la canción al azar cada vez que termina. -->
+  <audio id="musicaMenu" src="Musica/Pro-digio.mp3" preload="auto"></audio>
   <!-- Música del nivel 1. -->
   <audio id="musicaNivel" src="Musica/HazloOtraVez.mp3" preload="auto"></audio>
   <!-- Canción de la partida: su reloj guía las notas. Se puede cambiar desde Opciones. -->
@@ -36,6 +36,17 @@
     <!-- ===== PANTALLA DE INICIO: menú, historia, créditos, opciones y leaderboard.
                menu.js muestra un panel a la vez con el atributo "hidden". ===== -->
     <section class="start-screen" id="startScreen" aria-label="Menú de inicio">
+
+      <!-- Barra de la canción del menú: muestra la pista actual solo en el menú principal. -->
+      <aside class="menu-now-playing" id="menuNowPlaying" aria-label="Canción del menú" aria-live="polite" aria-hidden="true" hidden>
+        <div class="menu-now-playing-meta">
+          <strong id="menuSongTitle"></strong>
+          <span id="menuSongArtist">ElMiMAO$</span>
+        </div>
+        <div class="song-progress-bar" id="menuSongProgress" role="progressbar" aria-label="Avance de la canción del menú" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="song-progress-fill" id="menuSongProgressFill"></div>
+        </div>
+      </aside>
 
       <!-- Menú principal. -->
       <div class="start-card" id="mainMenu">

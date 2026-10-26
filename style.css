@@ -158,6 +158,46 @@ button, select { font: inherit; }
 }
 .start-screen[hidden] { display: none; }
 
+/* Barra de la canción del menú: va en la esquina superior derecha y solo aparece
+   cuando termina la intro.*/
+.menu-now-playing {
+  position: absolute;
+  z-index: 3;
+  top: clamp(16px, 3vw, 28px);
+  right: clamp(16px, 3vw, 28px);
+  display: grid;
+  gap: 7px;
+  width: min(300px, calc(100vw - 32px));
+  padding: 10px 12px;
+  border-right: 3px solid var(--pink);
+  border-radius: 8px 0 0 8px;
+  background: linear-gradient(270deg, #151226f2, #100e1bd9);
+  box-shadow: 0 0 16px #0007, 0 0 10px #ff4db82e;
+  pointer-events: none;
+}
+.menu-now-playing[hidden] { display: none; }
+.menu-now-playing-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+.menu-now-playing-meta strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.menu-now-playing-meta span {
+  flex: 0 0 auto;
+  color: var(--cyan);
+  font: 700 10px "Courier New", monospace;
+  letter-spacing: .5px;
+}
+.menu-now-playing .song-progress-bar { height: 7px; }
+
 /* Tarjeta base del menú principal y de los créditos. */
 .start-card {
   position: relative;
@@ -925,6 +965,8 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .brand { font-size: clamp(13px, 3.5vw, 16px); }
   .page-title { font-size: clamp(11px, 3vw, 13px); letter-spacing: .8px; }
   .start-screen { padding: clamp(12px, 4vw, 24px); }
+  .menu-now-playing { top: 14px; right: 12px; width: min(250px, calc(100vw - 24px)); padding: 8px 10px; }
+  .menu-now-playing-meta strong { font-size: 11px; }
   .start-card { width: 100%; padding: clamp(14px, 4vw, 32px); }
   .start-card h2 { font-size: clamp(26px, 8vw, 52px); }
   .start-menu-buttons button { font-size: clamp(25px, 7vw, 42px); }
