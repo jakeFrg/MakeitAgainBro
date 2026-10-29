@@ -3,7 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05040b">
+  <meta name="color-scheme" content="dark">
   <title>MAKE IT AGAIN BRO!</title>
+
+  <!-- Favicon pixelado en línea (sin peticiones extra). -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%2305040b'/%3E%3Crect x='1' y='1' width='14' height='14' fill='none' stroke='%23ff4db8' stroke-width='2'/%3E%3Crect x='9' y='3' width='2' height='7' fill='%2350e7f2'/%3E%3Crect x='6' y='9' width='4' height='3' fill='%2350e7f2'/%3E%3Crect x='10' y='3' width='3' height='2' fill='%23ffd65a'/%3E%3C/svg%3E">
+
+  <!-- Tipografías pixeladas locales (se usan en style.css). -->
+  <link rel="preload" href="ART/assets/fonts/PressStart2P-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="ART/assets/fonts/VT323-Regular.ttf" as="font" type="font/ttf" crossorigin>
 
   <!-- Estilos y scripts (defer: se ejecutan cuando la página ya cargó). game.js = juego, menu.js = menús. -->
   <link rel="stylesheet" href="style.css">
@@ -50,6 +59,7 @@
 
       <!-- Menú principal. -->
       <div class="start-card" id="mainMenu">
+        <p class="start-eyebrow">ROCKLEEK PRESENTS · 1986</p>
         <h2>MAKE IT AGAIN BRO!</h2>
         <nav class="start-menu-buttons" aria-label="Menú principal">
           <button id="startButton" type="button">MODO HISTORIA</button>

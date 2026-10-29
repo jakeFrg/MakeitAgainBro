@@ -289,11 +289,11 @@
     judgementDisplay.style.color = color;
     if (judgementAnimation) judgementAnimation.cancel();
     judgementAnimation = judgementDisplay.animate([
-      {opacity:0, transform:'scale(.95) translateY(2px)', filter:'drop-shadow(0 0 0 currentColor)', offset:0},
-      {opacity:1, transform:'scale(1.07) translateY(0)', filter:'drop-shadow(0 0 10px currentColor)', offset:.2},
-      {opacity:1, transform:'scale(1) translateY(0)', filter:'drop-shadow(0 0 6px currentColor)', offset:.42},
-      {opacity:0, transform:'scale(1) translateY(-1px)', filter:'drop-shadow(0 0 0 currentColor)', offset:1}
-    ], {duration:760, easing:'ease-out', fill:'forwards'});
+      {opacity:0, transform:'scale(.95) translateY(2px)', offset:0},
+      {opacity:1, transform:'scale(1.07) translateY(0)', offset:.2},
+      {opacity:1, transform:'scale(1) translateY(0)', offset:.42},
+      {opacity:0, transform:'scale(1) translateY(-1px)', offset:1}
+    ], {duration:760, easing:'steps(6, end)', fill:'forwards'});
   }
 
   // Nivel de combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.

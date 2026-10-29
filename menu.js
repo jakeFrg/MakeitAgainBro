@@ -136,7 +136,7 @@
     const animation = menuNowPlaying.animate([
       {transform:'translateX(calc(100% + 32px))', opacity:0},
       {transform:'translateX(0)', opacity:1}
-    ], {duration:NOW_PLAYING_ANIMATION_MS, easing:'cubic-bezier(.2,.8,.25,1)', fill:'both'});
+    ], {duration:NOW_PLAYING_ANIMATION_MS, easing:'steps(5, end)', fill:'both'});
 
     nowPlayingAnimation = animation;
     animation.onfinish = () => {
@@ -163,7 +163,7 @@
     const animation = menuNowPlaying.animate([
       {transform:'translateX(0)', opacity:1},
       {transform:'translateX(calc(100% + 32px))', opacity:0}
-    ], {duration:NOW_PLAYING_ANIMATION_MS, easing:'ease-in', fill:'both'});
+    ], {duration:NOW_PLAYING_ANIMATION_MS, easing:'steps(5, end)', fill:'both'});
 
     nowPlayingAnimation = animation;
     animation.onfinish = () => {
@@ -261,7 +261,7 @@
     storyIntro.animate([
       {opacity:0, transform:'translateY(10px) scale(.98)'},
       {opacity:1, transform:'translateY(0) scale(1)'}
-    ], {duration:SCENE_ANIMATION_MS, easing:'ease-out'});
+    ], {duration:SCENE_ANIMATION_MS, easing:'steps(4, end)'});
 
     sceneIndex++;
     if (sceneIndex < STORY_SCENES.length) {
