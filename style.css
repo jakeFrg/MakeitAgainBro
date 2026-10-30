@@ -574,6 +574,27 @@ button, select { font: inherit; }
     linear-gradient(74deg, transparent 21%, #fd478a27 34%, transparent 47%),
     linear-gradient(106deg, transparent 36%, #624bff24 49%, transparent 62%),
     radial-gradient(ellipse at 50% 6%, #ff8d552b, transparent 46%);
+  transition: background 900ms ease;
+}
+
+/* Cambia las luces y el color del fondo según la canción de la campaña. */
+.stage[data-scenario="no-me-digas"]::before {
+  background:
+    linear-gradient(72deg, transparent 18%, #22d9ff32 34%, transparent 49%),
+    linear-gradient(108deg, transparent 36%, #315cff30 51%, transparent 67%),
+    radial-gradient(ellipse at 50% 5%, #148ecb44, transparent 48%);
+}
+.stage[data-scenario="me-gustan"]::before {
+  background:
+    linear-gradient(72deg, transparent 17%, #ff4db83b 35%, transparent 50%),
+    linear-gradient(108deg, transparent 35%, #9b43ff35 51%, transparent 68%),
+    radial-gradient(ellipse at 50% 6%, #ec438d4a, transparent 49%);
+}
+.stage[data-scenario="hazlo-otra-vez"]::before {
+  background:
+    linear-gradient(72deg, transparent 16%, #ff704036 34%, transparent 49%),
+    linear-gradient(108deg, transparent 36%, #ffd65a32 52%, transparent 68%),
+    radial-gradient(ellipse at 50% 5%, #ffad3e50, transparent 49%);
 }
 
 /* Pista trapezoidal: angosta arriba y ancha abajo. */
@@ -587,7 +608,11 @@ button, select { font: inherit; }
   clip-path: polygon(30% 40%, 70% 40%, 98% 100%, 2% 100%);
   background: linear-gradient(180deg, #211c2db8, #13121dcc 50%, #0d0c14e8);
   filter: drop-shadow(0 0 14px #50e7f233);
+  transition: background 900ms ease, filter 900ms ease;
 }
+.stage[data-scenario="no-me-digas"] .highway { background: linear-gradient(180deg, #102b48df, #0d1a31e8 52%, #080d1af2); }
+.stage[data-scenario="me-gustan"] .highway { background: linear-gradient(180deg, #351342df, #1b1230e8 52%, #0c0a18f2); }
+.stage[data-scenario="hazlo-otra-vez"] .highway { background: linear-gradient(180deg, #422018df, #251525e8 52%, #100d18f2); }
 .highway::before {
   content: "";
   position: absolute;
@@ -603,6 +628,9 @@ button, select { font: inherit; }
   pointer-events: none;
   background: linear-gradient(180deg, #b57cff14, transparent 60%);
 }
+.stage[data-scenario="no-me-digas"] .lane-glow { background: linear-gradient(180deg, #4ddfff26, transparent 60%); }
+.stage[data-scenario="me-gustan"] .lane-glow { background: linear-gradient(180deg, #ff4db82a, transparent 62%); }
+.stage[data-scenario="hazlo-otra-vez"] .lane-glow { background: linear-gradient(180deg, #ffd65a26, transparent 62%); }
 
 /* Línea de golpe: aquí deben pulsarse las notas. */
 .hit-line {
@@ -664,6 +692,8 @@ button, select { font: inherit; }
 .perspective-lines { position: absolute; z-index: 7; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .perspective-lines path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .perspective-lines .track-border { stroke: #50e7f2; stroke-width: 4; opacity: .92; filter: drop-shadow(0 0 5px #50e7f2aa); }
+.stage[data-scenario="me-gustan"] .perspective-lines .track-border { stroke: #ff4db8; filter: drop-shadow(0 0 6px #ff4db8aa); }
+.stage[data-scenario="hazlo-otra-vez"] .perspective-lines .track-border { stroke: #ffd65a; filter: drop-shadow(0 0 6px #ffd65aaa); }
 .perspective-lines .lane-dividers { stroke: #dcd5ed; stroke-width: 2.4; opacity: .76; filter: drop-shadow(0 0 3px #dcd5ed66); }
 
 /* Nota normal: barra con el color de su carril. */
@@ -744,8 +774,28 @@ button, select { font: inherit; }
   color: white;
   box-shadow: 0 0 24px #50e7f244;
   line-height: 1.8;
+  pointer-events: auto;
 }
 .stage-message.results.defeat { border-color: #ff687e; box-shadow: 0 0 24px #ff687e55; }
+.replay-level-button {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  padding: 9px 15px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  background: #29202a;
+  font-weight: 800;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.replay-level-button:hover,
+.replay-level-button:focus-visible {
+  color: #17131a;
+  background: var(--gold);
+  outline: 2px solid #fff2b2;
+  outline-offset: 2px;
+}
 
 /* Aviso para activar el audio cuando el navegador lo bloquea (tiene un botón clicable). */
 .stage-message.audio-prompt {

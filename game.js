@@ -21,6 +21,14 @@
     ]
   };
 
+  // Campaña incluida: los JSON se cargan al abrir y se ordenan por cantidad real de notas.
+  // HazloOtraVez se mantiene al final aunque otro mapa tuviera más notas.
+  const STORY_SONG_CONFIG = [
+    {id:'no-me-digas', title:'No Me Digas Que No', audio:'Musica/NoMeDigasQueNo.mp3', chart:'charts/NoMeDigasQueNo-chart.json', scenario:'no-me-digas'},
+    {id:'me-gustan', title:'Me Gustan Loquitas', audio:'Musica/MeGustanLoquitas.mp3', chart:'charts/MeGustanLoquitas-chart.json', scenario:'me-gustan'},
+    {id:'hazlo-otra-vez', title:'Hazlo Otra Vez', audio:'Musica/HazloOtraVez.mp3', chart:'charts/HazloOtraVez-chart.json', scenario:'hazlo-otra-vez'}
+  ];
+
   // Teclas por carril (Espacio queda reservado para el impulso), nombres y colores.
   const DEFAULT_LANE_KEYS = ['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'];
   const LANE_NAMES  = ['Carril 1', 'Carril 2', 'Carril 3', 'Carril 4'];
@@ -124,6 +132,12 @@
   let chart = DEFAULT_CHART;          // mapa que se está jugando
   let selectedChart = DEFAULT_CHART;  // mapa elegido por el jugador (se restaura al salir de práctica)
   let chartLoadVersion = 0;           // impide que una carga tardía reemplace el mapa más reciente
+  let storyPlaylist = [];
+  let storyPlaylistReady = Promise.resolve([]);
+  let storyCampaignActive = false;
+  let storyStageIndex = -1;
+  let customSongSelected = false;
+  let customChartSelected = false;
   let notes = [];
   let notesByLane = [[], [], [], []]; // búsqueda rápida de notas pendientes por carril
 
@@ -720,6 +734,9 @@
 
   // Detiene la partida y deja todo en su estado inicial.
   function reset() {
+    storyCampaignActive = false;
+    storyStageIndex = -1;
+    stage.removeAttribute('data-scenario');
     running = false;
     document.body.classList.remove('level-finished');
     stopLevelMusic();
@@ -767,8 +784,16 @@
     playerProfile.bestCombo = Math.max(playerProfile.bestCombo, bestCombo);
     if (outcome !== 'defeat') playerProfile.levelsCompleted++;
 
-    const rating = accuracy * 0.7 + playerPerformance * 0.3;
-    const popularityChange = outcome === 'defeat' ? -4 : Math.round((rating - 50) / 10);
+    // Popularidad: precisión (40%), puntuación normalizada (30%), mejor combo (20%) y desempeño (10%).
+    // La referencia de 600 puntos por nota representa el valor de un acierto con multiplicador x4;
+    // se normaliza por cantidad de notas para que canciones de distinta duración sean comparables.
+    const chartNoteCount = Math.max(1, Number(chart?.notes?.length) || 0);
+    const scoreRating = Math.min(100, Math.max(0, score) / (chartNoteCount * 600) * 100);
+    const comboRating = Math.min(100, bestCombo / chartNoteCount * 100);
+    const rating = accuracy * 0.4 + scoreRating * 0.3 + comboRating * 0.2 + playerPerformance * 0.1;
+    const ratingChange = Math.round((rating - 50) / 10);
+    // Una derrota siempre resta popularidad; un buen rendimiento reduce el tamaño de la pérdida.
+    const popularityChange = outcome === 'defeat' ? Math.min(-1, ratingChange) : ratingChange;
     playerProfile.popularity = Math.max(0, Math.min(100, playerProfile.popularity + popularityChange));
 
     updateProfileUI();
@@ -781,8 +806,32 @@
     message.classList.toggle('defeat', outcome === 'defeat');
     const title = outcome === 'defeat' ? 'DERROTA' : 'NIVEL COMPLETADO';
     const reason = outcome === 'defeat' ? '<small>DESEMPEÑO AGOTADO</small><br>' : '';
-    message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small><br><small>REINICIA PARA JUGAR OTRA VEZ</small>`;
+    const nextStageIndex = storyCampaignActive && storyStageIndex + 1 < storyPlaylist.length
+      ? storyStageIndex + 1
+      : -1;
+    const nextStage = nextStageIndex >= 0 ? storyPlaylist[nextStageIndex] : null;
+    const resultAction = storyCampaignActive
+      ? nextStage
+        ? `<br><small>PRÓXIMO ESCENARIO: ${nextStage.title}</small><br><button id="nextStorySongButton" class="replay-level-button" type="button">SIGUIENTE CANCIÓN ▶</button>`
+        : `<br><small>${outcome === 'defeat' ? 'CAMPAÑA FINALIZADA' : 'CAMPAÑA COMPLETADA'}</small>`
+      : `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`;
+    message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
     message.hidden = false;
+    if (!storyCampaignActive) {
+      message.querySelector('#replayLevelButton').addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        // Reutiliza el mapa y el audio activos; start reinicia variables, notas y reloj.
+        start();
+      }, {once:true});
+    }
+    if (nextStage) {
+      message.querySelector('#nextStorySongButton').addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        startStoryCampaignStage(nextStageIndex);
+      }, {once:true});
+    }
     setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
   }
 
@@ -1002,7 +1051,7 @@
       if (!running) break; // una derrota pudo terminar la partida a mitad del recorrido
     }
 
-    if (!preRoll && notes.every(note => note.missed || (note.hit && !note.holding))) finishLevel();
+    if (!preRoll && (!storyCampaignActive || !songStarted) && notes.every(note => note.missed || (note.hit && !note.holding))) finishLevel();
   }
 
   /* ==========================================================================
@@ -1088,6 +1137,7 @@
       if (version !== chartLoadVersion) return;
       chart = parsedChart;
       selectedChart = chart;
+      customChartSelected = true;
       reset(); // ya reconstruye las notas
       setFeedback(`MAPA CARGADO: ${chart.notes.length} NOTAS`);
     } catch (error) {
@@ -1116,9 +1166,43 @@
     }
   }
 
+  // Carga los mapas de la historia y los ordena por cantidad de notas; HazloOtraVez siempre cierra la secuencia.
+  async function loadStoryPlaylist() {
+    const loadedSongs = await Promise.all(STORY_SONG_CONFIG.map(async song => {
+      const response = await fetch(new URL(`./${song.chart}`, window.location.href));
+      if (!response.ok) throw new Error(`No se pudo cargar ${song.chart} (${response.status})`);
+      return {...song, chart:parseChart(await response.json())};
+    }));
+
+    loadedSongs.sort((a, b) => {
+      if (a.id === 'hazlo-otra-vez') return 1;
+      if (b.id === 'hazlo-otra-vez') return -1;
+      return a.chart.notes.length - b.chart.notes.length;
+    });
+    console.info('Orden de la historia:', loadedSongs.map(song => `${song.title} (${song.chart.notes.length} notas)`));
+    return loadedSongs;
+  }
+
+  // Inicia la canción y el JSON de un escenario de la campaña.
+  function startStoryCampaignStage(index) {
+    const song = storyPlaylist[index];
+    if (!song) return;
+    storyCampaignActive = true;
+    storyStageIndex = index;
+    chart = applyDifficulty(song.chart);
+    stage.dataset.scenario = song.scenario;
+    songAudio.pause();
+    songAudio.src = new URL(`./${song.audio}`, window.location.href).href;
+    songAudio.load();
+    songName.textContent = `${song.title}.mp3`;
+    updateSongProgress(0);
+    start();
+  }
+
   // Permite sustituir el MP3 incluido por un archivo local del jugador.
   function loadSongFile(file) {
     reset();
+    customSongSelected = true;
     if (songObjectUrl) URL.revokeObjectURL(songObjectUrl);
     songObjectUrl = URL.createObjectURL(file);
     songAudio.src = songObjectUrl;
@@ -1201,12 +1285,31 @@
     // Eventos que dispara el menú: historia, práctica y salir.
     document.addEventListener('rhythm:start', () => {
       leadMs = getDifficultyConfig().leadMs;
-      chart = applyDifficulty(selectedChart);
       prepareFeedbackAudio();
-      start();
+      const startSingleSong = () => {
+        storyCampaignActive = false;
+        storyStageIndex = -1;
+        stage.removeAttribute('data-scenario');
+        chart = applyDifficulty(selectedChart);
+        start();
+      };
+
+      // Los archivos cargados desde Opciones conservan el modo de canción única.
+      if (customSongSelected || customChartSelected) {
+        startSingleSong();
+        return;
+      }
+
+      storyPlaylistReady.then(playlist => {
+        if (customSongSelected || customChartSelected) startSingleSong();
+        else if (playlist.length) startStoryCampaignStage(0);
+        else startSingleSong();
+      });
     });
     document.addEventListener('rhythm:practice', () => {
       leadMs = getDifficultyConfig().leadMs;
+      storyCampaignActive = false;
+      storyStageIndex = -1;
       chart = createPracticeChart();
       prepareFeedbackAudio();
       start();
@@ -1227,7 +1330,7 @@
     });
 
     // Al terminar la canción, termina el nivel.
-    songAudio.addEventListener('ended', () => { if (running) finishLevel(); });
+    songAudio.addEventListener('ended', () => { if (running) finishLevel('victory'); });
   }
 
   // Prepara progreso, opciones, mapa, marcadores y bucle al abrir la página.
@@ -1236,6 +1339,14 @@
     loadStoredProgress();
     loadSavedOptions();
     leadMs = getDifficultyConfig().leadMs;
+    storyPlaylistReady = loadStoryPlaylist().then(playlist => {
+      storyPlaylist = playlist;
+      return playlist;
+    }).catch(error => {
+      storyPlaylist = [];
+      console.warn('No se pudo cargar la campaña; Story Mode usará una sola canción:', error);
+      return [];
+    });
     setupVolume();
     bindEvents();
     refreshKeyButtons();
