@@ -10,6 +10,14 @@
    -------------------------------------------------------------------------- */
 
 /* Paleta de colores de toda la interfaz. */
+
+@font-face {
+  font-family: 'Neon4';
+  src: url('fonts/Neon4.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --bg: #090914;
   --panel: #171724;
@@ -210,7 +218,7 @@ button, select { font: inherit; }
 
 /* Título de los créditos (h1) y del menú principal (h2), con borde y sombra de color. */
 .start-card h1 {
-  margin: 0 0 2px;
+  margin: 0 0 px;
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
   font-size: clamp(100px, 20vw, 100px);
@@ -219,25 +227,35 @@ button, select { font: inherit; }
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
 }
 .start-card h2 {
-  margin: 0 0 22px;
+  margin: 0 0 50px;
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(28px, 7.2vw, 80px);
-  line-height: .96;
+  font-size: clamp(2px, 7.20vw, 1px);
+  line-height: 1.08;
+  letter-spacing: 0px;
+  -webkit-text-stroke: 0px #171018;
+  text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
+}
+
+.credits-screen {
+  margin: 0 0 2px;
+  color: #fff9e8;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(100px, 20vw, 100px);
   letter-spacing: 1px;
   -webkit-text-stroke: 1px #171018;
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
 }
 
 /* Botones grandes del menú principal; se desplazan al pasar el cursor. */
-.start-menu-buttons { display: grid; justify-items: start; gap: 2px; }
+.start-menu-buttons { display: grid; justify-items: start; gap: 5px; }
 .start-menu-buttons button {
   border: 0;
   padding: 1px 8px 7px 0;
   color: #fff;
   background: transparent;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(35px, 6.2vw, 59px);
+  font-size: clamp(35px, 6.2vw, 50px);
   line-height: .98;
   letter-spacing: .5px;
   text-align: left;
@@ -246,10 +264,17 @@ button, select { font: inherit; }
   cursor: pointer;
   transition: transform .12s ease, color .12s ease;
 }
-.start-menu-buttons button:hover, .start-menu-buttons button:focus-visible {
+
+.start-menu-buttons button:hover,
+.start-menu-buttons button:focus-visible {
   transform: translateX(9px) rotate(-1deg);
   outline: none;
+  color: #ff42bc;
+  text-shadow:
+    0 0 8px #ff2fae,
+    0 0 20px #ff2fae;
 }
+
 
 /* Botón "Reiniciar partida" fijo en la esquina inferior izquierda de la pantalla de inicio. */
 #resetButton.menu-reset-button {
@@ -1050,4 +1075,15 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .stage { overflow: visible; }
   .judgement-display { right: -84px; width: 84px; }
   .combo-count-marker { left: -84px; width: 84px; }
+}
+
+.start-card .game-title {
+  font-family: 'neon4', sans-serif !important;
+  font-size: 77px;
+  color: #fff;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #fdfdfd,
+    0 0 25px #ff00aa,
+    0 0 45px #e200d7;
 }
