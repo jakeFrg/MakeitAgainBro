@@ -91,6 +91,66 @@
   let nowPlayingTimer = 0;       // oculta la barra tras unos segundos
   let nowPlayingAnimation = null; // animación de entrada o salida en curso
 
+    /* ==========================================================================
+     ANIMACIÓN DE EL MIMAO EN EL MENÚ
+     ========================================================================== */
+
+  const menuMimao = $('#menuMimao');
+
+  const MIMAO_FRAMES = 8;
+  const MIMAO_FRAME_DURATION = 500;
+
+  let mimaoFrame = 0;
+  let mimaoLastFrame = 0;
+  let mimaoAnimationId = 0;
+
+function animateMimao(timestamp) {
+    if (mainMenu.hidden || startScreen.hidden) {
+        mimaoAnimationId = 0;
+        return;
+    }
+
+    if (timestamp - mimaoLastFrame >= MIMAO_FRAME_DURATION) {
+        mimaoFrame = (mimaoFrame + 1) % MIMAO_FRAMES;
+        mimaoLastFrame = timestamp;
+    }
+
+    const position = (mimaoFrame / (MIMAO_FRAMES - 1)) * 100;
+
+    menuMimao.style.backgroundPosition = `${position}% 0`;
+
+    mimaoAnimationId = requestAnimationFrame(animateMimao);
+}
+
+function startMimaoAnimation() {
+    if (!menuMimao) return;
+    if (mimaoAnimationId) return;
+
+    mimaoLastFrame = 0;
+    mimaoFrame = 0;
+    menuMimao.style.backgroundPosition = "0% 0";
+
+    mimaoAnimationId = requestAnimationFrame(animateMimao);
+}
+
+function stopMimaoAnimation() {
+    if (mimaoAnimationId) {
+        cancelAnimationFrame(mimaoAnimationId);
+        mimaoAnimationId = 0;
+    }
+
+    mimaoFrame = 0;
+
+    if (menuMimao) {
+        menuMimao.style.backgroundPosition = "0% 0";
+    }
+}
+
+// Iniciar si el juego abre directamente en el menú.
+if (mainMenu && !mainMenu.hidden) {
+    startMimaoAnimation();
+}
+
   /* ==========================================================================
      4. MÚSICA DEL MENÚ
      ========================================================================== */
@@ -223,11 +283,24 @@
 
   // Muestra solo el panel indicado y oculta los demás.
   function showOnly(panel) {
-    for (const item of panels) item.hidden = item !== panel;
-    // La barra musical solo se ve en el menú principal.
-    if (panel !== mainMenu) hideNowPlaying(true);
-  }
+    for (const item of panels) {
+      item.hidden = item !== panel;
+    }
 
+    // La barra musical solo se ve en el menú principal.
+    if (panel !== mainMenu) {
+        hideNowPlaying(true);
+    }
+
+    // El Mimao solo aparece en el menú principal.
+    if (panel === mainMenu) {
+        menuMimao.hidden = false;
+        startMimaoAnimation();
+    } else {
+        stopMimaoAnimation();
+        menuMimao.hidden = true;
+    }
+}
   // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone otra canción.
   function showMainMenu() {
     clearTimeout(storyTimer);

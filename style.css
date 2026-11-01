@@ -1087,3 +1087,35 @@ body.level-finished .combo-count-marker { visibility: hidden; }
     0 0 25px #ff00aa,
     0 0 45px #e200d7;
 }
+
+/* El Mimao animado en el menú principal */
+.menu-mimao {
+  position: absolute;
+  z-index: 2;
+  left: 60%;
+  bottom: 5%;
+
+  width: min(32vw, 400px);
+  aspect-ratio: 256 / 341;
+
+  background-image: url("ART/assets/MIMAOV1SP2.png");
+  background-repeat: no-repeat;
+  background-size: 800% 100%;
+  background-position: 0 0;
+
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+
+  transform: scaleX(-1);
+}
+
+@media (max-width: 650px) {
+  .menu-mimao {
+    left: auto;
+    right: 2%;
+    bottom: 3%;
+    width: min(42vw, 230px);
+    opacity: 0.65;
+  }
+}
