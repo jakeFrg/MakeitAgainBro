@@ -414,6 +414,44 @@
      7. SONIDO DE ACIERTO Y FALLO
      ========================================================================== */
 
+  // Efectos de fallo: se elige uno al azar sin repetir el que sonó en el fallo anterior.
+  const FAIL_SOUND_FILES = [
+    'SoundEffects/Fallo1.wav',
+    'SoundEffects/Fallo2.wav',
+    'SoundEffects/Fallo3.mp3',
+    'SoundEffects/Fallo4.wav',
+    'SoundEffects/Fallo5.mp3',
+    'SoundEffects/Fallo6.wav',
+    'SoundEffects/Fallo7.wav'
+  ];
+  const failSounds = FAIL_SOUND_FILES.map(src => {
+    const audio = new Audio(src);
+    audio.preload = 'auto';
+    return audio;
+  });
+  let lastFailSoundIndex = -1;
+
+  // Reproduce un efecto de fallo distinto al anterior con el volumen de efectos actual.
+  function playRandomFailSound() {
+    if (!failSounds.length || feedbackVolume <= 0) return;
+
+    const options = failSounds
+      .map((sound, index) => index)
+      .filter(index => index !== lastFailSoundIndex);
+    const index = options[Math.floor(Math.random() * options.length)];
+    const sound = failSounds[index];
+    lastFailSoundIndex = index;
+
+    try {
+      sound.currentTime = 0;
+    } catch (error) {}
+    try {
+      sound.volume = feedbackVolume;
+      const playback = sound.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    } catch (error) {}
+  }
+
   // Prepara un único oscilador reutilizable (no reproduce música).
   function prepareFeedbackAudio() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -646,6 +684,7 @@
     updatePerformance();
     updateScore(time);
     setFeedback(feedbackText, '#ff687e');
+    playRandomFailSound();
     if (playerPerformance <= 0) finishLevel('defeat');
   }
 
@@ -885,7 +924,6 @@
     note.element.remove();
     registerMiss(time, 'SOLTASTE LA TECLA ANTES DE TIEMPO');
     showJudgement('FALLO', '#ff687e');
-    playFeedbackTone(false);
   }
 
   /* ==========================================================================
@@ -953,7 +991,6 @@
     if (!candidate) {
       registerMiss(time);
       showJudgement('MALO', '#ff687e');
-      playFeedbackTone(false);
       return;
     }
 
