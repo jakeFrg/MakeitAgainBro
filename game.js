@@ -411,7 +411,7 @@
   }
 
   /* ==========================================================================
-     7. SONIDO DE ACIERTO Y FALLO
+     7. SONIDO DE ACIERTO, FALLO E IMPULSO
      ========================================================================== */
 
   // Efectos de fallo: se elige uno al azar sin repetir el que sonó en el fallo anterior.
@@ -423,7 +423,7 @@
     'SoundEffects/Fallo5.wav',
     'SoundEffects/Fallo6.wav'
   ];
-  const FAIL_SOUND_VOLUME_GAIN = 2; // sube el efecto sin llegar al volumen máximo
+  const FAIL_SOUND_VOLUME_GAIN = 2;
   const failSounds = FAIL_SOUND_FILES.map(src => {
     const audio = new Audio(src);
     audio.preload = 'auto';
@@ -448,6 +448,23 @@
     try {
       sound.volume = Math.min(1, feedbackVolume * FAIL_SOUND_VOLUME_GAIN);
       const playback = sound.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    } catch (error) {}
+  }
+
+  // Sonido al activar el impulso (Espacio).
+  const boostSound = new Audio('SoundEffects/Potenciadora.wav');
+  boostSound.preload = 'auto';
+  const BOOST_SOUND_VOLUME_GAIN = 4;
+
+  // Reproduce el sonido de activación del impulso con el volumen de efectos actual.
+  function playBoostSound() {
+    try {
+      boostSound.currentTime = 0;
+    } catch (error) {}
+    try {
+      boostSound.volume = Math.min(1, feedbackVolume * BOOST_SOUND_VOLUME_GAIN);
+      const playback = boostSound.play();
       if (playback && typeof playback.catch === 'function') playback.catch(() => {});
     } catch (error) {}
   }
@@ -641,6 +658,7 @@
     updateBoostUI();
     updateScore(time);
     setFeedback('¡IMPULSO ACTIVADO!', '#ffd65a');
+    playBoostSound();
   }
 
   // Resetea todo lo relacionado con el impulso.
