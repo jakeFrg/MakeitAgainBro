@@ -870,7 +870,7 @@
     const resultAction = storyCampaignActive
       ? nextStage
         ? `<br><small>PRÓXIMO ESCENARIO: ${nextStage.title}</small><br><button id="nextStorySongButton" class="replay-level-button" type="button">SIGUIENTE CANCIÓN ▶</button>`
-        : `<br><small>${outcome === 'defeat' ? 'CAMPAÑA FINALIZADA' : 'CAMPAÑA COMPLETADA'}</small>`
+        : `<br><small>${outcome === 'defeat' ? 'CAMPAÑA FINALIZADA' : 'CAMPAÑA COMPLETADA'}</small><br><button id="backToMainMenuButton" class="replay-level-button" type="button">VOLVER AL MENÚ</button>`
       : `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`;
     message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
     message.hidden = false;
@@ -887,6 +887,13 @@
         event.preventDefault();
         event.stopPropagation();
         startStoryCampaignStage(nextStageIndex);
+      }, {once:true});
+    }
+    if (storyCampaignActive && !nextStage) {
+      message.querySelector('#backToMainMenuButton').addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        $('#resetButton').click();
       }, {once:true});
     }
     setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
