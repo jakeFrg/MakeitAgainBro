@@ -419,11 +419,11 @@
     'SoundEffects/Fallo1.wav',
     'SoundEffects/Fallo2.wav',
     'SoundEffects/Fallo3.mp3',
-    'SoundEffects/Fallo4.wav',
-    'SoundEffects/Fallo5.mp3',
-    'SoundEffects/Fallo6.wav',
-    'SoundEffects/Fallo7.wav'
+    'SoundEffects/Fallo4.mp3',
+    'SoundEffects/Fallo5.wav',
+    'SoundEffects/Fallo6.wav'
   ];
+  const FAIL_SOUND_VOLUME_GAIN = 2; // sube el efecto sin llegar al volumen máximo
   const failSounds = FAIL_SOUND_FILES.map(src => {
     const audio = new Audio(src);
     audio.preload = 'auto';
@@ -446,7 +446,7 @@
       sound.currentTime = 0;
     } catch (error) {}
     try {
-      sound.volume = feedbackVolume;
+      sound.volume = Math.min(1, feedbackVolume * FAIL_SOUND_VOLUME_GAIN);
       const playback = sound.play();
       if (playback && typeof playback.catch === 'function') playback.catch(() => {});
     } catch (error) {}
