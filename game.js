@@ -419,9 +419,8 @@
     'SoundEffects/Fallo1.wav',
     'SoundEffects/Fallo2.wav',
     'SoundEffects/Fallo3.mp3',
-    'SoundEffects/Fallo4.mp3',
+    'SoundEffects/Fallo4.wav',
     'SoundEffects/Fallo5.wav',
-    'SoundEffects/Fallo6.wav'
   ];
   const FAIL_SOUND_VOLUME_GAIN = 2;
   const failSounds = FAIL_SOUND_FILES.map(src => {
