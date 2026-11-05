@@ -412,8 +412,62 @@
   }
 
   /* ==========================================================================
-     7. SONIDO DE ACIERTO Y FALLO
+     7. SONIDO DE ACIERTO, FALLO E IMPULSO
      ========================================================================== */
+
+  // Efectos de fallo: se elige uno al azar sin repetir el que sonó en el fallo anterior.
+  const FAIL_SOUND_FILES = [
+    'SoundEffects/Fallo1.wav',
+    'SoundEffects/Fallo2.wav',
+    'SoundEffects/Fallo3.mp3',
+    'SoundEffects/Fallo4.wav',
+    'SoundEffects/Fallo5.wav',
+  ];
+  const FAIL_SOUND_VOLUME_GAIN = 2;
+  const failSounds = FAIL_SOUND_FILES.map(src => {
+    const audio = new Audio(src);
+    audio.preload = 'auto';
+    return audio;
+  });
+  let lastFailSoundIndex = -1;
+
+  // Reproduce un efecto de fallo distinto al anterior con el volumen de efectos actual.
+  function playRandomFailSound() {
+    if (!failSounds.length || feedbackVolume <= 0) return;
+
+    const options = failSounds
+      .map((sound, index) => index)
+      .filter(index => index !== lastFailSoundIndex);
+    const index = options[Math.floor(Math.random() * options.length)];
+    const sound = failSounds[index];
+    lastFailSoundIndex = index;
+
+    try {
+      sound.currentTime = 0;
+    } catch (error) {}
+    try {
+      sound.volume = Math.min(1, feedbackVolume * FAIL_SOUND_VOLUME_GAIN);
+      const playback = sound.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    } catch (error) {}
+  }
+
+  // Sonido al activar el impulso (Espacio).
+  const boostSound = new Audio('SoundEffects/Potenciadora.wav');
+  boostSound.preload = 'auto';
+  const BOOST_SOUND_VOLUME_GAIN = 4;
+
+  // Reproduce el sonido de activación del impulso con el volumen de efectos actual.
+  function playBoostSound() {
+    try {
+      boostSound.currentTime = 0;
+    } catch (error) {}
+    try {
+      boostSound.volume = Math.min(1, feedbackVolume * BOOST_SOUND_VOLUME_GAIN);
+      const playback = boostSound.play();
+      if (playback && typeof playback.catch === 'function') playback.catch(() => {});
+    } catch (error) {}
+  }
 
   // Prepara un único oscilador reutilizable (no reproduce música).
   function prepareFeedbackAudio() {
@@ -604,6 +658,7 @@
     updateBoostUI();
     updateScore(time);
     setFeedback('¡IMPULSO ACTIVADO!', '#ffd65a');
+    playBoostSound();
   }
 
   // Resetea todo lo relacionado con el impulso.
@@ -647,6 +702,7 @@
     updatePerformance();
     updateScore(time);
     setFeedback(feedbackText, '#ff687e');
+    playRandomFailSound();
     if (playerPerformance <= 0) finishLevel('defeat');
   }
 
@@ -818,7 +874,7 @@
     const resultAction = storyCampaignActive
       ? nextStage
         ? `<br><small>PRÓXIMO ESCENARIO: ${nextStage.title}</small><br><button id="nextStorySongButton" class="replay-level-button" type="button">SIGUIENTE CANCIÓN ▶</button>`
-        : `<br><small>${outcome === 'defeat' ? 'CAMPAÑA FINALIZADA' : 'CAMPAÑA COMPLETADA'}</small>`
+        : `<br><small>${outcome === 'defeat' ? 'CAMPAÑA FINALIZADA' : 'CAMPAÑA COMPLETADA'}</small><br><button id="backToMainMenuButton" class="replay-level-button" type="button">VOLVER AL MENÚ</button>`
       : `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`;
     message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
     message.hidden = false;
@@ -835,6 +891,13 @@
         event.preventDefault();
         event.stopPropagation();
         startStoryCampaignStage(nextStageIndex);
+      }, {once:true});
+    }
+    if (storyCampaignActive && !nextStage) {
+      message.querySelector('#backToMainMenuButton').addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        $('#resetButton').click();
       }, {once:true});
     }
     setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
@@ -891,7 +954,6 @@
     note.element.remove();
     registerMiss(time, 'SOLTASTE LA TECLA ANTES DE TIEMPO');
     showJudgement('FALLO', '#ff687e');
-    playFeedbackTone(false);
   }
 
   /* ==========================================================================
@@ -959,7 +1021,6 @@
     if (!candidate) {
       registerMiss(time);
       showJudgement('MALO', '#ff687e');
-      playFeedbackTone(false);
       return;
     }
 
