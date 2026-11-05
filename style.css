@@ -51,6 +51,40 @@ body {
 /* Botones y selectores heredan la fuente de la página. */
 button, select { font: inherit; }
 
+/* --------------------------------------------------------------------------
+   Marco de referencia fijo.
+   El juego se maqueta siempre dentro de 1920x1080. menu.js calcula la escala
+   (min(ancho/1920, alto/1080)) y la aplica aquí; el resto del viewport queda
+   como espacio libre (bandas) cuando la relación de aspecto no es 16:9.
+   Las unidades cqw/cqh son relativas a este marco, no al monitor.
+   -------------------------------------------------------------------------- */
+.game-viewport {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #05040a;
+}
+
+.game-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  container-type: size;
+  transform: translate(-50%, -50%) scale(var(--game-scale, 1));
+  transform-origin: center center;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(#0909149c, #090914b8),
+    url("fondo-concierto.png");
+  background-size: cover;
+  background-position: center;
+}
+
 /* Intro inicial: una capa negra cubre la página hasta terminar el fade del logo. */
 .game-intro {
   position: fixed;
@@ -64,8 +98,8 @@ button, select { font: inherit; }
 .game-intro[hidden] { display: none; }
 .game-intro-logo {
   display: block;
-  width: min(72vw, 640px);
-  max-height: 72vh;
+  width: min(72cqw, 640px);
+  max-height: 72cqh;
   object-fit: contain;
   opacity: 0;
   animation: game-intro-fade 3s ease-in-out forwards;
@@ -120,7 +154,7 @@ button, select { font: inherit; }
   margin: 0;
   color: #f5edff;
   text-align: center;
-  font-size: clamp(16px, 2.6vw, 25px);
+  font-size: clamp(16px, 2.6cqw, 25px);
   letter-spacing: 2px;
 }
 
@@ -172,11 +206,11 @@ button, select { font: inherit; }
 .menu-now-playing {
   position: absolute;
   z-index: 3;
-  top: clamp(16px, 3vw, 28px);
-  right: clamp(16px, 3vw, 28px);
+  top: clamp(16px, 3cqw, 28px);
+  right: clamp(16px, 3cqw, 28px);
   display: grid;
   gap: 7px;
-  width: min(300px, calc(100vw - 32px));
+  width: min(300px, calc(100cqw - 32px));
   padding: 10px 12px;
   border-right: 3px solid var(--pink);
   border-radius: 8px 0 0 8px;
@@ -212,7 +246,7 @@ button, select { font: inherit; }
   position: relative;
   z-index: 1;
   width: min(620px, 100%);
-  padding: clamp(18px, 4vw, 42px);
+  padding: clamp(18px, 4cqw, 42px);
   text-align: left;
 }
 .start-eyebrow { margin: 0 0 7px; color: #50e7f2; font-size: 12px; font-weight: 1000; letter-spacing: 3px; }
@@ -222,7 +256,7 @@ button, select { font: inherit; }
   margin: 0 0 px;
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(100px, 20vw, 100px);
+  font-size: clamp(100px, 20cqw, 100px);
   letter-spacing: 1px;
   -webkit-text-stroke: 1px #171018;
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
@@ -231,7 +265,7 @@ button, select { font: inherit; }
   margin: 0 0 50px;
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(2px, 7.20vw, 1px);
+  font-size: clamp(2px, 7.20cqw, 1px);
   line-height: 1.08;
   letter-spacing: 0px;
   -webkit-text-stroke: 0px #171018;
@@ -242,7 +276,7 @@ button, select { font: inherit; }
   margin: 0 0 2px;
   color: #fff9e8;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(100px, 20vw, 100px);
+  font-size: clamp(100px, 20cqw, 100px);
   letter-spacing: 1px;
   -webkit-text-stroke: 1px #171018;
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
@@ -256,7 +290,7 @@ button, select { font: inherit; }
   color: #fff;
   background: transparent;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(35px, 6.2vw, 50px);
+  font-size: clamp(35px, 6.2cqw, 50px);
   line-height: .98;
   letter-spacing: .5px;
   text-align: left;
@@ -318,8 +352,8 @@ button, select { font: inherit; }
   align-items: center;
   justify-content: center;
   width: min(760px, 100%);
-  min-height: min(62vh, 490px);
-  padding: clamp(25px, 6vw, 66px);
+  min-height: min(62cqh, 490px);
+  padding: clamp(25px, 6cqw, 66px);
   overflow: hidden;
   isolation: isolate;
   border: 4px solid #50e7f2;
@@ -339,13 +373,13 @@ button, select { font: inherit; }
 .story-intro h2 {
   margin: 0;
   color: #fff5dc;
-  font: 900 clamp(30px, 6vw, 58px)/1.08 Impact, "Arial Black", sans-serif;
+  font: 900 clamp(30px, 6cqw, 58px)/1.08 Impact, "Arial Black", sans-serif;
   text-shadow: 4px 4px #ff4db8, 7px 7px #080a18;
 }
 .story-intro > p:not(.story-scene-label) {
   margin: 25px 0 28px;
   color: #d8d5f7;
-  font: bold clamp(13px, 2vw, 17px) "Courier New", monospace;
+  font: bold clamp(13px, 2cqw, 17px) "Courier New", monospace;
 }
 .story-skip {
   padding: 9px 13px;
@@ -366,9 +400,9 @@ button, select { font: inherit; }
   position: relative;
   z-index: 1;
   width: min(620px, 100%);
-  max-height: min(90vh, 820px);
+  max-height: min(90cqh, 820px);
   overflow: auto;
-  padding: clamp(18px, 4vw, 32px);
+  padding: clamp(18px, 4cqw, 32px);
   color: #f6edcf;
   background: #211831;
   border: 3px solid #211326;
@@ -381,7 +415,7 @@ button, select { font: inherit; }
 .settings-header {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 2vw, 16px);
+  gap: clamp(8px, 2cqw, 16px);
   margin-bottom: 18px;
   padding-bottom: 13px;
   border-bottom: 2px dashed #f0b944;
@@ -390,7 +424,7 @@ button, select { font: inherit; }
   min-width: 0;
   margin: 0;
   color: #51e0d0;
-  font-size: clamp(15px, 4vw, 27px);
+  font-size: clamp(15px, 4cqw, 27px);
   overflow-wrap: anywhere;
   letter-spacing: 1px;
   text-shadow: 2px 2px #160e21;
@@ -527,8 +561,7 @@ button, select { font: inherit; }
   z-index: 1;
   isolation: isolate;
   width: min(100%, 1100px);
-  height: calc(100vh - 84px);
-  height: calc(100svh - 84px);
+  height: calc(100cqh - 84px);
   min-height: 420px;
   margin: 12px auto 0;
 }
@@ -588,8 +621,7 @@ button, select { font: inherit; }
 .game-card {
   position: relative;
   z-index: 1;
-  width: min(100%, calc((100vh - 190px) * 1.25));
-  width: min(100%, calc((100svh - 190px) * 1.25));
+  width: min(100%, calc((100cqh - 190px) * 1.25));
   /* La pista termina justo donde empieza el panel inferior; así su base
      queda alineada con los bordes laterales del HUD y no pasa por detrás. */
   height: calc(100% - var(--bottom-hud-height, 154px));
@@ -613,13 +645,12 @@ button, select { font: inherit; }
 .stage[data-scenario="no-me-digas"] {
   background: transparent;
 }
-body[data-scenario="no-me-digas"] {
+body[data-scenario="no-me-digas"] .game-frame {
   background-color: #100c20;
   background-image: linear-gradient(#08081726, #08081738), url("ART/assets/escenario1.jpeg");
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: 100vw 100vh;
-  background-attachment: fixed;
+  background-size: 100% 100%;
 }
 .stage::before {
   content: "";
@@ -707,15 +738,17 @@ body[data-scenario="no-me-digas"] {
   position: absolute;
   z-index: 4;
   bottom: 156px;
-  left: 0;
-  right: 0;
+  /* A esta altura el trapecio ya se estrechó: los cuatro carriles ocupan
+     del 11.81% al 88.19% del ancho de la pista. */
+  left: 11.81%;
+  right: 11.81%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   justify-items: center;
 }
 .receptor {
-  width: clamp(29px, 6vw, 42px);
-  height: clamp(29px, 6vw, 42px);
+  width: clamp(29px, 6cqw, 42px);
+  height: clamp(29px, 6cqw, 42px);
   display: grid;
   place-items: center;
   border: 2px solid var(--note-color);
@@ -724,7 +757,7 @@ body[data-scenario="no-me-digas"] {
   background: #11101be8;
   box-shadow: 0 0 13px color-mix(in srgb, var(--note-color) 55%, transparent);
   transition: transform .08s, background .08s;
-  font-size: clamp(19px, 2.4vw, 27px);
+  font-size: clamp(19px, 2.4cqw, 27px);
   font-weight: 900;
   line-height: 1;
 }
@@ -738,7 +771,7 @@ body[data-scenario="no-me-digas"] {
   max-width: 100%;
   overflow: hidden;
   padding: 0 2px;
-  font-size: clamp(10px, 1.5vw, 16px);
+  font-size: clamp(10px, 1.5cqw, 16px);
   text-overflow: clip;
   white-space: nowrap;
 }
@@ -757,7 +790,7 @@ body[data-scenario="no-me-digas"] {
 /* Nota normal: barra con el color de su carril. */
 .note {
   position: absolute;
-  width: clamp(38px, 4.2vw, 58px);
+  width: clamp(38px, 4.2cqw, 58px);
   height: 16px;
   transform: translate(-50%, -50%);
   border: 2px solid var(--note-color);
@@ -779,7 +812,7 @@ body[data-scenario="no-me-digas"] {
 
 /* Nota dorada con estrella: carga la barra de impulso. */
 .note.boost-note {
-  width: clamp(34px, 6vw, 62px);
+  width: clamp(34px, 6cqw, 62px);
   height: 15px;
   border: 2px solid #fff1a5;
   background: #ffd65a;
@@ -944,15 +977,15 @@ body.practice-mode .impulse-hud { display: none; }
 .points-inline {
   position: fixed;
   z-index: 4;
-  left: clamp(20px, 3vw, 56px);
-  bottom: clamp(78px, 11vh, 110px);
-  width: min(320px, calc(100vw - 40px));
+  left: clamp(20px, 3cqw, 56px);
+  bottom: clamp(78px, 11cqh, 110px);
+  width: min(320px, calc(100cqw - 40px));
   margin: 0;
   text-align: center;
   pointer-events: none;
 }
 .points-inline .stat-label { font-size: 9px; }
-.points-inline > strong { justify-content: center; font-size: clamp(32px, 4.4vw, 52px); line-height: 1; letter-spacing: 1px; text-shadow: 0 0 14px #50e7f255; }
+.points-inline > strong { justify-content: center; font-size: clamp(32px, 4.4cqw, 52px); line-height: 1; letter-spacing: 1px; text-shadow: 0 0 14px #50e7f255; }
 
 /* Círculo central con el multiplicador actual. */
 .combo-orb {
@@ -980,11 +1013,11 @@ body.practice-mode .impulse-hud { display: none; }
 .song-progress {
   position: fixed;
   z-index: 4;
-  left: clamp(20px, 3vw, 56px);
-  bottom: clamp(145px, 24vh, 220px);
+  left: clamp(20px, 3cqw, 56px);
+  bottom: clamp(145px, 24cqh, 220px);
   display: grid;
   gap: 6px;
-  width: min(320px, calc(100vw - 40px));
+  width: min(320px, calc(100cqw - 40px));
   margin: 0;
   padding: 5px 9px 7px;
   border-left: 3px solid var(--cyan);
@@ -1007,7 +1040,7 @@ body.practice-mode .impulse-hud { display: none; }
   min-height: 24px;
   color: #ffd65a;
   text-align: center;
-  font-size: clamp(14px, 2vw, 22px);
+  font-size: clamp(14px, 2cqw, 22px);
   font-weight: 900;
   letter-spacing: 1.5px;
   text-shadow: none;
@@ -1072,23 +1105,23 @@ body.level-finished .combo-count-marker { visibility: hidden; }
    -------------------------------------------------------------------------- */
 
 /* Todo más compacto; los botones ocupan el ancho disponible. */
-@media (max-width: 650px) {
+@container (max-width: 650px) {
   .app { width: calc(100% - 20px); padding-top: 10px; }
   .topbar { display: flex; flex-wrap: wrap; gap: 8px; }
-  .brand { font-size: clamp(13px, 3.5vw, 16px); }
-  .page-title { font-size: clamp(11px, 3vw, 13px); letter-spacing: .8px; }
-  .start-screen { padding: clamp(12px, 4vw, 24px); }
-  .menu-now-playing { top: 14px; right: 12px; width: min(250px, calc(100vw - 24px)); padding: 8px 10px; }
+  .brand { font-size: clamp(13px, 3.5cqw, 16px); }
+  .page-title { font-size: clamp(11px, 3cqw, 13px); letter-spacing: .8px; }
+  .start-screen { padding: clamp(12px, 4cqw, 24px); }
+  .menu-now-playing { top: 14px; right: 12px; width: min(250px, calc(100cqw - 24px)); padding: 8px 10px; }
   .menu-now-playing-meta strong { font-size: 11px; }
-  .start-card { width: 100%; padding: clamp(14px, 4vw, 32px); }
-  .start-card h2 { font-size: clamp(26px, 8vw, 52px); }
-  .start-menu-buttons button { font-size: clamp(25px, 7vw, 42px); }
-  .settings-screen { max-height: 88vh; padding: clamp(14px, 4vw, 24px); }
+  .start-card { width: 100%; padding: clamp(14px, 4cqw, 32px); }
+  .start-card h2 { font-size: clamp(26px, 8cqw, 52px); }
+  .start-menu-buttons button { font-size: clamp(25px, 7cqw, 42px); }
+  .settings-screen { max-height: 88cqh; padding: clamp(14px, 4cqw, 24px); }
   .settings-header { gap: 8px; margin-bottom: 12px; }
-  .settings-header h2 { font-size: clamp(14px, 4.5vw, 22px); }
-  .options-menu button { padding: 11px 12px; font-size: clamp(13px, 3.5vw, 15px); }
+  .settings-header h2 { font-size: clamp(14px, 4.5cqw, 22px); }
+  .options-menu button { padding: 11px 12px; font-size: clamp(13px, 3.5cqw, 15px); }
   .game-main { margin-top: 16px; }
-  .game-main { height: calc(100vh - 100px); height: calc(100svh - 100px); min-height: 420px; }
+  .game-main { height: calc(100cqh - 100px); min-height: 420px; }
   .feedback { min-width: 95px; font-size: 9px; }
   .score-block strong, .combo-block strong { font-size: 20px; }
   .game-card { width: 100%; }
@@ -1101,7 +1134,7 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .impulse-hud { left: 18%; right: 18%; bottom: 10%; }
   .boost-meter { height: 12px; }
   .combo-orb { grid-column: 1; grid-row: 1; width: 68px; height: 68px; transform: none; }
-  .song-progress { position: fixed; left: 12px; bottom: 188px; z-index: 13; width: min(220px, calc(100vw - 24px)); margin: 0; }
+  .song-progress { position: fixed; left: 12px; bottom: 188px; z-index: 13; width: min(220px, calc(100cqw - 24px)); margin: 0; }
   .points-inline { position: fixed; left: 12px; bottom: 132px; z-index: 13; width: auto; margin: 0; text-align: left; }
   .performance-status { grid-column: 1; grid-row: 2; }
   .judgement-display { right: -60px; bottom: 130px; width: 58px; font-size: 10px; }
@@ -1110,32 +1143,27 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .receptors { bottom: 124px; }
   .impulse-hud { bottom: 170px; }
   .performance-heading { flex-wrap: wrap; }
-  .points-inline > strong { font-size: clamp(26px, 7vw, 36px); }
+  .points-inline > strong { font-size: clamp(26px, 7cqw, 36px); }
   .controls { grid-column: auto; }
   .controls button { min-width: 0; flex: 1; }
 }
 
-@media (min-width: 651px) and (max-width: 1200px) {
+@container (min-width: 651px) and (max-width: 1200px) {
   .stage { overflow: visible; }
   .judgement-display { right: -84px; width: 84px; }
   .combo-count-marker { left: -84px; width: 84px; }
 }
 
 /* Ajusta la pista a ventanas bajas en horizontal. */
-@media (min-width: 651px) and (max-height: 700px) {
+@container (min-width: 651px) and (max-height: 700px) {
   .app { padding-top: 4px; }
   .topbar { min-height: 42px; padding-bottom: 6px; }
-  .game-card { width: min(100%, calc((100vh - 130px) * 1.25)); width: min(100%, calc((100svh - 130px) * 1.25)); }
+  .game-card { width: min(100%, calc((100cqh - 130px) * 1.25)); }
   .stage { min-height: 320px; }
 }
 
-/* En vertical se centra la calle y se recortan solo los lados del fondo. */
-@media (orientation: portrait) {
-  body[data-scenario="no-me-digas"] {
-    background-size: auto 100vh;
-    background-size: auto 100svh;
-  }
-}
+/* El marco de referencia es siempre 16:9, así que el fondo no cambia de
+   encuadre con la orientación del monitor. */
 
 .start-card .game-title {
   font-family: 'neon4', sans-serif !important;
@@ -1155,7 +1183,7 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   left: 60%;
   bottom: 5%;
 
-  width: min(32vw, 400px);
+  width: min(32cqw, 400px);
   aspect-ratio: 256 / 341;
 
   background-image: url("ART/assets/MIMAOV1SP2.png");
@@ -1170,12 +1198,12 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   transform: scaleX(-1);
 }
 
-@media (max-width: 650px) {
+@container (max-width: 650px) {
   .menu-mimao {
     left: auto;
     right: 2%;
     bottom: 3%;
-    width: min(42vw, 230px);
+    width: min(42cqw, 230px);
     opacity: 0.65;
   }
 }

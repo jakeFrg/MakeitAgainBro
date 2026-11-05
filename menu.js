@@ -22,6 +22,11 @@
 
   const MENU_MUSIC_VOLUME_KEY = 'ritmo-menu-music-volume';
 
+  // Resolución de referencia fija del juego. El marco nunca cambia de tamaño;
+  // solo se escala de forma proporcional para caber en la ventana.
+  const VIEWPORT_WIDTH  = 1920;
+  const VIEWPORT_HEIGHT = 1080;
+
   // Canciones del menú (los archivos de la carpeta Musica). El título es el que muestra la barra.
   const MENU_TRACKS = [
     {title:'Pro-digio',          src:'Musica/Pro-digio.mp3'},
@@ -477,7 +482,22 @@ if (mainMenu && !mainMenu.hidden) {
     document.addEventListener('keydown', handleEscape);
   }
 
+  // Calcula la escala que hace caber el marco 1920x1080 sin deformarlo.
+  // Si la ventana no es 16:9, la diferencia queda como espacio libre centrado.
+  function fitGameFrame() {
+    const scale = Math.min(
+      window.innerWidth / VIEWPORT_WIDTH,
+      window.innerHeight / VIEWPORT_HEIGHT
+    );
+    document.documentElement.style.setProperty('--game-scale', String(scale));
+  }
+
   function init() {
+    // Escala proporcional del marco de referencia 1920x1080 (letterboxing).
+    fitGameFrame();
+    window.addEventListener('resize', fitGameFrame);
+    window.addEventListener('orientationchange', fitGameFrame);
+
     let savedVolume = NaN;
     try {
       const saved = localStorage.getItem(MENU_MUSIC_VOLUME_KEY);

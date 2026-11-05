@@ -34,8 +34,9 @@
   const LANE_NAMES  = ['Carril 1', 'Carril 2', 'Carril 3', 'Carril 4'];
   const LANE_COLORS = ['#50e7f2', '#ff4db8', '#a989ff', '#ffd65a'];
 
-  // Posición horizontal (%) de cada carril arriba de la pista; abajo se calcula con laneBottomX().
-  const TOP_LANE_CENTERS = [35, 45, 55, 65];
+  // El trapecio de la pista empieza al 40% de su altura; laneCenterAt() calcula
+  // el centro de cada carril a cualquier altura para que notas y receptores
+  // sigan el mismo ancho que las líneas de perspectiva.
 
   // Acierto e impulso.
   const HIT_WINDOW_MS = 150;                // margen máximo de acierto para notas separadas
@@ -226,9 +227,15 @@
   // Tiempo de la canción: reloj de la partida más el desfase del mapa.
   const songClock = () => chartTime() + (chart.offsetMs || 0);
 
-  // Posición horizontal (%) de un carril en la parte baja de la pista.
-  const laneTopX = lane => TOP_LANE_CENTERS[lane];
-  const laneBottomX = lane => 2 + (lane + 0.5) * 24;
+  // Centro horizontal (%) de un carril a una altura relativa de la pista
+  // (0 = borde superior, 1 = borde inferior). Reproduce el trapecio que dibuja
+  // .highway: arriba va del 30% al 70% y abajo del 2% al 98%.
+  function laneCenterAt(lane, ratio) {
+    const t = Math.max(0, Math.min(1, (ratio - 0.4) / 0.6));
+    const left = 30 - 28 * t;
+    const right = 70 + 28 * t;
+    return left + (lane + 0.5) * (right - left) / 4;
+  }
 
   // ¿Está activo el modo práctica? (la práctica no guarda estadísticas).
   const isPracticeMode = () => document.body.classList.contains('practice-mode');
@@ -1056,18 +1063,18 @@
      ========================================================================== */
 
   // Nota sostenida en curso: queda en la línea de golpe y su cola se acorta.
-  function updateHeldNote(note, songTime, hitY, travel) {
+  function updateHeldNote(note, songTime, hitY, travel, height) {
     const remaining = note.holdUntil - songTime;
     if (!heldLaneKeys.has(note.lane)) { failHold(note, songTime); return; }
     if (remaining <= 0) { finishHold(note, songTime); return; }
     note.element.hidden = false;
-    note.element.style.left = `${laneBottomX(note.lane)}%`;
+    note.element.style.left = `${laneCenterAt(note.lane, hitY / height)}%`;
     note.element.style.top = `${hitY}px`;
     note.element.style.setProperty('--hold-length', `${Math.max(12, Math.min(travel, remaining / leadMs * travel))}px`);
   }
 
   // Nota que cae: la marca como fallada si pasó, o la coloca en la pista según su tiempo.
-  function updateFallingNote(note, time, songTime, hitY, entryY, travel) {
+  function updateFallingNote(note, time, songTime, hitY, travel, height) {
     if (note.hit || note.missed) return;
 
     const untilHit = note.timeMs - (chart.offsetMs || 0) - time;
@@ -1084,10 +1091,7 @@
 
     // La nota se estrecha arriba y se alinea con su receptor al llegar abajo.
     const y = hitY - (untilHit / leadMs) * travel;
-    const progress = Math.max(0, Math.min(1, (y - entryY) / travel));
-    const topX = laneTopX(note.lane);
-    const bottomX = laneBottomX(note.lane);
-    note.element.style.left = `${topX + (bottomX - topX) * progress}%`;
+    note.element.style.left = `${laneCenterAt(note.lane, y / height)}%`;
     note.element.style.top = `${y}px`;
     if (note.holdMs > 0) {
       note.element.style.setProperty('--hold-length', `${Math.max(24, Math.min(travel, note.holdMs / leadMs * travel))}px`);
@@ -1108,15 +1112,18 @@
 
     // Geometría de la pista: las notas entran al 40% de la altura y llegan a la línea de golpe.
     const height = stage.clientHeight;
-    const stageTop = stage.getBoundingClientRect().top;
+    const stageRect = stage.getBoundingClientRect();
+    // El marco se escala con transform: pasamos las medidas de pantalla a las
+    // medidas internas de referencia para que las notas sigan en su sitio.
+    const screenScale = height ? stageRect.height / height : 1;
     const receptorRect = receptors[0].getBoundingClientRect();
-    const hitY = receptorRect.top - stageTop + receptorRect.height / 2;
+    const hitY = (receptorRect.top - stageRect.top + receptorRect.height / 2) / screenScale;
     const entryY = height * 0.4;
     const travel = hitY - entryY;
 
     for (const note of notes) {
-      if (note.holding) updateHeldNote(note, songTime, hitY, travel);
-      else updateFallingNote(note, time, songTime, hitY, entryY, travel);
+      if (note.holding) updateHeldNote(note, songTime, hitY, travel, height);
+      else updateFallingNote(note, time, songTime, hitY, travel, height);
       if (!running) break; // una derrota pudo terminar la partida a mitad del recorrido
     }
 
