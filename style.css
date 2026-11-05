@@ -27,6 +27,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100svh;
   overflow-x: hidden;
   color: var(--text);
   font: 15px Arial, sans-serif;
@@ -496,7 +497,16 @@ button, select { font: inherit; }
    -------------------------------------------------------------------------- */
 
 /* Contenedor de la pista; se amplía para ocupar casi toda la ventana. */
-.game-main { position: relative; width: min(100%, 1100px); margin: 12px auto 0; }
+.game-main {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  width: min(100%, 1100px);
+  height: calc(100vh - 84px);
+  height: calc(100svh - 84px);
+  min-height: 420px;
+  margin: 12px auto 0;
+}
 
 /* Haces de luz difuminados detrás de la pista. */
 .concert-lights {
@@ -549,8 +559,18 @@ button, select { font: inherit; }
 .multiplier[data-tier="4"] { color: #b99cff; }
 .multiplier[data-tier="8"] { color: var(--gold); }
 
-/* Marco que envuelve el escenario (sin relleno). */
-.game-card { position: relative; z-index: 1; width: 100%; padding: 0; }
+/* Marco del escenario: su ancho sigue la altura útil para conservar una proporción cómoda. */
+.game-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, calc((100vh - 190px) * 1.25));
+  width: min(100%, calc((100svh - 190px) * 1.25));
+  /* La pista termina justo donde empieza el panel inferior; así su base
+     queda alineada con los bordes laterales del HUD y no pasa por detrás. */
+  height: calc(100% - var(--bottom-hud-height, 154px));
+  margin-inline: auto;
+  padding: 0;
+}
 
 /* --------------------------------------------------------------------------
    6. Escenario, pista y notas
@@ -559,11 +579,22 @@ button, select { font: inherit; }
 /* Escenario: ocupa casi toda la altura de la ventana, con luces de colores. */
 .stage {
   position: relative;
-  height: min(calc(100vh - 190px), 1080px);
-  min-height: 520px;
+  height: 100%;
+  min-height: 0;
   overflow: visible;
   perspective: 1000px;
   background: linear-gradient(#09091433, #07071044);
+}
+.stage[data-scenario="no-me-digas"] {
+  background: transparent;
+}
+body[data-scenario="no-me-digas"] {
+  background-color: #100c20;
+  background-image: linear-gradient(#08081726, #08081738), url("ART/assets/escenario1.jpeg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 100vw 100vh;
+  background-attachment: fixed;
 }
 .stage::before {
   content: "";
@@ -610,7 +641,9 @@ button, select { font: inherit; }
   filter: drop-shadow(0 0 14px #50e7f233);
   transition: background 900ms ease, filter 900ms ease;
 }
-.stage[data-scenario="no-me-digas"] .highway { background: linear-gradient(180deg, #102b48df, #0d1a31e8 52%, #080d1af2); }
+.stage[data-scenario="no-me-digas"] .highway {
+  background: linear-gradient(180deg, #102b48df, #0d1a31e8 52%, #080d1af2);
+}
 .stage[data-scenario="me-gustan"] .highway { background: linear-gradient(180deg, #351342df, #1b1230e8 52%, #0c0a18f2); }
 .stage[data-scenario="hazlo-otra-vez"] .highway { background: linear-gradient(180deg, #422018df, #251525e8 52%, #100d18f2); }
 .highway::before {
@@ -636,7 +669,7 @@ button, select { font: inherit; }
 .hit-line {
   position: absolute;
   z-index: 3;
-  bottom: 73px;
+  bottom: 176px;
   left: 0;
   right: 0;
   height: 2px;
@@ -648,7 +681,7 @@ button, select { font: inherit; }
 .receptors {
   position: absolute;
   z-index: 4;
-  bottom: 49px;
+  bottom: 156px;
   left: 0;
   right: 0;
   display: grid;
@@ -828,8 +861,9 @@ button, select { font: inherit; }
    7. Barra de impulso y HUD inferior
    -------------------------------------------------------------------------- */
 
-/* Barra amarilla de impulso integrada sobre la pista (se oculta en modo práctica). */
-.impulse-hud { position: absolute; z-index: 10; left: 14%; right: 14%; bottom: 10%; }
+/* La barra solo existe visualmente durante una partida de historia activa. */
+.impulse-hud { display: none; position: absolute; z-index: 10; left: 14%; right: 14%; bottom: 210px; }
+body.game-running:not(.practice-mode) .impulse-hud { display: block; }
 body.practice-mode .impulse-hud { display: none; }
 .boost-meter {
   height: 14px;
@@ -851,20 +885,24 @@ body.practice-mode .impulse-hud { display: none; }
 
 /* Fila bajo la pista: puntos a la izquierda, combo al centro, resultado a la derecha. */
 .power-controls {
-  position: relative;
-  z-index: 2;
+  position: absolute;
+  z-index: 12;
+  left: 2%;
+  bottom: 0;
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  align-items: center;
-  width: calc(96% + 4px);
-  margin: 0 calc(2% - 2px);
+  align-items: stretch;
+  width: 96%;
+  height: var(--bottom-hud-height, 154px);
+  margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
 }
 .boost-hud {
   display: grid;
+  height: 100%;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto;
   gap: 8px 18px;
@@ -873,7 +911,7 @@ body.practice-mode .impulse-hud { display: none; }
   border: 2px solid var(--cyan);
   border-top: 0;
   border-radius: 0 0 12px 12px;
-  background: linear-gradient(105deg, #0d0b18f2, #211634e8 55%, #0d0b18f2);
+  background: linear-gradient(105deg, #0d0b18cf, #211634c9 55%, #0d0b18cf);
   box-shadow: 0 0 7px #50e7f299, inset 0 0 18px #50e7f21a, 0 4px 18px #0005;
 }
 
@@ -939,7 +977,7 @@ body.practice-mode .impulse-hud { display: none; }
   position: absolute;
   z-index: 9;
   right: -95px;
-  bottom: 52px;
+  bottom: 164px;
   width: 95px;
   min-height: 24px;
   color: #ffd65a;
@@ -957,7 +995,7 @@ body.practice-mode .impulse-hud { display: none; }
   position: absolute;
   z-index: 9;
   left: -95px;
-  bottom: 52px;
+  bottom: 164px;
   width: 95px;
   color: #ffd65a;
   font-size: 24px;
@@ -1025,21 +1063,27 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .settings-header h2 { font-size: clamp(14px, 4.5vw, 22px); }
   .options-menu button { padding: 11px 12px; font-size: clamp(13px, 3.5vw, 15px); }
   .game-main { margin-top: 16px; }
+  .game-main { height: calc(100vh - 100px); height: calc(100svh - 100px); min-height: 420px; }
   .feedback { min-width: 95px; font-size: 9px; }
   .score-block strong, .combo-block strong { font-size: 20px; }
-  .stage { height: min(calc(100vh - 210px), 980px); min-height: 420px; overflow: visible; }
+  .game-card { width: 100%; }
+  .stage { height: 100%; min-height: 0; aspect-ratio: auto; overflow: visible; }
   .power-controls { grid-template-columns: 1fr; }
-  .power-controls { width: calc(96% + 4px); margin: 0 calc(2% - 2px); }
+  .game-main { --bottom-hud-height: 132px; }
+  .power-controls { left: 2%; bottom: 0; width: 96%; height: var(--bottom-hud-height); margin: 0; }
   .boost-hud { grid-template-columns: minmax(0, 1fr); gap: 7px; }
   .boost-hud { padding: 9px 8px; }
   .impulse-hud { left: 18%; right: 18%; bottom: 10%; }
   .boost-meter { height: 12px; }
   .combo-orb { grid-column: 1; grid-row: 1; width: 68px; height: 68px; transform: none; }
-  .song-progress { position: relative; left: auto; bottom: auto; z-index: auto; width: calc(100% - 24px); max-width: 420px; margin: 8px 12px; }
-  .points-inline { position: relative; left: auto; bottom: auto; z-index: auto; width: auto; margin: 8px 12px; }
+  .song-progress { position: fixed; left: 12px; bottom: 188px; z-index: 13; width: min(220px, calc(100vw - 24px)); margin: 0; }
+  .points-inline { position: fixed; left: 12px; bottom: 132px; z-index: 13; width: auto; margin: 0; text-align: left; }
   .performance-status { grid-column: 1; grid-row: 2; }
-  .judgement-display { right: -60px; bottom: 50px; width: 58px; font-size: 10px; }
-  .combo-count-marker { left: -60px; bottom: 50px; width: 58px; font-size: 18px; }
+  .judgement-display { right: -60px; bottom: 130px; width: 58px; font-size: 10px; }
+  .combo-count-marker { left: -60px; bottom: 130px; width: 58px; font-size: 18px; }
+  .hit-line { bottom: 138px; }
+  .receptors { bottom: 124px; }
+  .impulse-hud { bottom: 170px; }
   .performance-heading { flex-wrap: wrap; }
   .points-inline > strong { font-size: clamp(26px, 7vw, 36px); }
   .controls { grid-column: auto; }
@@ -1050,4 +1094,20 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .stage { overflow: visible; }
   .judgement-display { right: -84px; width: 84px; }
   .combo-count-marker { left: -84px; width: 84px; }
+}
+
+/* Ajusta la pista a ventanas bajas en horizontal. */
+@media (min-width: 651px) and (max-height: 700px) {
+  .app { padding-top: 4px; }
+  .topbar { min-height: 42px; padding-bottom: 6px; }
+  .game-card { width: min(100%, calc((100vh - 130px) * 1.25)); width: min(100%, calc((100svh - 130px) * 1.25)); }
+  .stage { min-height: 320px; }
+}
+
+/* En vertical se centra la calle y se recortan solo los lados del fondo. */
+@media (orientation: portrait) {
+  body[data-scenario="no-me-digas"] {
+    background-size: auto 100vh;
+    background-size: auto 100svh;
+  }
 }

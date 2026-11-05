@@ -21,8 +21,8 @@
     ]
   };
 
-  // Campaña incluida: los JSON se cargan al abrir y se ordenan por cantidad real de notas.
-  // HazloOtraVez se mantiene al final aunque otro mapa tuviera más notas.
+  // Orden de la campaña: No Me Digas Que No, Me Gustan Loquitas y Hazlo Otra Vez.
+  // Hazlo Otra Vez cierra la secuencia de historia.
   const STORY_SONG_CONFIG = [
     {id:'no-me-digas', title:'No Me Digas Que No', audio:'Musica/NoMeDigasQueNo.mp3', chart:'charts/NoMeDigasQueNo-chart.json', scenario:'no-me-digas'},
     {id:'me-gustan', title:'Me Gustan Loquitas', audio:'Musica/MeGustanLoquitas.mp3', chart:'charts/MeGustanLoquitas-chart.json', scenario:'me-gustan'},
@@ -227,6 +227,7 @@
   const songClock = () => chartTime() + (chart.offsetMs || 0);
 
   // Posición horizontal (%) de un carril en la parte baja de la pista.
+  const laneTopX = lane => TOP_LANE_CENTERS[lane];
   const laneBottomX = lane => 2 + (lane + 0.5) * 24;
 
   // ¿Está activo el modo práctica? (la práctica no guarda estadísticas).
@@ -657,6 +658,7 @@
   function showAudioStartPrompt() {
     if (!running) return;
     running = false;
+    document.body.classList.remove('game-running');
     preRoll = false;
     pausedAt = 0;
     songStarted = false;
@@ -688,6 +690,7 @@
     startedAt = preRollStartedAt;
     pausedAt = 0;
     running = true;
+    document.body.classList.add('game-running');
     score = 0;
     combo = 0;
     bestCombo = 0;
@@ -737,7 +740,9 @@
     storyCampaignActive = false;
     storyStageIndex = -1;
     stage.removeAttribute('data-scenario');
+    document.body.removeAttribute('data-scenario');
     running = false;
+    document.body.classList.remove('game-running');
     document.body.classList.remove('level-finished');
     stopLevelMusic();
     preRoll = false;
@@ -842,6 +847,7 @@
     pausedAt = chartTime();
     updateSongProgress(pausedAt);
     running = false;
+    document.body.classList.remove('game-running');
     preRoll = false;
     songAudio.pause();
     songStarted = false;
@@ -1018,7 +1024,7 @@
     // La nota se estrecha arriba y se alinea con su receptor al llegar abajo.
     const y = hitY - (untilHit / leadMs) * travel;
     const progress = Math.max(0, Math.min(1, (y - entryY) / travel));
-    const topX = TOP_LANE_CENTERS[note.lane];
+    const topX = laneTopX(note.lane);
     const bottomX = laneBottomX(note.lane);
     note.element.style.left = `${topX + (bottomX - topX) * progress}%`;
     note.element.style.top = `${y}px`;
@@ -1041,7 +1047,9 @@
 
     // Geometría de la pista: las notas entran al 40% de la altura y llegan a la línea de golpe.
     const height = stage.clientHeight;
-    const hitY = height - 76;
+    const stageTop = stage.getBoundingClientRect().top;
+    const receptorRect = receptors[0].getBoundingClientRect();
+    const hitY = receptorRect.top - stageTop + receptorRect.height / 2;
     const entryY = height * 0.4;
     const travel = hitY - entryY;
 
@@ -1166,7 +1174,7 @@
     }
   }
 
-  // Carga los mapas de la historia y los ordena por cantidad de notas; HazloOtraVez siempre cierra la secuencia.
+  // Carga los mapas de historia conservando el orden definido en STORY_SONG_CONFIG.
   async function loadStoryPlaylist() {
     const loadedSongs = await Promise.all(STORY_SONG_CONFIG.map(async song => {
       const response = await fetch(new URL(`./${song.chart}`, window.location.href));
@@ -1174,11 +1182,6 @@
       return {...song, chart:parseChart(await response.json())};
     }));
 
-    loadedSongs.sort((a, b) => {
-      if (a.id === 'hazlo-otra-vez') return 1;
-      if (b.id === 'hazlo-otra-vez') return -1;
-      return a.chart.notes.length - b.chart.notes.length;
-    });
     console.info('Orden de la historia:', loadedSongs.map(song => `${song.title} (${song.chart.notes.length} notas)`));
     return loadedSongs;
   }
@@ -1191,6 +1194,7 @@
     storyStageIndex = index;
     chart = applyDifficulty(song.chart);
     stage.dataset.scenario = song.scenario;
+    document.body.dataset.scenario = song.scenario;
     songAudio.pause();
     songAudio.src = new URL(`./${song.audio}`, window.location.href).href;
     songAudio.load();
@@ -1290,6 +1294,7 @@
         storyCampaignActive = false;
         storyStageIndex = -1;
         stage.removeAttribute('data-scenario');
+        document.body.removeAttribute('data-scenario');
         chart = applyDifficulty(selectedChart);
         start();
       };
