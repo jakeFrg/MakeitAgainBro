@@ -1139,7 +1139,9 @@ body.level-finished .combo-count-marker { visibility: hidden; }
 
 .start-card .game-title {
   font-family: 'neon4', sans-serif !important;
-  font-size: 77px;
+  font-size: clamp(30px, 7vw, 77px);
+  line-height: .98;
+  overflow-wrap: anywhere;
   color: #fff;
   text-shadow:
     0 0 5px #fff,
@@ -1178,4 +1180,87 @@ body.level-finished .combo-count-marker { visibility: hidden; }
     width: min(42vw, 230px);
     opacity: 0.65;
   }
+}
+
+/* Ajustes fluidos para que el encabezado, la pista y el HUD quepan en otras
+   resoluciones y proporciones de ventana, sin depender del zoom del navegador. */
+.app {
+  width: calc(100% - 32px);
+  max-width: 1200px;
+}
+.topbar, .brand, .page-title { min-width: 0; }
+.page-title {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  line-height: 1.1;
+}
+.game-main {
+  height: calc(100vh - 112px);
+  height: calc(100svh - 112px);
+  min-height: 360px;
+}
+
+@media (max-width: 900px) {
+  .app { width: calc(100% - 24px); }
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 8px;
+    align-items: center;
+  }
+  .brand { font-size: clamp(12px, 2.2vw, 17px); letter-spacing: 1px; }
+  .page-title { font-size: clamp(14px, 2.5vw, 21px); letter-spacing: .06em; }
+  .game-main { width: 100%; }
+  .points-inline {
+    left: max(12px, calc((100vw - 1100px) / 2));
+    width: min(250px, calc(100vw - 24px));
+  }
+  .song-progress {
+    left: max(12px, calc((100vw - 1100px) / 2));
+    width: min(250px, calc(100vw - 24px));
+  }
+}
+
+@media (max-width: 650px) {
+  .app { width: calc(100% - 20px); padding-top: 10px; }
+  .topbar {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+    padding-inline: 0;
+  }
+  .brand, .page-title { width: 100%; text-align: center; }
+  .page-title { font-size: clamp(13px, 4vw, 18px); }
+  .game-main {
+    height: max(310px, calc(100svh - 108px));
+    min-height: 310px;
+    --bottom-hud-height: 132px;
+  }
+  .game-card { height: calc(100% - var(--bottom-hud-height)); }
+  .points-inline { left: 12px; width: min(180px, calc(100vw - 24px)); }
+  .song-progress { left: 12px; width: min(220px, calc(100vw - 24px)); }
+}
+
+@media (max-width: 380px) {
+  .app { width: calc(100% - 16px); }
+  .topbar { gap: 5px; }
+  .game-main { --bottom-hud-height: 122px; }
+  .power-controls { height: var(--bottom-hud-height); }
+  .boost-hud { padding: 7px 6px; }
+  .combo-orb { width: 60px; height: 60px; }
+  .points-inline > strong { font-size: 27px; }
+  .song-progress { width: min(190px, calc(100vw - 24px)); }
+}
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .app { padding-top: 6px; padding-bottom: 6px; }
+  .topbar { min-height: 40px; padding-bottom: 6px; }
+  .game-main { height: max(310px, calc(100svh - 64px)); min-height: 310px; margin-top: 6px; }
+  .game-card { height: calc(100% - var(--bottom-hud-height, 120px)); }
+  .game-main { --bottom-hud-height: 120px; }
+  .power-controls { height: var(--bottom-hud-height); }
+  .boost-hud { padding: 7px 12px; gap: 4px; }
+  .combo-orb { width: 64px; height: 64px; }
+  .points-inline { bottom: 72px; }
+  .song-progress { bottom: 138px; }
 }
