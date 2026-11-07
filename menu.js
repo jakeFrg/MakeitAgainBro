@@ -102,10 +102,10 @@
 
   const menuMimao = $('#menuMimao');
 
-  const MIMAO_FRAMES = 8;
-  const MIMAO_FRAME_DURATION = 500;
+  const MIMAO_FRAMES = 16; 
+  const MIMAO_FRAME_DURATION = 130; // ms por frame
 
-  let mimaoFrame = 0;
+  let mimaoFrame = 0;  
   let mimaoLastFrame = 0;
   let mimaoAnimationId = 0;
 

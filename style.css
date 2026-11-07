@@ -1184,11 +1184,11 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   bottom: 5%;
 
   width: min(32cqw, 400px);
-  aspect-ratio: 256 / 341;
+  aspect-ratio: 256 / 384;
 
-  background-image: url("ART/assets/MIMAOV1SP2.png");
+  background-image: url("ART/assets/MIMAOV1Salto.png");
   background-repeat: no-repeat;
-  background-size: 800% 100%;
+  background-size: 1600% 100%;
   background-position: 0 0;
 
   image-rendering: pixelated;
