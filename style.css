@@ -1180,13 +1180,13 @@ body.level-finished .combo-count-marker { visibility: hidden; }
 .menu-mimao {
   position: absolute;
   z-index: 2;
-  left: 60%;
+  left: 56%;
   bottom: 5%;
 
   width: min(32cqw, 400px);
   aspect-ratio: 256 / 384;
 
-  background-image: url("ART/assets/MIMAOV1Salto.png");
+  background-image: url("ART/assets/MIMAOV1Baile.png");
   background-repeat: no-repeat;
   background-size: 1600% 100%;
   background-position: 0 0;
