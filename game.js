@@ -21,9 +21,10 @@
     ]
   };
 
-  // Orden de la campaña: No Me Digas Que No, Me Gustan Loquitas y Hazlo Otra Vez.
-  // Hazlo Otra Vez cierra la secuencia de historia.
+  // La campaña abre con un fragmento didáctico de ProDigio y después continúa
+  // con las tres canciones de historia. Hazlo Otra Vez cierra la secuencia.
   const STORY_SONG_CONFIG = [
+    {id:'prodigio-tutorial', title:'Tutorial · ProDigio', audio:'Musica/Pro-digio.mp3', chart:'charts/Pro-digio-chart.json', scenario:'no-me-digas', tutorial:true, noteEndMs:48000, durationMs:50000},
     {id:'no-me-digas', title:'No Me Digas Que No', audio:'Musica/NoMeDigasQueNo.mp3', chart:'charts/NoMeDigasQueNo-chart.json', scenario:'no-me-digas'},
     {id:'me-gustan', title:'Me Gustan Loquitas', audio:'Musica/MeGustanLoquitas.mp3', chart:'charts/MeGustanLoquitas-chart.json', scenario:'me-gustan'},
     {id:'hazlo-otra-vez', title:'Hazlo Otra Vez', audio:'Musica/HazloOtraVez.mp3', chart:'charts/HazloOtraVez-chart.json', scenario:'hazlo-otra-vez'}
@@ -207,8 +208,12 @@
   function updateSongProgress(timeMs = 0) {
     const chartDurationMs = chart.notes.reduce((latest, note) => Math.max(latest, Number(note.timeMs) || 0), 0);
     const audioDurationMs = Number.isFinite(songAudio.duration) ? songAudio.duration * 1000 : 0;
-    const durationMs = audioDurationMs > 0 ? audioDurationMs : chartDurationMs;
-    const elapsedMs = songStarted ? songAudio.currentTime * 1000 : Math.max(0, timeMs);
+    const activeSong = storyCampaignActive ? storyPlaylist[storyStageIndex] : null;
+    const durationMs = Number.isFinite(activeSong?.durationMs)
+      ? activeSong.durationMs
+      : audioDurationMs > 0 ? audioDurationMs : chartDurationMs;
+    const rawElapsedMs = songStarted ? songAudio.currentTime * 1000 : Math.max(0, timeMs);
+    const elapsedMs = Math.min(durationMs || rawElapsedMs, rawElapsedMs);
     const percent = durationMs > 0 ? Math.max(0, Math.min(100, elapsedMs / durationMs * 100)) : 0;
     songProgressTitle.textContent = songName.textContent.replace(/\.[^.]+$/, '') || 'Canción';
     songProgressTime.textContent = `${formatTime(elapsedMs)} / ${formatTime(durationMs)}`;
@@ -930,7 +935,8 @@
     const grade = accuracy >= 95 ? 'S' : accuracy >= 85 ? 'A' : accuracy >= 70 ? 'B' : accuracy >= 50 ? 'C' : 'D';
 
     updateScore(pausedAt);
-    if (!isPracticeMode()) saveRunToProfile(outcome, accuracy);
+    const tutorialRound = storyCampaignActive && storyPlaylist[storyStageIndex]?.tutorial;
+    if (!isPracticeMode() && !tutorialRound) saveRunToProfile(outcome, accuracy);
     showResults(outcome, accuracy, grade);
   }
 
@@ -1107,6 +1113,11 @@
     const songTime = time + (chart.offsetMs || 0);
     clockEl.textContent = formatTime(time);
     updateSongProgress(time);
+    const activeStorySong = storyCampaignActive ? storyPlaylist[storyStageIndex] : null;
+    if (songStarted && Number.isFinite(activeStorySong?.durationMs) && time >= activeStorySong.durationMs) {
+      finishLevel('victory');
+      return;
+    }
     advanceEnergy(songTime);
     updateBoostUI();
 
@@ -1247,7 +1258,11 @@
     const loadedSongs = await Promise.all(STORY_SONG_CONFIG.map(async song => {
       const response = await fetch(new URL(`./${song.chart}`, window.location.href));
       if (!response.ok) throw new Error(`No se pudo cargar ${song.chart} (${response.status})`);
-      return {...song, chart:parseChart(await response.json())};
+      const parsedChart = parseChart(await response.json());
+      if (Number.isFinite(song.noteEndMs)) {
+        parsedChart.notes = parsedChart.notes.filter(note => note.timeMs <= song.noteEndMs);
+      }
+      return {...song, chart:parsedChart};
     }));
 
     console.info('Orden de la historia:', loadedSongs.map(song => `${song.title} (${song.chart.notes.length} notas)`));

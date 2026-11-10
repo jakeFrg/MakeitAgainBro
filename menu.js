@@ -11,7 +11,7 @@
     {label:'CAPÍTULO 01', title:'¿DÓNDE ESTOY?',          text:'Acabas de despertar en tu habitación pero no se siente igual...'},
     {label:'CAPÍTULO 01', title:'1986!!',                 text:'Ves el calendario y ves que dice 1986, abres la ventana y ves luces de neón y música de Federico Mercurio...'},
     {label:'CAPÍTULO 01', title:'NO TIENES NADA',         text:'Te das cuenta de que no tienes un centavo y decides salir a volverte a ganar el público.'},
-    {label:'CAPÍTULO 01', title:'¿LISTO PARA VOLVER?',    text:'Vuelves a cantar pero ahora debes ganarte a cada uno del público.'}
+    {label:'CAPÍTULO 01', title:'¿LISTO PARA VOLVER?',    text:'Antes de comenzar tu viaje, practica los cuatro carriles con un fragmento corto de ProDigio. Pulsa cada tecla cuando la nota llegue al receptor.'}
   ];
   const SCENE_DURATION_MS  = 5000; // tiempo que se ve cada escena
   const SCENE_ANIMATION_MS = 500;  // duración de la animación de cambio de escena

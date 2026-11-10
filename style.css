@@ -12,10 +12,32 @@
 /* Paleta de colores de toda la interfaz. */
 
 @font-face {
-  font-family: 'Neon4';
-  src: url('fonts/Neon4.otf') format('truetype');
+  font-family: 'Neon1';
+  src: url('fonts/Neon1.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neon2';
+  src: url('fonts/Neon2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neon3';
+  src: url('fonts/Neon3.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Neon4';
+  src: url('fonts/Neon4.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 :root {
@@ -399,17 +421,34 @@ button, select { font: inherit; }
 .settings-screen {
   position: relative;
   z-index: 1;
-  width: min(620px, 100%);
+  width: min(760px, 100%);
   max-height: min(90cqh, 820px);
   overflow: auto;
   padding: clamp(18px, 4cqw, 32px);
   color: #f6edcf;
   background: #211831;
-  border: 3px solid #211326;
-  box-shadow: 7px 8px 0 #d65449, 12px 13px 0 #201326;
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 9px #50e7f255, inset 0 0 14px #50e7f20c,
+    7px 8px 0 #fff, 12px 13px 0 #201326;
+  animation: options-panel-lights 3.8s ease-in-out infinite alternate;
   font-family: "Courier New", monospace;
 }
 .settings-screen[hidden] { display: none; }
+@keyframes options-panel-lights {
+  from {
+    border-color: var(--cyan);
+    box-shadow: 0 0 8px #50e7f255, inset 0 0 14px #50e7f20c,
+      7px 8px 0 #fff, 12px 13px 0 #201326;
+  }
+  to {
+    border-color: var(--pink);
+    box-shadow: 0 0 18px #ff4db877, inset 0 0 18px #ff4db817,
+      7px 8px 0 #fff, 12px 13px 0 #201326;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-screen { animation: none; }
+}
 
 /* Cabecera con el botón de volver y el título. */
 .settings-header {
@@ -424,6 +463,7 @@ button, select { font: inherit; }
   min-width: 0;
   margin: 0;
   color: #51e0d0;
+  font-family: 'Neon4', Impact, sans-serif;
   font-size: clamp(15px, 4cqw, 27px);
   overflow-wrap: anywhere;
   letter-spacing: 1px;
@@ -435,7 +475,8 @@ button, select { font: inherit; }
   border: 2px solid #f0b944;
   color: #ffdf70;
   background: #332342;
-  font: bold 11px "Courier New", monospace;
+  font: 11px 'Neon4', "Courier New", monospace;
+  letter-spacing: .6px;
   cursor: pointer;
 }
 .settings-back:hover, .settings-back:focus-visible { color: #211831; background: #51e0d0; outline: none; }
@@ -455,13 +496,28 @@ button, select { font: inherit; }
   border: 2px solid #bd77ae;
   color: #fff6db;
   background: #2b203b;
-  font: 900 15px "Courier New", monospace;
+  font: 18px 'Neon4', Impact, sans-serif;
+  letter-spacing: .8px;
+  text-shadow: 1px 1px #160e21, 0 0 8px #ff4db855;
   text-align: left;
   cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background .15s ease,
+    transform .15s ease, box-shadow .15s ease;
 }
-.options-menu button:hover, .options-menu button:focus-visible { border-color: var(--cyan); color: var(--cyan); outline: none; }
+.options-menu button:nth-child(1) { --option-accent: var(--cyan); }
+.options-menu button:nth-child(2) { --option-accent: var(--pink); }
+.options-menu button:nth-child(3) { --option-accent: var(--purple); }
+.options-menu button:nth-child(4) { --option-accent: var(--gold); }
+.options-menu button:hover, .options-menu button:focus-visible {
+  transform: translateX(7px) rotate(-.4deg);
+  border-color: var(--option-accent);
+  color: var(--option-accent);
+  background: color-mix(in srgb, var(--option-accent) 10%, #2b203b);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--option-accent) 48%, transparent);
+  outline: none;
+}
 .settings-group { margin: 14px 0; padding-bottom: 14px; border-bottom: 1px solid #4a4056; }
-.settings-group > h3 { margin: 0 0 10px; color: var(--cyan); font-size: 10px; letter-spacing: 1px; }
+.settings-group > h3 { margin: 0 0 10px; color: var(--cyan); font: 15px 'Neon3', 'Neon4', sans-serif; letter-spacing: 1px; }
 .settings-group .file-controls + .file-controls { margin-top: 14px; }
 
 /* Leaderboard: progreso guardado del jugador y lista de mejores partidas. */
@@ -693,15 +749,15 @@ body[data-scenario="no-me-digas"] .game-frame {
   grid-template-columns: repeat(4, 1fr);
   overflow: hidden;
   clip-path: polygon(30% 40%, 70% 40%, 98% 100%, 2% 100%);
-  background: linear-gradient(180deg, #211c2db8, #13121dcc 50%, #0d0c14e8);
+  background: linear-gradient(180deg, #211c2d, #13121d 50%, #0d0c14);
   filter: drop-shadow(0 0 14px #50e7f233);
   transition: background 900ms ease, filter 900ms ease;
 }
 .stage[data-scenario="no-me-digas"] .highway {
-  background: linear-gradient(180deg, #102b48df, #0d1a31e8 52%, #080d1af2);
+  background: linear-gradient(180deg, #102b48, #0d1a31 52%, #080d1a);
 }
-.stage[data-scenario="me-gustan"] .highway { background: linear-gradient(180deg, #351342df, #1b1230e8 52%, #0c0a18f2); }
-.stage[data-scenario="hazlo-otra-vez"] .highway { background: linear-gradient(180deg, #422018df, #251525e8 52%, #100d18f2); }
+.stage[data-scenario="me-gustan"] .highway { background: linear-gradient(180deg, #351342, #1b1230 52%, #0c0a18); }
+.stage[data-scenario="hazlo-otra-vez"] .highway { background: linear-gradient(180deg, #422018, #251525 52%, #100d18); }
 .highway::before {
   content: "";
   position: absolute;
@@ -969,7 +1025,7 @@ body.practice-mode .impulse-hud { display: none; }
   border: 2px solid var(--cyan);
   border-top: 0;
   border-radius: 0 0 12px 12px;
-  background: linear-gradient(105deg, #0d0b18cf, #211634c9 55%, #0d0b18cf);
+  background: linear-gradient(105deg, #0d0b18, #211634 55%, #0d0b18);
   box-shadow: 0 0 7px #50e7f299, inset 0 0 18px #50e7f21a, 0 4px 18px #0005;
 }
 
