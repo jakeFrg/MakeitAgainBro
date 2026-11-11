@@ -7,6 +7,12 @@
 
   <!-- Estilos y scripts (defer: se ejecutan cuando la página ya cargó). game.js = juego, menu.js = menús. -->
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">  <link rel="stylesheet" href="style.css">
+  <script>
+    document.documentElement.style.setProperty(
+      '--game-scale',
+      String(Math.min(window.innerWidth / 1920, window.innerHeight / 1080))
+    );
+  </script>
   <script src="game.js" defer></script>
   <script src="menu.js" defer></script>
 </head>
@@ -55,16 +61,16 @@
 
 <div id="menuMimao" class="menu-mimao" aria-hidden="true"></div>
 
-      <!-- Menú principal. -->
-      <div class="start-card" id="mainMenu">
-          <h2 class="game-title">MAKE IT AGAIN BRO!</h2>          
-          <nav class="start-menu-buttons" aria-label="Menú principal">
-          <button id="startButton" type="button">MODO HISTORIA</button>
-          <button id="practiceButton" type="button">PRÁCTICA</button>
-          <button id="openLeaderboardButton" type="button">LEADERBOARD</button>
-          <button id="creditsButton" type="button">CRÉDITOS</button>
-          <button id="openSettingsButton" type="button">OPCIONES</button>
-          <button id="exitButton" type="button">SALIR :(</button>
+      <!-- Menú principal-->
+      <div class="main-menu" id="mainMenu">
+        <h2 class="game-title"><img src="ART/Menu/Logo%20MIAB.png" alt="MAKE IT AGAIN BRO!"></h2>
+        <nav class="start-menu-buttons" aria-label="Menú principal">
+          <button id="startButton" type="button"><img src="ART/Menu/BotonMH.png" alt="Modo historia"></button>
+          <button id="practiceButton" type="button"><img src="ART/Menu/BotonP.png" alt="Práctica"></button>
+          <button id="openLeaderboardButton" type="button"><img src="ART/Menu/BotonL.png" alt="Leaderboard"></button>
+          <button id="openSettingsButton" type="button"><img src="ART/Menu/BotonO.png" alt="Opciones"></button>
+          <button id="creditsButton" type="button"><img src="ART/Menu/BotonC.png" alt="Créditos"></button>
+          <button id="exitButton" type="button"><img src="ART/Menu/BotonS.png" alt="Salir"></button>
         </nav>
       </div>
 

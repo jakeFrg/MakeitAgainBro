@@ -263,7 +263,7 @@ button, select { font: inherit; }
 }
 .menu-now-playing .song-progress-bar { height: 7px; }
 
-/* Tarjeta base del menú principal y de los créditos. */
+/* Tarjeta base del panel de créditos. */
 .start-card {
   position: relative;
   z-index: 1;
@@ -273,7 +273,7 @@ button, select { font: inherit; }
 }
 .start-eyebrow { margin: 0 0 7px; color: #50e7f2; font-size: 12px; font-weight: 1000; letter-spacing: 3px; }
 
-/* Título de los créditos (h1) y del menú principal (h2), con borde y sombra de color. */
+/* Título de los créditos (h1), con borde y sombra de color. */
 .start-card h1 {
   margin: 0 0 px;
   color: #fff9e8;
@@ -283,16 +283,24 @@ button, select { font: inherit; }
   -webkit-text-stroke: 1px #171018;
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
 }
-.start-card h2 {
-  margin: 0 0 50px;
-  color: #fff9e8;
-  font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(2px, 7.20cqw, 1px);
-  line-height: 1.08;
-  letter-spacing: 0px;
-  -webkit-text-stroke: 0px #171018;
-  text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
+/* Menú principal*/
+.main-menu {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #05060d url("ART/Menu/Fondo%20de%20menu.jpg") center / 100% 100% no-repeat;
 }
+.main-menu[hidden] { display: none; }
+
+/* Logo superior */
+.main-menu .game-title {
+  position: absolute;
+  top: 87px;
+  left: 624px;
+  width: 672px;
+  margin: 0;
+}
+.main-menu .game-title img { display: block; width: 100%; height: auto; }
 
 .credits-screen {
   margin: 0 0 2px;
@@ -304,32 +312,42 @@ button, select { font: inherit; }
   text-shadow: 3px 4px 0 #171018, 5px 6px 0 #ca493f;
 }
 
-/* Botones grandes del menú principal; se desplazan al pasar el cursor. */
-.start-menu-buttons { display: grid; justify-items: start; gap: 5px; }
-.start-menu-buttons button {
+/* Botones del menú */
+.main-menu .start-menu-buttons { position: absolute; inset: 0; }
+.main-menu .start-menu-buttons button {
+  position: absolute;
+  left: 729px;
+  width: 462px;
+  padding: 0;
   border: 0;
-  padding: 1px 8px 7px 0;
-  color: #fff;
   background: transparent;
-  font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(35px, 6.2cqw, 50px);
-  line-height: .98;
-  letter-spacing: .5px;
-  text-align: left;
-  -webkit-text-stroke: 1.7px #090b18;
-  text-shadow: 2px 3px 0 #090b18;
   cursor: pointer;
-  transition: transform .12s ease, color .12s ease;
+  transform-origin: 50% 50%;
+  transition: transform .18s ease, filter .18s ease;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.main-menu .start-menu-buttons img {
+  display: block;
+  width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
 }
 
-.start-menu-buttons button:hover,
-.start-menu-buttons button:focus-visible {
-  transform: translateX(9px) rotate(-1deg);
+/* Altura de cada botón de la columna */
+#startButton           { top: 461px; }
+#practiceButton        { top: 562px; }
+#openLeaderboardButton { top: 651px; }
+#openSettingsButton    { top: 738px; }
+#creditsButton         { top: 823px; }
+#exitButton            { top: 907px; }
+
+/* Animacion de Botones */
+.main-menu .start-menu-buttons button:hover,
+.main-menu .start-menu-buttons button:focus-visible {
+  transform: scale(1.035);
+  filter: brightness(1.12) drop-shadow(0 0 14px #ffd66e4d);
   outline: none;
-  color: #ff42bc;
-  text-shadow:
-    0 0 8px #ff2fae,
-    0 0 20px #ff2fae;
 }
 
 
@@ -1170,8 +1188,6 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .menu-now-playing { top: 14px; right: 12px; width: min(250px, calc(100cqw - 24px)); padding: 8px 10px; }
   .menu-now-playing-meta strong { font-size: 11px; }
   .start-card { width: 100%; padding: clamp(14px, 4cqw, 32px); }
-  .start-card h2 { font-size: clamp(26px, 8cqw, 52px); }
-  .start-menu-buttons button { font-size: clamp(25px, 7cqw, 42px); }
   .settings-screen { max-height: 88cqh; padding: clamp(14px, 4cqw, 24px); }
   .settings-header { gap: 8px; margin-bottom: 12px; }
   .settings-header h2 { font-size: clamp(14px, 4.5cqw, 22px); }
@@ -1218,22 +1234,11 @@ body.level-finished .combo-count-marker { visibility: hidden; }
   .stage { min-height: 320px; }
 }
 
-/* El marco de referencia es siempre 16:9, así que el fondo no cambia de
-   encuadre con la orientación del monitor. */
 
-.start-card .game-title {
-  font-family: 'neon4', sans-serif !important;
-  font-size: 77px;
-  color: #fff;
-  text-shadow:
-    0 0 5px #fff,
-    0 0 10px #fdfdfd,
-    0 0 25px #ff00aa,
-    0 0 45px #e200d7;
-}
-
-/* El Mimao animado en el menú principal */
+/* El Mimao animado queda oculto. El elemento y su animación en menu.js se conservan
+   por si se quiere restaurar. */
 .menu-mimao {
+  display: none;
   position: absolute;
   z-index: 2;
   left: 56%;
