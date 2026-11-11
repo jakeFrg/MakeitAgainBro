@@ -92,13 +92,9 @@
   const multiplierEl     = $('#comboMultiplier');
   const bestComboEl      = $('#bestCombo');
   const bestScoreEl      = $('#bestScore');
-  const accuracyEl       = $('#accuracy');
   const receptors        = Array.from(document.querySelectorAll('.receptor'));
 
   // Barras de desempeño e impulso.
-  const performanceMeter = $('#performanceMeter');
-  const performanceFill  = $('#performanceFill');
-  const performanceValue = $('#performanceValue');
   const boostFill        = $('#boostFill');
   const boostStatus      = $('#boostStatus');
   const boostMeter       = $('.boost-meter');
@@ -116,8 +112,6 @@
   const songAudio        = $('#songAudio');
   const songFileInput    = $('#songFile');
   const songName         = $('#songName');
-  const songProgressTitle = $('#songProgressTitle');
-  const songProgressTime = $('#songProgressTime');
   const songProgressBar = $('#songProgressBar');
   const songProgressFill = $('#songProgressFill');
   const musicVolume      = $('#musicVolume');
@@ -215,8 +209,6 @@
     const rawElapsedMs = songStarted ? songAudio.currentTime * 1000 : Math.max(0, timeMs);
     const elapsedMs = Math.min(durationMs || rawElapsedMs, rawElapsedMs);
     const percent = durationMs > 0 ? Math.max(0, Math.min(100, elapsedMs / durationMs * 100)) : 0;
-    songProgressTitle.textContent = songName.textContent.replace(/\.[^.]+$/, '') || 'Canción';
-    songProgressTime.textContent = `${formatTime(elapsedMs)} / ${formatTime(durationMs)}`;
     songProgressFill.style.width = `${percent}%`;
     songProgressBar.setAttribute('aria-valuenow', String(Math.round(percent)));
   }
@@ -323,6 +315,14 @@
     ], {duration:760, easing:'ease-out', fill:'forwards'});
   }
 
+  function showLaneResult(lane, label, points = 0, color = '#ffffff') {
+    const result = document.querySelector(`.lane-result[data-lane="${lane}"]`);
+    if (!result) return;
+    result.textContent = points ? `${label} +${points}` : label;
+    result.style.color = color;
+    result.animate([{opacity:1, transform:'translateY(0)'}, {opacity:0, transform:'translateY(-8px)'}], {duration:900, easing:'ease-out'});
+  }
+
   // Nivel de combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.
   function comboTier() {
     if (combo >= 30) return 8;
@@ -347,8 +347,6 @@
     multiplierEl.classList.toggle('boosted', isBoostActive(time));
     bestComboEl.textContent = String(playerProfile.bestCombo);
     bestScoreEl.textContent = String(bestScore).padStart(6, '0');
-    const attempts = hits + misses;
-    accuracyEl.textContent = `${attempts ? Math.round(hits / attempts * 100) : 100}%`;
     if (score > bestScore) {
       bestScore = score;
       playerProfile.bestScore = bestScore;
@@ -392,10 +390,11 @@
   // Refresca la barra de desempeño (verde, amarilla o roja según el nivel).
   function updatePerformance() {
     const value = Math.max(0, Math.min(MAX_PERFORMANCE, playerPerformance));
-    performanceFill.style.width = `${value}%`;
-    performanceValue.textContent = `${value}%`;
-    performanceMeter.setAttribute('aria-valuenow', String(value));
-    performanceMeter.dataset.level = value >= 60 ? 'high' : value >= 30 ? 'medium' : 'low';
+    const grayMix = 1 - value / MAX_PERFORMANCE;
+    const red = Math.round(0 + 112 * grayMix);
+    const green = Math.round(255 - 143 * grayMix);
+    const blue = Math.round(75 + 45 * grayMix);
+    stage.style.setProperty('--performance-frame', `rgb(${red} ${green} ${blue})`);
   }
 
   // Refresca el relleno y el porcentaje de la barra de impulso.
@@ -404,6 +403,7 @@
     boostFill.style.width = `${percent}%`;
     boostMeter.setAttribute('aria-valuenow', String(Math.round(percent)));
     boostStatus.textContent = `${Math.round(percent)}%`;
+    boostMeter.closest('.combo-orb').style.setProperty('--boost-progress', `${percent}%`);
   }
 
   // Muestra la tecla de cada carril en los botones de configuración y en los receptores.
@@ -1034,6 +1034,7 @@
     if (!candidate) {
       registerMiss(time);
       showJudgement('MALO', '#ff687e');
+      showLaneResult(lane, 'FALLO', 0, '#ff687e');
       return;
     }
 
@@ -1045,6 +1046,7 @@
       candidate.element.classList.add('being-held');
       setFeedback('MANTÉN PRESIONADA LA TECLA', '#50e7f2');
       showJudgement('MANTÉN', '#50e7f2');
+      showLaneResult(lane, 'MANTÉN', 0, '#50e7f2');
       return;
     }
 
@@ -1060,6 +1062,7 @@
     updateScore(time);
     updateBoostUI();
     showJudgement(judgement.label, judgement.color);
+    showLaneResult(lane, judgement.label, judgement.points * multiplier, judgement.color);
     setFeedback(candidate.boost ? '¡GEMA ESPECIAL! +25% DE IMPULSO' : '¡ACIERTO!');
     playFeedbackTone(true);
   }

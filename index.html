@@ -218,14 +218,10 @@
             <path class="lane-dividers" d="M400 400 L260 1000 M500 400 V1000 M600 400 L740 1000" />
           </svg>
 
-          <!-- Barra de impulso sobre la pista (#boostStatus guarda el porcentaje para lectores de pantalla). -->
-          <div class="impulse-hud" aria-label="Barra de impulso">
-            <div class="boost-meter" role="progressbar" aria-label="Carga de impulso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-              <div id="boostFill" class="boost-fill"></div>
-            </div>
-            <span id="boostStatus" class="visually-hidden">0%</span>
+          <div class="lane-results" aria-label="Resultado por carril">
+            <span class="lane-result" data-lane="0"></span><span class="lane-result" data-lane="1"></span>
+            <span class="lane-result" data-lane="2"></span><span class="lane-result" data-lane="3"></span>
           </div>
-
           <!-- Calidad del golpe junto al receptor amarillo, fuera de la pista. -->
           <div id="judgementDisplay" class="judgement-display" aria-live="polite"></div>
           <!-- Aciertos consecutivos: el contador se reinicia al fallar. -->
@@ -238,10 +234,6 @@
 
       <!-- Barra musical y puntuación fuera de la pista, a la izquierda. -->
       <div class="song-progress" aria-label="Progreso de la canción">
-        <div class="song-progress-meta">
-          <strong id="songProgressTitle">No Me Digas Que No</strong>
-          <span id="songProgressTime">00:00 / 00:00</span>
-        </div>
         <div id="songProgressBar" class="song-progress-bar" role="progressbar" aria-label="Avance de la canción" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
           <div id="songProgressFill" class="song-progress-fill"></div>
         </div>
@@ -258,18 +250,10 @@
           <!-- El círculo muestra únicamente el multiplicador actual. -->
           <div class="combo-block combo-orb" aria-label="Multiplicador actual">
             <strong><span id="comboMultiplier" class="multiplier">x1</span></strong>
+            <div class="boost-meter" role="progressbar" aria-label="Carga de impulso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="boostFill" class="boost-fill"></div></div>
+            <span id="boostStatus" class="visually-hidden">0%</span>
           </div>
 
-          <!-- Desempeño (vida) y precisión; si el desempeño llega a 0, pierdes. -->
-          <div class="performance-status" aria-label="Desempeño actual">
-            <div class="performance-heading">
-              <span class="stat-label">DESEMPEÑO</span><strong id="performanceValue">100%</strong>
-              <span class="stat-label">PRECISIÓN</span><strong id="accuracy">100%</strong>
-            </div>
-            <div id="performanceMeter" class="performance-meter" role="progressbar" aria-label="Desempeño restante" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" data-level="high">
-              <div id="performanceFill" class="performance-fill"></div>
-            </div>
-          </div>
         </div>
       </section>
     </section>
