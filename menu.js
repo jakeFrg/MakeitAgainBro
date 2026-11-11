@@ -6,19 +6,32 @@
      1. CONFIGURACIÓN
      ========================================================================== */
 
-  // Escenas de la introducción del modo historia: se muestran una tras otra.
-  const STORY_SCENES = [
-    {label:'CAPÍTULO 01', title:'¿DÓNDE ESTOY?',          text:'Acabas de despertar en tu habitación pero no se siente igual...'},
-    {label:'CAPÍTULO 01', title:'1986!!',                 text:'Ves el calendario y ves que dice 1986, abres la ventana y ves luces de neón y música de Federico Mercurio...'},
-    {label:'CAPÍTULO 01', title:'NO TIENES NADA',         text:'Te das cuenta de que no tienes un centavo y decides salir a volverte a ganar el público.'},
-    {label:'CAPÍTULO 01', title:'¿LISTO PARA VOLVER?',    text:'Antes de comenzar tu viaje, practica los cuatro carriles con un fragmento corto de ProDigio. Pulsa cada tecla cuando la nota llegue al receptor.'}
+  const SCENE_ANIMATION_MS = 350;
+  const NEXT_PANEL_LABEL = 'SIGUIENTE CUADRO ▶';
+  const INTRO_COMIC = [
+    {label:'CAPÍTULO 01 · 1986',title:'¿DÓNDE ESTOY?',text:'Abres los ojos en tu habitación. Algo se siente distinto…',image:'ART/assets/escenario1.jpeg',zoom:1.05,focus:'50% 55%'},
+    {label:'CAPÍTULO 01 · 1986',title:'UNA FECHA IMPOSIBLE',text:'El calendario marca 1986. Afuera, la ciudad brilla con luces de neón.',image:'ART/assets/escenario1.jpeg',zoom:1.35,focus:'40% 45%'},
+    {label:'CAPÍTULO 01 · 1986',title:'LA CIUDAD TE ESPERA',text:'La música suena por todas partes. Sales a buscar tu lugar en el escenario.',image:'ART/assets/escenario1.jpeg',zoom:1.65,focus:'65% 60%'},
+    {label:'TUTORIAL',title:'SIGUE EL RITMO',text:'Pulsa las cuatro teclas cuando las notas lleguen a los receptores.'}
   ];
-  const SCENE_DURATION_MS  = 5000; // tiempo que se ve cada escena
-  const SCENE_ANIMATION_MS = 500;  // duración de la animación de cambio de escena
-
-  // Texto del botón de la introducción: saltar mientras corre, empezar al llegar a la última escena.
-  const SKIP_LABEL  = 'SALTAR INTRO ▶';
-  const START_LABEL = 'EMPEZAR CANCIÓN ▶';
+  const COMIC_BY_NEXT_STAGE = {
+    1:[
+      {label:'CAPÍTULO 02 · PRIMER CONCIERTO',title:'UNA OPORTUNIDAD',text:'Después de practicar, llega tu primer concierto. La multitud espera.',image:'ART/assets/escenario1.jpeg'},
+      {label:'CAPÍTULO 02 · PRIMER CONCIERTO',title:'QUE NO PARE LA MÚSICA',text:'Toma aire, sigue las notas y demuestra lo que puedes hacer.'}
+    ],
+    2:[
+      {label:'CAPÍTULO 03 · NUEVAS MIRADAS',title:'MÁS PÚBLICO',text:'Tu presentación corrió la voz. Una nueva audiencia se reúne para verte.',image:'ART/assets/escenario1.jpeg'},
+      {label:'CAPÍTULO 03 · NUEVAS MIRADAS',title:'SUBE AL ESCENARIO',text:'Las luces se encienden. Mantén el ritmo y conquista a la multitud.'}
+    ],
+    3:[
+      {label:'CAPÍTULO 04 · EL GRAN SHOW',title:'LA NOCHE FINAL',text:'El escenario más grande de la ciudad se abre ante ti.',image:'ART/assets/escenario1.jpeg'},
+      {label:'CAPÍTULO 04 · EL GRAN SHOW',title:'TODO O NADA',text:'Esta es tu última canción. Haz que todos la recuerden.'}
+    ]
+  };
+  const FINAL_COMIC = [
+    {label:'EPÍLOGO',title:'UNA NOCHE PARA RECORDAR',text:'La última nota resuena y el público estalla en aplausos.',image:'ART/assets/escenario1.jpeg'},
+    {label:'EPÍLOGO',title:'EL SHOW CONTINÚA',text:'Tu historia apenas comienza. Gracias por jugar.'}
+  ];
 
   const MENU_MUSIC_VOLUME_KEY = 'ritmo-menu-music-volume';
 
@@ -65,6 +78,7 @@
   const storyLabel     = $('#storySceneLabel');
   const storyTitle     = $('#storySceneTitle');
   const storyText      = $('#storySceneText');
+  const storyPanelNumber = $('#storyPanelNumber');
   const skipStoryIntro = $('#skipStoryIntro');
 
   // Opciones.
@@ -88,8 +102,9 @@
      3. ESTADO
      ========================================================================== */
 
-  let storyTimer = 0;  // temporizador que avanza a la siguiente escena
-  let sceneIndex = 0;  // escena que toca mostrar
+  let comicPages = [];
+  let comicIndex = 0;
+  let comicFlow = 'intro';
 
   let menuTrack = null;          // canción del menú que suena ahora
   let introFinished = false;     // la barra solo puede aparecer al acabar la intro
@@ -308,7 +323,8 @@ if (mainMenu && !mainMenu.hidden) {
 }
   // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone otra canción.
   function showMainMenu() {
-    clearTimeout(storyTimer);
+    storyIntro.hidden = true;
+    document.body.classList.remove('story-transition');
     startScreen.hidden = false;
     showOnly(mainMenu);
     playMenuMusic(true);
@@ -318,45 +334,66 @@ if (mainMenu && !mainMenu.hidden) {
      6. MODO HISTORIA
      ========================================================================== */
 
-  // Cierra la introducción y el menú, y avisa al juego para empezar.
-  function beginStoryGame() {
-    clearTimeout(storyTimer);
-    stopMenuMusic();
-    storyIntro.hidden = true;
-    startScreen.hidden = true;
-    document.body.classList.remove('practice-mode');
-    document.dispatchEvent(new Event('rhythm:start'));
+  function renderComicPage() {
+    const page = comicPages[comicIndex];
+    if (!page) return;
+    storyIntro.dataset.scene = String(comicIndex % 3);
+    storyIntro.style.setProperty('--comic-art', page.image ? `url("${page.image}")` : 'none');
+    storyIntro.style.setProperty('--comic-zoom', String(page.zoom || 1));
+    storyIntro.style.setProperty('--comic-focus', page.focus || 'center');
+    storyPanelNumber.textContent = `${String(comicIndex + 1).padStart(2, '0')} / ${String(comicPages.length).padStart(2, '0')}`;
+    storyLabel.textContent = page.label;
+    storyTitle.textContent = page.title;
+    storyText.textContent = page.text;
+    skipStoryIntro.textContent = comicIndex === comicPages.length - 1
+      ? (comicFlow === 'final' ? 'VOLVER AL MENÚ ▶' : comicFlow === 'intro' ? 'EMPEZAR TUTORIAL ▶' : 'EMPEZAR CANCIÓN ▶')
+      : NEXT_PANEL_LABEL;
+    storyIntro.animate([{opacity:0, transform:'scale(1.025)'},{opacity:1, transform:'scale(1)'}], {duration:SCENE_ANIMATION_MS, easing:'ease-out'});
   }
 
-  // Muestra la escena actual con una animación; en la última, el botón cambia a "EMPEZAR CANCIÓN".
-  function showStoryScene() {
-    const scene = STORY_SCENES[sceneIndex];
-    storyIntro.dataset.scene = String(sceneIndex); // el CSS cambia el color según la escena
-    storyLabel.textContent = scene.label;
-    storyTitle.textContent = scene.title;
-    storyText.textContent  = scene.text;
+  function showComic(pages, flow) {
+    comicPages = pages;
+    comicIndex = 0;
+    comicFlow = flow;
+    document.body.classList.remove('story-transition');
+    startScreen.hidden = false;
+    showOnly(storyIntro);
+    renderComicPage();
+  }
 
-    storyIntro.animate([
-      {opacity:0, transform:'translateY(10px) scale(.98)'},
-      {opacity:1, transform:'translateY(0) scale(1)'}
-    ], {duration:SCENE_ANIMATION_MS, easing:'ease-out'});
-
-    sceneIndex++;
-    if (sceneIndex < STORY_SCENES.length) {
-      storyTimer = setTimeout(showStoryScene, SCENE_DURATION_MS);
+  function advanceComic() {
+    if (comicIndex + 1 < comicPages.length) {
+      comicIndex++;
+      renderComicPage();
+      return;
+    }
+    storyIntro.hidden = true;
+    if (comicFlow === 'intro') {
+      startScreen.hidden = true;
+      document.body.classList.remove('practice-mode');
+      document.dispatchEvent(new Event('rhythm:start'));
+    } else if (comicFlow === 'final') {
+      showMainMenu();
     } else {
-      // La partida no empieza sola: el clic inicia el audio, como exigen los navegadores.
-      skipStoryIntro.textContent = START_LABEL;
+      startScreen.hidden = true;
+      document.dispatchEvent(new CustomEvent('rhythm:comic:continue'));
     }
   }
 
-  // Empieza la introducción desde la primera escena.
   function startStoryIntro() {
     stopMenuMusic();
+    document.body.classList.add('story-transition');
+    startScreen.hidden = false;
     showOnly(storyIntro);
-    sceneIndex = 0;
-    skipStoryIntro.textContent = SKIP_LABEL;
-    showStoryScene();
+    comicPages = INTRO_COMIC;
+    comicIndex = 0;
+    comicFlow = 'intro';
+    storyIntro.hidden = true;
+    window.setTimeout(() => {
+      document.body.classList.remove('story-transition');
+      storyIntro.hidden = false;
+      renderComicPage();
+    }, 500);
   }
 
   /* ==========================================================================
@@ -466,8 +503,17 @@ if (mainMenu && !mainMenu.hidden) {
     });
     backToOptions.addEventListener('click', showOptionsHome);
 
-    // Botones para saltar la introducción o volver al menú.
-    skipStoryIntro.addEventListener('click', beginStoryGame);
+    // Cada clic en el cómic avanza exactamente un cuadro.
+    storyIntro.addEventListener('click', advanceComic);
+    document.addEventListener('rhythm:comic', event => {
+      document.body.classList.add('story-transition');
+      showComic(COMIC_BY_NEXT_STAGE[event.detail?.nextStage] || [], 'between');
+    });
+    document.addEventListener('rhythm:comic:final', () => {
+      document.body.classList.add('story-transition');
+      showComic(FINAL_COMIC, 'final');
+    });
+    document.addEventListener('rhythm:comic:continue', () => document.dispatchEvent(new Event('rhythm:next-stage')));
     $('#backFromCredits').addEventListener('click', showMainMenu);
     backFromSettings.addEventListener('click', showMainMenu);
     $('#backFromLeaderboard').addEventListener('click', showMainMenu);

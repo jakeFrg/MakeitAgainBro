@@ -78,11 +78,12 @@
       <button id="resetButton" class="menu-reset-button" type="button">↺ REINICIAR PARTIDA</button>
 
       <!-- Introducción del modo historia: menu.js rellena el texto de cada escena. -->
-      <div class="story-intro" id="storyIntro" aria-live="polite" hidden>
+      <div class="story-intro story-comic" id="storyIntro" aria-live="polite" hidden>
+        <span class="comic-panel-number" id="storyPanelNumber"></span>
         <p id="storySceneLabel" class="story-scene-label"></p>
         <h2 id="storySceneTitle"></h2>
         <p id="storySceneText"></p>
-        <button id="skipStoryIntro" class="story-skip" type="button">SALTAR INTRO ▶</button>
+        <button id="skipStoryIntro" class="story-skip" type="button">SIGUIENTE CUADRO ▶</button>
       </div>
 
       <!-- Créditos. -->

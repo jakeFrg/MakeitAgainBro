@@ -132,6 +132,7 @@
   let storyPlaylistReady = Promise.resolve([]);
   let storyCampaignActive = false;
   let storyStageIndex = -1;
+  const laneResultTimers = new Map();
   let customSongSelected = false;
   let customChartSelected = false;
   let notes = [];
@@ -315,12 +316,31 @@
     ], {duration:760, easing:'ease-out', fill:'forwards'});
   }
 
-  function showLaneResult(lane, label, points = 0, color = '#ffffff') {
+  function showLaneResult(lane, label, color = '#ffffff') {
     const result = document.querySelector(`.lane-result[data-lane="${lane}"]`);
     if (!result) return;
-    result.textContent = points ? `${label} +${points}` : label;
+    const oldTimer = laneResultTimers.get(lane);
+    if (oldTimer) clearTimeout(oldTimer);
+    result.getAnimations().forEach(animation => animation.cancel());
+    result.textContent = label;
     result.style.color = color;
-    result.animate([{opacity:1, transform:'translateY(0)'}, {opacity:0, transform:'translateY(-8px)'}], {duration:900, easing:'ease-out'});
+    result.style.opacity = '1';
+    result.animate([{opacity:0, transform:'translateY(5px)'},{opacity:1, transform:'translateY(0)'}], {duration:120, easing:'ease-out'});
+    laneResultTimers.set(lane, window.setTimeout(() => {
+      result.style.opacity = '0';
+      result.textContent = '';
+      laneResultTimers.delete(lane);
+    }, 900));
+  }
+
+  function clearLaneResults() {
+    laneResultTimers.forEach(timer => clearTimeout(timer));
+    laneResultTimers.clear();
+    document.querySelectorAll('.lane-result').forEach(result => {
+      result.getAnimations().forEach(animation => animation.cancel());
+      result.textContent = '';
+      result.style.opacity = '0';
+    });
   }
 
   // Nivel de combo: x1 antes de 10 aciertos, x2 desde 10, x4 desde 20 y x8 desde 30.
@@ -390,11 +410,13 @@
   // Refresca la barra de desempeño (verde, amarilla o roja según el nivel).
   function updatePerformance() {
     const value = Math.max(0, Math.min(MAX_PERFORMANCE, playerPerformance));
-    const grayMix = 1 - value / MAX_PERFORMANCE;
-    const red = Math.round(0 + 112 * grayMix);
-    const green = Math.round(255 - 143 * grayMix);
-    const blue = Math.round(75 + 45 * grayMix);
-    stage.style.setProperty('--performance-frame', `rgb(${red} ${green} ${blue})`);
+    const ratio = value / MAX_PERFORMANCE;
+    const mix = ratio >= .5 ? (1 - ratio) * 2 : 1 - ratio * 2;
+    const from = ratio >= .5 ? [34, 255, 82] : [255, 211, 35];
+    const to = ratio >= .5 ? [255, 211, 35] : [255, 45, 55];
+    const rgb = from.map((channel, index) => Math.round(channel + (to[index] - channel) * mix));
+    stage.style.setProperty('--performance-frame', `rgb(${rgb.join(' ')})`);
+    document.body.style.setProperty('--performance-gray', `${Math.round((1 - ratio) * 78)}%`);
   }
 
   // Refresca el relleno y el porcentaje de la barra de impulso.
@@ -770,6 +792,7 @@
     resetNotes();
     updateSongProgress(0);
     updateBoostUI();
+    clearLaneResults();
     message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
     setFeedback(musicRound ? '¡A JUGAR!' : 'PREPÁRATE');
@@ -831,6 +854,7 @@
     clockEl.textContent = '00:00';
     resetNotes();
     updateBoostUI();
+    clearLaneResults();
     updateSongProgress(0);
     message.textContent = '';
     message.classList.remove('results', 'defeat', 'audio-prompt');
@@ -885,8 +909,8 @@
     const nextStage = nextStageIndex >= 0 ? storyPlaylist[nextStageIndex] : null;
     const resultAction = storyCampaignActive
       ? nextStage
-        ? `<br><small>PRÓXIMO ESCENARIO: ${nextStage.title}</small><br><button id="nextStorySongButton" class="replay-level-button" type="button">SIGUIENTE CANCIÓN ▶</button>`
-        : `<br><small>${outcome === 'defeat' ? 'CAMPAÑA FINALIZADA' : 'CAMPAÑA COMPLETADA'}</small><br><button id="backToMainMenuButton" class="replay-level-button" type="button">VOLVER AL MENÚ</button>`
+        ? `<br><small>PRÓXIMO ESCENARIO: ${nextStage.title}</small><br><button id="nextStorySongButton" class="replay-level-button" type="button">VER CÓMIC ▶</button>`
+        : `<br><small>CAMPAÑA FINALIZADA</small><br><button id="backToMainMenuButton" class="replay-level-button" type="button">VER CÓMIC FINAL ▶</button>`
       : `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`;
     message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
     message.hidden = false;
@@ -902,14 +926,16 @@
       message.querySelector('#nextStorySongButton').addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
-        startStoryCampaignStage(nextStageIndex);
+        document.body.classList.add('story-transition');
+        window.setTimeout(() => document.dispatchEvent(new CustomEvent('rhythm:comic', {detail:{nextStage:nextStageIndex}})), 650);
       }, {once:true});
     }
     if (storyCampaignActive && !nextStage) {
       message.querySelector('#backToMainMenuButton').addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
-        $('#resetButton').click();
+        document.body.classList.add('story-transition');
+        window.setTimeout(() => document.dispatchEvent(new Event('rhythm:comic:final')), 650);
       }, {once:true});
     }
     setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
@@ -937,7 +963,16 @@
     updateScore(pausedAt);
     const tutorialRound = storyCampaignActive && storyPlaylist[storyStageIndex]?.tutorial;
     if (!isPracticeMode() && !tutorialRound) saveRunToProfile(outcome, accuracy);
-    showResults(outcome, accuracy, grade);
+    const nextStageIndex = storyCampaignActive ? storyStageIndex + 1 : -1;
+    if (outcome === 'victory' && storyCampaignActive && nextStageIndex < storyPlaylist.length) {
+      document.body.classList.add('story-transition');
+      window.setTimeout(() => document.dispatchEvent(new CustomEvent('rhythm:comic', {detail:{nextStage:nextStageIndex}})), 650);
+    } else if (outcome === 'victory' && storyCampaignActive) {
+      document.body.classList.add('story-transition');
+      window.setTimeout(() => document.dispatchEvent(new Event('rhythm:comic:final')), 650);
+    } else {
+      showResults(outcome, accuracy, grade);
+    }
   }
 
   /* ==========================================================================
@@ -956,6 +991,7 @@
     updateScore(time);
     updateBoostUI();
     showJudgement('EXCELENTE', '#50e7f2');
+    showLaneResult(note.lane, 'EXCELENTE', '#50e7f2');
     setFeedback('¡NOTA SOSTENIDA!');
     playFeedbackTone(true);
   }
@@ -967,6 +1003,7 @@
     note.element.remove();
     registerMiss(time, 'SOLTASTE LA TECLA ANTES DE TIEMPO');
     showJudgement('FALLO', '#ff687e');
+    showLaneResult(note.lane, 'FALLO', '#ff687e');
   }
 
   /* ==========================================================================
@@ -1034,7 +1071,7 @@
     if (!candidate) {
       registerMiss(time);
       showJudgement('MALO', '#ff687e');
-      showLaneResult(lane, 'FALLO', 0, '#ff687e');
+      showLaneResult(lane, 'FALLO', '#ff687e');
       return;
     }
 
@@ -1046,7 +1083,7 @@
       candidate.element.classList.add('being-held');
       setFeedback('MANTÉN PRESIONADA LA TECLA', '#50e7f2');
       showJudgement('MANTÉN', '#50e7f2');
-      showLaneResult(lane, 'MANTÉN', 0, '#50e7f2');
+      showLaneResult(lane, 'MANTÉN', '#50e7f2');
       return;
     }
 
@@ -1062,7 +1099,7 @@
     updateScore(time);
     updateBoostUI();
     showJudgement(judgement.label, judgement.color);
-    showLaneResult(lane, judgement.label, judgement.points * multiplier, judgement.color);
+    showLaneResult(lane, judgement.label, judgement.color);
     setFeedback(candidate.boost ? '¡GEMA ESPECIAL! +25% DE IMPULSO' : '¡ACIERTO!');
     playFeedbackTone(true);
   }
@@ -1092,6 +1129,7 @@
       note.element.remove();
       registerMiss(songTime);
       showJudgement('MALO', '#ff687e');
+      showLaneResult(note.lane, 'FALLO', '#ff687e');
       return;
     }
 
@@ -1277,6 +1315,7 @@
     const song = storyPlaylist[index];
     if (!song) return;
     storyCampaignActive = true;
+    document.body.classList.remove('story-transition');
     storyStageIndex = index;
     chart = applyDifficulty(song.chart);
     stage.dataset.scenario = song.scenario;
@@ -1396,6 +1435,10 @@
         else if (playlist.length) startStoryCampaignStage(0);
         else startSingleSong();
       });
+    });
+    document.addEventListener('rhythm:next-stage', () => {
+      const nextIndex = storyStageIndex + 1;
+      if (nextIndex >= 0 && nextIndex < storyPlaylist.length) startStoryCampaignStage(nextIndex);
     });
     document.addEventListener('rhythm:practice', () => {
       leadMs = getDifficultyConfig().leadMs;
