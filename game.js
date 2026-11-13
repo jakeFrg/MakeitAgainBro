@@ -33,7 +33,7 @@
   // Teclas por carril (Espacio queda reservado para el impulso), nombres y colores.
   const DEFAULT_LANE_KEYS = ['ArrowLeft', 'ArrowDown', 'ArrowUp', 'ArrowRight'];
   const LANE_NAMES  = ['Carril 1', 'Carril 2', 'Carril 3', 'Carril 4'];
-  const LANE_COLORS = ['#50e7f2', '#ff4db8', '#a989ff', '#ffd65a'];
+  const LANE_COLORS = ['#50e7f2', '#ff4db8', '#a989ff', '#ff8a32'];
 
   // El trapecio de la pista empieza al 40% de su altura; laneCenterAt() calcula
   // el centro de cada carril a cualquier altura para que notas y receptores
@@ -114,11 +114,16 @@
   const songName         = $('#songName');
   const songProgressBar = $('#songProgressBar');
   const songProgressFill = $('#songProgressFill');
+  const performanceMeter = $('#performanceMeter');
+  const performanceFill = $('#performanceFill');
+  const performanceValue = $('#performanceValue');
   const musicVolume      = $('#musicVolume');
   const musicVolumeValue = $('#musicVolumeValue');
   const volumeControl    = $('#volumeControl');
   const volumeValue      = $('#volumeValue');
   const levelMusic       = $('#musicaNivel');
+  const countdownScreen  = $('#countdownScreen');
+  const countdownNumber  = $('#countdownNumber');
 
   /* ==========================================================================
      3. ESTADO
@@ -146,6 +151,10 @@
   // Reloj de la partida
   let running = false;
   let preRoll = false;                // cuenta previa (ya no se activa en esta versión)
+  let countdownActive = false;
+  let countdownTimer = 0;
+  let countdownToken = 0;
+  let countdownWasMuted = false;
   let startedAt = 0;
   let preRollStartedAt = 0;
   let pausedAt = 0;
@@ -412,11 +421,18 @@
     const value = Math.max(0, Math.min(MAX_PERFORMANCE, playerPerformance));
     const ratio = value / MAX_PERFORMANCE;
     const mix = ratio >= .5 ? (1 - ratio) * 2 : 1 - ratio * 2;
-    const from = ratio >= .5 ? [34, 255, 82] : [255, 211, 35];
-    const to = ratio >= .5 ? [255, 211, 35] : [255, 45, 55];
+    const from = ratio >= .5 ? [0, 255, 36] : [255, 230, 0];
+    const to = ratio >= .5 ? [255, 230, 0] : [255, 18, 32];
     const rgb = from.map((channel, index) => Math.round(channel + (to[index] - channel) * mix));
     stage.style.setProperty('--performance-frame', `rgb(${rgb.join(' ')})`);
     document.body.style.setProperty('--performance-gray', `${Math.round((1 - ratio) * 78)}%`);
+    performanceFill.style.height = `${ratio * 100}%`;
+    performanceFill.style.backgroundColor = `rgb(${rgb.join(' ')})`;
+    performanceFill.style.boxShadow = `0 0 9px rgb(${rgb.join(' ')} / 60%)`;
+    performanceValue.textContent = `${Math.round(value)}%`;
+    performanceValue.style.color = `rgb(${rgb.join(' ')})`;
+    performanceMeter.setAttribute('aria-valuenow', String(Math.round(value)));
+    performanceMeter.dataset.level = ratio > .6 ? 'high' : ratio > .3 ? 'medium' : 'low';
   }
 
   // Refresca el relleno y el porcentaje de la barra de impulso.
@@ -747,6 +763,11 @@
   // Si el navegador bloquea la reproducción automática, pide un clic para activar el audio.
   function showAudioStartPrompt() {
     if (!running) return;
+    countdownToken++;
+    clearTimeout(countdownTimer);
+    countdownActive = false;
+    countdownScreen.hidden = true;
+    songAudio.muted = countdownWasMuted;
     running = false;
     document.body.classList.remove('game-running');
     preRoll = false;
@@ -768,7 +789,7 @@
 
   // Empieza una ronda: reinicia puntos, impulso y notas; en historia arranca la canción.
   function start({allowSilentFallback = false} = {}) {
-    if (running) return;
+    if (running || countdownActive) return;
     document.body.classList.remove('level-finished');
     const musicRound = !isPracticeMode();
     clearBoostState();
@@ -779,8 +800,8 @@
     preRollStartedAt = performance.now();
     startedAt = preRollStartedAt;
     pausedAt = 0;
-    running = true;
-    document.body.classList.add('game-running');
+    running = false;
+    document.body.classList.remove('game-running');
     score = 0;
     combo = 0;
     bestCombo = 0;
@@ -795,39 +816,107 @@
     clearLaneResults();
     message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
-    setFeedback(musicRound ? '¡A JUGAR!' : 'PREPÁRATE');
+    setFeedback(musicRound ? 'PREPÁRATE' : 'PREPÁRATE');
 
-    // Story Mode usa el audio como reloj maestro desde el inicio de la partida.
-    if (musicRound) {
-      try { songAudio.currentTime = 0; } catch (error) {}
-      try {
-        const playback = songAudio.play();
-        if (playback && typeof playback.then === 'function') {
-          playback.then(() => { songStarted = true; }).catch(error => {
-            console.warn('No se pudo reproducir la canción:', error);
-            if (allowSilentFallback) {
-              songAudio.pause();
-              songStarted = false;
-              startedAt = performance.now();
-              setFeedback('JUGANDO SIN AUDIO', '#ffd65a');
-            } else showAudioStartPrompt();
-          });
-        } else {
-          songStarted = true;
-        }
-      } catch (error) {
+    const beginPlaying = silentFallback => {
+      countdownScreen.hidden = true;
+      countdownActive = false;
+      running = true;
+      document.body.classList.add('game-running');
+      startedAt = performance.now();
+      if (musicRound && !silentFallback) {
+        try { songAudio.currentTime = 0; } catch (error) {}
+        songAudio.muted = countdownWasMuted;
+        songStarted = true;
+      } else if (musicRound) {
+        songAudio.pause();
+        songAudio.muted = countdownWasMuted;
+        songStarted = false;
+        setFeedback('JUGANDO SIN AUDIO', '#ffd65a');
+      } else {
+        songStarted = false;
+      }
+      setFeedback(silentFallback ? 'JUGANDO SIN AUDIO' : '¡A JUGAR!', silentFallback ? '#ffd65a' : undefined);
+    };
+
+    if (!musicRound) {
+      countdownScreen.hidden = true;
+      beginPlaying(false);
+      return;
+    }
+
+    countdownActive = true;
+    const token = ++countdownToken;
+    let countdownFinished = false;
+    let audioReady = false;
+    let silentFallback = false;
+    countdownWasMuted = songAudio.muted;
+    countdownScreen.hidden = false;
+    countdownNumber.textContent = '3';
+    setFeedback('PREPÁRATE');
+
+    const finishWhenReady = () => {
+      if (token !== countdownToken || !countdownFinished || !audioReady) return;
+      beginPlaying(silentFallback);
+    };
+    const countNext = number => {
+      if (token !== countdownToken) return;
+      if (number > 1) {
+        countdownTimer = window.setTimeout(() => {
+          countdownNumber.textContent = String(number - 1);
+          countNext(number - 1);
+        }, 1000);
+      } else {
+        countdownTimer = window.setTimeout(() => {
+          countdownFinished = true;
+          finishWhenReady();
+        }, 1000);
+      }
+    };
+    countNext(3);
+
+    // Inicia el audio silenciado desde el gesto de usuario para evitar que el navegador
+    // bloquee la reproducción al terminar los tres segundos de cuenta regresiva.
+    try {
+      songAudio.currentTime = 0;
+      songAudio.muted = true;
+      const playback = songAudio.play();
+      Promise.resolve(playback).then(() => {
+        if (token !== countdownToken) return;
+        audioReady = true;
+        finishWhenReady();
+      }).catch(error => {
+        if (token !== countdownToken) return;
         console.warn('No se pudo reproducir la canción:', error);
         if (allowSilentFallback) {
-          songStarted = false;
-          startedAt = performance.now();
-          setFeedback('JUGANDO SIN AUDIO', '#ffd65a');
-        } else showAudioStartPrompt();
+          audioReady = true;
+          silentFallback = true;
+          finishWhenReady();
+        } else {
+          running = true;
+          showAudioStartPrompt();
+        }
+      });
+    } catch (error) {
+      console.warn('No se pudo reproducir la canción:', error);
+      if (allowSilentFallback) {
+        audioReady = true;
+        silentFallback = true;
+        finishWhenReady();
+      } else {
+        running = true;
+        showAudioStartPrompt();
       }
     }
   }
 
   // Detiene la partida y deja todo en su estado inicial.
   function reset() {
+    countdownToken++;
+    clearTimeout(countdownTimer);
+    countdownActive = false;
+    countdownScreen.hidden = true;
+    songAudio.muted = countdownWasMuted;
     storyCampaignActive = false;
     storyStageIndex = -1;
     stage.removeAttribute('data-scenario');
@@ -906,11 +995,8 @@
     const nextStageIndex = storyCampaignActive && storyStageIndex + 1 < storyPlaylist.length
       ? storyStageIndex + 1
       : -1;
-    const nextStage = nextStageIndex >= 0 ? storyPlaylist[nextStageIndex] : null;
     const resultAction = storyCampaignActive
-      ? nextStage
-        ? `<br><small>PRÓXIMO ESCENARIO: ${nextStage.title}</small><br><button id="nextStorySongButton" class="replay-level-button" type="button">VER CÓMIC ▶</button>`
-        : `<br><small>CAMPAÑA FINALIZADA</small><br><button id="backToMainMenuButton" class="replay-level-button" type="button">VER CÓMIC FINAL ▶</button>`
+      ? '<br><small class="continue-hint">HAZ CLIC PARA CONTINUAR</small>'
       : `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`;
     message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
     message.hidden = false;
@@ -922,21 +1008,18 @@
         start();
       }, {once:true});
     }
-    if (nextStage) {
-      message.querySelector('#nextStorySongButton').addEventListener('click', event => {
-        event.preventDefault();
-        event.stopPropagation();
+    if (storyCampaignActive) {
+      message.style.cursor = 'pointer';
+      message.addEventListener('click', () => {
         document.body.classList.add('story-transition');
-        window.setTimeout(() => document.dispatchEvent(new CustomEvent('rhythm:comic', {detail:{nextStage:nextStageIndex}})), 650);
+        if (nextStageIndex >= 0) {
+          window.setTimeout(() => document.dispatchEvent(new CustomEvent('rhythm:comic', {detail:{nextStage:nextStageIndex}})), 650);
+        } else {
+          window.setTimeout(() => document.dispatchEvent(new Event('rhythm:comic:final')), 650);
+        }
       }, {once:true});
-    }
-    if (storyCampaignActive && !nextStage) {
-      message.querySelector('#backToMainMenuButton').addEventListener('click', event => {
-        event.preventDefault();
-        event.stopPropagation();
-        document.body.classList.add('story-transition');
-        window.setTimeout(() => document.dispatchEvent(new Event('rhythm:comic:final')), 650);
-      }, {once:true});
+    } else {
+      message.style.cursor = '';
     }
     setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
   }
@@ -963,16 +1046,7 @@
     updateScore(pausedAt);
     const tutorialRound = storyCampaignActive && storyPlaylist[storyStageIndex]?.tutorial;
     if (!isPracticeMode() && !tutorialRound) saveRunToProfile(outcome, accuracy);
-    const nextStageIndex = storyCampaignActive ? storyStageIndex + 1 : -1;
-    if (outcome === 'victory' && storyCampaignActive && nextStageIndex < storyPlaylist.length) {
-      document.body.classList.add('story-transition');
-      window.setTimeout(() => document.dispatchEvent(new CustomEvent('rhythm:comic', {detail:{nextStage:nextStageIndex}})), 650);
-    } else if (outcome === 'victory' && storyCampaignActive) {
-      document.body.classList.add('story-transition');
-      window.setTimeout(() => document.dispatchEvent(new Event('rhythm:comic:final')), 650);
-    } else {
-      showResults(outcome, accuracy, grade);
-    }
+    showResults(outcome, accuracy, grade);
   }
 
   /* ==========================================================================
@@ -1002,6 +1076,7 @@
     note.missed = true;
     note.element.remove();
     registerMiss(time, 'SOLTASTE LA TECLA ANTES DE TIEMPO');
+    flashReceptor(note.lane, true);
     showJudgement('FALLO', '#ff687e');
     showLaneResult(note.lane, 'FALLO', '#ff687e');
   }
@@ -1020,14 +1095,17 @@
   }
 
   // Ilumina un instante el receptor del carril pulsado.
-  function flashReceptor(lane) {
+  function flashReceptor(lane, missed = false) {
     const receptor = receptors[lane];
+    receptor.classList.remove('active', 'missed');
+    void receptor.offsetWidth;
+    receptor.classList.toggle('missed', missed);
     receptor.classList.add('active');
     clearTimeout(receptorFlashTimers[lane]);
     receptorFlashTimers[lane] = setTimeout(() => {
-      receptor.classList.remove('active');
+      receptor.classList.remove('active', 'missed');
       receptorFlashTimers[lane] = 0;
-    }, 100);
+    }, missed ? 260 : 180);
   }
 
   // Busca (con búsqueda binaria) la nota pendiente más cercana del carril dentro de su ventana de acierto.
@@ -1069,6 +1147,7 @@
 
     // Fallo: no había nota al alcance.
     if (!candidate) {
+      flashReceptor(lane, true);
       registerMiss(time);
       showJudgement('MALO', '#ff687e');
       showLaneResult(lane, 'FALLO', '#ff687e');
@@ -1128,6 +1207,7 @@
       note.missed = true;
       note.element.remove();
       registerMiss(songTime);
+      flashReceptor(note.lane, true);
       showJudgement('MALO', '#ff687e');
       showLaneResult(note.lane, 'FALLO', '#ff687e');
       return;

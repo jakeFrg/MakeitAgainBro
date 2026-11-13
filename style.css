@@ -117,6 +117,27 @@ button, select { font: inherit; }
   overflow: hidden;
   background: #000;
 }
+.countdown-screen {
+  position: absolute;
+  z-index: 110;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  background: #000;
+  color: #fff;
+  text-align: center;
+}
+.countdown-screen[hidden] { display: none; }
+.countdown-screen span {
+  color: #fff;
+  font: 900 clamp(160px, 28cqw, 420px)/.85 Impact, "Arial Black", sans-serif;
+  text-shadow: 0 0 18px #fff9, 0 0 58px #50e7f2aa;
+  animation: countdown-pop .72s ease both;
+}
+.countdown-screen small { color: #d8d5f7; font: 800 clamp(14px, 2cqw, 26px) "Courier New", monospace; letter-spacing: .3em; }
+@keyframes countdown-pop { from { opacity: .25; transform: scale(1.3); } to { opacity: 1; transform: scale(1); } }
 .game-intro[hidden] { display: none; }
 .game-intro-logo {
   display: block;
@@ -462,6 +483,7 @@ button, select { font: inherit; }
 .story-intro.story-comic > p:not(.story-scene-label) { max-width: 760px; font-size: clamp(16px, 2.5vw, 26px); line-height: 1.6; }
 .story-intro.story-comic .story-scene-label { margin-bottom: 16px; color: #ffd65a; font-size: clamp(12px, 1.5vw, 18px); }
 .comic-panel-number { position: absolute; top: 22px; right: 26px; color: #fff; font: 800 14px "Courier New", monospace; letter-spacing: 2px; }
+.story-continue-hint { margin-top: 16px; color: #ffd65a; font: 800 clamp(12px, 1.5vw, 18px) "Courier New", monospace; letter-spacing: .12em; text-shadow: 0 2px 6px #000; }
 .story-transition::after { position: fixed; inset: 0; z-index: 20; content: ""; background: #030307; animation: comic-black-in .5s ease both; }
 @keyframes comic-black-in { from { opacity: 0; } to { opacity: 1; } }
 
@@ -803,7 +825,7 @@ body[data-scenario="no-me-digas"] .game-frame {
   overflow: hidden;
   clip-path: polygon(30% 40%, 70% 40%, 98% 100%, 2% 100%);
   background: linear-gradient(180deg, #211c2d, #13121d 50%, #0d0c14);
-  filter: drop-shadow(0 0 14px #50e7f233);
+  filter: none;
   transition: background 900ms ease, filter 900ms ease;
 }
 .stage[data-scenario="no-me-digas"] .highway {
@@ -829,17 +851,28 @@ body[data-scenario="no-me-digas"] .game-frame {
 .stage[data-scenario="no-me-digas"] .lane-glow { background: linear-gradient(180deg, #4ddfff26, transparent 60%); }
 .stage[data-scenario="me-gustan"] .lane-glow { background: linear-gradient(180deg, #ff4db82a, transparent 62%); }
 .stage[data-scenario="hazlo-otra-vez"] .lane-glow { background: linear-gradient(180deg, #ffd65a26, transparent 62%); }
+.lane-glow { background: none !important; }
 
 /* Línea de golpe: aquí deben pulsarse las notas. */
 .hit-line {
   position: absolute;
   z-index: 3;
+  isolation: isolate;
   bottom: 176px;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #ff4db8 8%, #ff4db8 92%, transparent);
-  box-shadow: 0 0 12px #ff4db8;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0 11.81%,
+    #50e7f2 11.81% 30.905%,
+    #ff4db8 30.905% 50%,
+    #a989ff 50% 69.095%,
+    #ff8a32 69.095% 88.19%,
+    transparent 88.19% 100%);
+  box-shadow: none;
+}
+.hit-line::before {
+  display: none;
 }
 
 /* Receptores: flechas fijas, cada una con el color de su carril; se iluminan al pulsar. */
@@ -856,15 +889,15 @@ body[data-scenario="no-me-digas"] .game-frame {
   justify-items: center;
 }
 .receptor {
-  width: clamp(29px, 6cqw, 42px);
-  height: clamp(29px, 6cqw, 42px);
+  width: clamp(48px, 6.8cqw, 76px);
+  height: clamp(28px, 3.8cqw, 42px);
   display: grid;
   place-items: center;
   border: 2px solid var(--note-color);
-  border-radius: 7px;
+  border-radius: 4px;
   color: var(--note-color);
   background: #11101be8;
-  box-shadow: 0 0 13px color-mix(in srgb, var(--note-color) 55%, transparent);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--note-color) 35%, transparent);
   transition: transform .08s, background .08s;
   font-size: clamp(19px, 2.4cqw, 27px);
   font-weight: 900;
@@ -873,8 +906,10 @@ body[data-scenario="no-me-digas"] .game-frame {
 .receptor[data-lane="0"] { --note-color: #50e7f2; }
 .receptor[data-lane="1"] { --note-color: #ff4db8; }
 .receptor[data-lane="2"] { --note-color: #a989ff; }
-.receptor[data-lane="3"] { --note-color: #ffd65a; }
+.receptor[data-lane="3"] { --note-color: #ff8a32; }
 .receptor.active { transform: scale(1.12); background: var(--note-color); color: #17131a; }
+.receptor.active { box-shadow: 0 0 6px var(--note-color), 0 0 12px color-mix(in srgb, var(--note-color) 55%, transparent); filter: brightness(1.12); }
+.receptor.active.missed { border-color: #ff253f; background: #ff253f; color: #fff; box-shadow: 0 0 7px #ff253f, 0 0 14px #ff253f88; }
 /* Tecla personalizada: letra más pequeña para que quepa en el receptor. */
 .receptor.custom-key span {
   max-width: 100%;
@@ -903,9 +938,9 @@ body[data-scenario="no-me-digas"] .game-frame {
   height: 16px;
   transform: translate(-50%, -50%);
   border: 2px solid var(--note-color);
-  border-radius: 4px;
+  border-radius: 3px;
   background: #10101add;
-  box-shadow: 0 0 9px var(--note-color), inset 0 0 5px color-mix(in srgb, var(--note-color) 25%, transparent);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--note-color) 65%, transparent), inset 0 0 3px color-mix(in srgb, var(--note-color) 20%, transparent);
 }
 
 /* Nota sostenida: cola larga que se consume mientras mantienes la tecla. */
@@ -914,7 +949,7 @@ body[data-scenario="no-me-digas"] .game-frame {
   transform: translate(-50%, -100%);
   border-radius: 999px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--note-color) 45%, #10101a), var(--note-color));
-  box-shadow: 0 0 12px var(--note-color), inset 0 0 6px #fff8;
+  box-shadow: 0 0 6px var(--note-color), inset 0 0 4px #fff8;
 }
 .note.hold-note.being-held { filter: brightness(1.25); }
 .note.boost-note.hold-note { height: var(--hold-length, 72px); }
@@ -923,9 +958,9 @@ body[data-scenario="no-me-digas"] .game-frame {
 .note.boost-note {
   width: clamp(34px, 6cqw, 62px);
   height: 15px;
-  border: 2px solid #fff1a5;
-  background: #ffd65a;
-  box-shadow: 0 0 12px #ffd65a99, inset 0 0 5px #ffd65a66;
+  border: 2px solid color-mix(in srgb, var(--note-color) 65%, #fff);
+  background: color-mix(in srgb, var(--note-color) 75%, #fff);
+  box-shadow: 0 0 6px var(--note-color), inset 0 0 4px #fff;
 }
 .note.boost-note::after {
   content: "★";
@@ -939,10 +974,16 @@ body[data-scenario="no-me-digas"] .game-frame {
 }
 
 /* Impulso activo: resplandor dorado en la pista y en la línea de golpe. */
-.stage.boost-active .highway { filter: drop-shadow(0 0 18px #ffd65a99); }
+.stage.boost-active .highway { filter: none; }
 .stage.boost-active .hit-line {
-  background: linear-gradient(90deg, transparent, #ffd65a, #fff4b0, #ffd65a, transparent);
-  box-shadow: 0 0 18px #ffd65a;
+  background: linear-gradient(90deg,
+    transparent 0 11.81%,
+    #50e7f2 11.81% 30.905%,
+    #ff4db8 30.905% 50%,
+    #a989ff 50% 69.095%,
+    #ff8a32 69.095% 88.19%,
+    transparent 88.19% 100%);
+  box-shadow: none;
 }
 
 /* Mensaje sobre la pista (empezar, fin de partida). */
@@ -963,20 +1004,25 @@ body[data-scenario="no-me-digas"] .game-frame {
 
 /* Resumen centrado en la pista al terminar el nivel (borde rojo si es derrota). */
 .stage-message.results {
+  z-index: 12;
   top: 50%;
   left: 50%;
-  width: min(92%, 460px);
-  padding: 16px;
+  width: min(88%, 540px);
+  padding: 4px 8px;
   transform: translate(-50%, -50%);
-  border: 1px solid var(--cyan);
-  border-radius: 8px;
-  background: #090914ed;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: white;
-  box-shadow: 0 0 24px #50e7f244;
-  line-height: 1.8;
+  box-shadow: none;
+  font-size: clamp(13px, 1.1cqw, 18px);
+  line-height: 1.65;
+  text-shadow: 0 2px 6px #000, 0 0 12px #000, 0 0 22px #000;
   pointer-events: auto;
 }
-.stage-message.results.defeat { border-color: #ff687e; box-shadow: 0 0 24px #ff687e55; }
+.stage-message.results small { font-size: 1em; }
+.stage-message.results.defeat { border-color: transparent; box-shadow: none; }
+.stage-message.results .continue-hint { display: inline-block; margin-top: 10px; color: #ffd65a; font-size: .8em; letter-spacing: .12em; }
 .replay-level-button {
   position: relative;
   z-index: 1;
@@ -1370,4 +1416,51 @@ body.level-finished .combo-count-marker { visibility: hidden; }
 .combo-orb::before {
   background: conic-gradient(#777783 0 calc(100% - var(--boost-progress, 0%)), #ffd52e 0 100%);
   filter: drop-shadow(0 0 5px #ffd52e88);
+}
+
+/* Indicador vertical de desempeño en la esquina superior izquierda. */
+.performance-hud {
+  position: fixed;
+  z-index: 15;
+  top: clamp(120px, 13cqh, 155px);
+  left: clamp(22px, 3cqw, 56px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  pointer-events: none;
+  text-shadow: 0 1px 5px #000;
+}
+body.game-running .performance-hud { display: flex; }
+body.level-finished .performance-hud { display: none; }
+.performance-hud .performance-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  text-align: center;
+}
+.performance-hud .performance-heading .stat-label { margin: 0; font-size: 9px; letter-spacing: .12em; }
+.performance-hud .performance-heading strong { color: #00ff24; font-size: 13px; }
+.performance-hud .performance-meter {
+  position: relative;
+  width: 14px;
+  height: clamp(260px, 34cqh, 370px);
+  overflow: hidden;
+  border: 1px solid #ffffffa0;
+  border-radius: 999px;
+  background: #11131ddd;
+  box-shadow: inset 0 0 4px #000;
+}
+.performance-hud .performance-fill {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transition: height .25s ease, background-color .25s ease;
 }

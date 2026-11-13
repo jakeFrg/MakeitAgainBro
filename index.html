@@ -35,6 +35,19 @@
   <div class="game-intro" id="gameIntro" aria-hidden="true">
     <img src="ART/assets/RockLeek%20logo.png" alt="" class="game-intro-logo" id="gameIntroLogo">
   </div>
+  <div class="countdown-screen" id="countdownScreen" aria-live="assertive" aria-label="Cuenta regresiva" hidden>
+    <span id="countdownNumber">3</span>
+    <small>PREPÁRATE</small>
+  </div>
+  <aside class="performance-hud" id="performanceHud" aria-label="Desempeño de la partida">
+    <div class="performance-heading">
+      <span class="stat-label">DESEMPEÑO</span>
+      <strong id="performanceValue">100%</strong>
+    </div>
+    <div class="performance-meter" id="performanceMeter" role="progressbar" aria-label="Desempeño" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+      <div class="performance-fill" id="performanceFill"></div>
+    </div>
+  </aside>
 
   <main class="app">
 
@@ -83,7 +96,7 @@
         <p id="storySceneLabel" class="story-scene-label"></p>
         <h2 id="storySceneTitle"></h2>
         <p id="storySceneText"></p>
-        <button id="skipStoryIntro" class="story-skip" type="button">SIGUIENTE CUADRO ▶</button>
+        <span id="storyContinueHint" class="story-continue-hint">HAZ CLIC PARA CONTINUAR</span>
       </div>
 
       <!-- Créditos. -->
@@ -229,7 +242,7 @@
             <span class="lane-result" data-lane="0"></span><span class="lane-result" data-lane="1"></span>
             <span class="lane-result" data-lane="2"></span><span class="lane-result" data-lane="3"></span>
           </div>
-          <!-- Calidad del golpe junto al receptor amarillo, fuera de la pista. -->
+          <!-- Calidad del golpe en el carril correspondiente. -->
           <div id="judgementDisplay" class="judgement-display" aria-live="polite"></div>
           <!-- Aciertos consecutivos: el contador se reinicia al fallar. -->
           <div id="combo" class="combo-count-marker" aria-label="Aciertos consecutivos">0</div>

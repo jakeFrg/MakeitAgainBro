@@ -7,7 +7,6 @@
      ========================================================================== */
 
   const SCENE_ANIMATION_MS = 350;
-  const NEXT_PANEL_LABEL = 'SIGUIENTE CUADRO ▶';
   const INTRO_COMIC = [
     {label:'CAPÍTULO 01 · 1986',title:'¿DÓNDE ESTOY?',text:'Abres los ojos en tu habitación. Algo se siente distinto…',image:'ART/assets/escenario1.jpeg',zoom:1.05,focus:'50% 55%'},
     {label:'CAPÍTULO 01 · 1986',title:'UNA FECHA IMPOSIBLE',text:'El calendario marca 1986. Afuera, la ciudad brilla con luces de neón.',image:'ART/assets/escenario1.jpeg',zoom:1.35,focus:'40% 45%'},
@@ -79,7 +78,7 @@
   const storyTitle     = $('#storySceneTitle');
   const storyText      = $('#storySceneText');
   const storyPanelNumber = $('#storyPanelNumber');
-  const skipStoryIntro = $('#skipStoryIntro');
+  const storyContinueHint = $('#storyContinueHint');
 
   // Opciones.
   const backFromSettings = $('#backFromSettings');
@@ -345,9 +344,9 @@ if (mainMenu && !mainMenu.hidden) {
     storyLabel.textContent = page.label;
     storyTitle.textContent = page.title;
     storyText.textContent = page.text;
-    skipStoryIntro.textContent = comicIndex === comicPages.length - 1
-      ? (comicFlow === 'final' ? 'VOLVER AL MENÚ ▶' : comicFlow === 'intro' ? 'EMPEZAR TUTORIAL ▶' : 'EMPEZAR CANCIÓN ▶')
-      : NEXT_PANEL_LABEL;
+    storyContinueHint.textContent = comicIndex === comicPages.length - 1
+      ? (comicFlow === 'final' ? 'HAZ CLIC PARA VOLVER AL MENÚ' : comicFlow === 'intro' ? 'HAZ CLIC PARA EMPEZAR' : 'HAZ CLIC PARA CONTINUAR')
+      : 'HAZ CLIC PARA CONTINUAR';
     storyIntro.animate([{opacity:0, transform:'scale(1.025)'},{opacity:1, transform:'scale(1)'}], {duration:SCENE_ANIMATION_MS, easing:'ease-out'});
   }
 
