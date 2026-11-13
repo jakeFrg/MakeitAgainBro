@@ -863,11 +863,11 @@ body[data-scenario="no-me-digas"] .game-frame {
   right: 0;
   height: 4px;
   background: linear-gradient(90deg,
-    transparent 0 11.81%,
-    #50e7f2 11.81% 30.905%,
+    transparent 0%,
+    #50e7f2 0% 29.5%,
     #ff4db8 30.905% 50%,
-    #a989ff 50% 69.095%,
-    #ff8a32 69.095% 88.19%,
+    #a989ff 50% 69.8%,
+    #ff8a32 60.095% 91.19%,
     transparent 88.19% 100%);
   box-shadow: none;
 }
@@ -881,9 +881,9 @@ body[data-scenario="no-me-digas"] .game-frame {
   z-index: 4;
   bottom: 156px;
   /* A esta altura el trapecio ya se estrechó: los cuatro carriles ocupan
-     del 11.81% al 88.19% del ancho de la pista. */
-  left: 11.81%;
-  right: 11.81%;
+     del 10% al 88.19% del ancho de la pista. */
+  left: 10%;
+  right: 10%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   justify-items: center;
