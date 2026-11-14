@@ -39,6 +39,21 @@
   font-style: normal;
   font-display: swap;
 }
+/* Tipografía pixelada de las burbujas del cómic (Silkscreen, SIL OFL). */
+@font-face {
+  font-family: 'Silkscreen';
+  src: url('fonts/Silkscreen-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Silkscreen';
+  src: url('fonts/Silkscreen-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --bg: #090914;
@@ -486,6 +501,175 @@ button, select { font: inherit; }
 .story-continue-hint { margin-top: 16px; color: #ffd65a; font: 800 clamp(12px, 1.5vw, 18px) "Courier New", monospace; letter-spacing: .12em; text-shadow: 0 2px 6px #000; }
 .story-transition::after { position: fixed; inset: 0; z-index: 20; content: ""; background: #030307; animation: comic-black-in .5s ease both; }
 @keyframes comic-black-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Cómic narrativo de la intro. La página original se recorta sobre la viñeta
+   activa; las burbujas viven dentro de ese recorte para no invadir otras viñetas. */
+.story-intro.story-comic.is-dialogue-comic {
+  padding: 0;
+  background: #05050a;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.story-intro.story-comic.is-dialogue-comic::before { display: none; }
+.story-intro.is-dialogue-comic > :not(.comic-intro-view) { display: none; }
+.comic-intro-view {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.comic-intro-view[hidden] { display: none; }
+
+.comic-panel {
+  position: relative;
+  width: min(96cqw, calc(92cqh * var(--panel-ratio, 1.8)));
+  aspect-ratio: var(--panel-ratio, 1.8);
+  container-type: inline-size;
+}
+.comic-art-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #08080d;
+  box-shadow: 0 0 0 2px #e9e1d1, 0 0 0 5px #0a0a10, 0 22px 70px #000d;
+}
+.comic-cut-line {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.comic-cut-line[hidden] { display: none; }
+.comic-cut-line line {
+  stroke: #f0e8d8;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+.comic-panel-art {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  image-rendering: pixelated;
+}
+
+.comic-bubble {
+  /* Borde y esquinas escalonadas: el globo se dibuja como dos capas para que
+     el contorno oscuro siga el borde pixelado en cualquier tamaño. */
+  --bubble-border: clamp(3px, .26cqw, 6px);
+  --bubble-bg: #fff6dc;
+  --bubble-corner: polygon(
+    0 calc(var(--bubble-border) * 2),
+    var(--bubble-border) calc(var(--bubble-border) * 2),
+    var(--bubble-border) var(--bubble-border),
+    calc(var(--bubble-border) * 2) var(--bubble-border),
+    calc(var(--bubble-border) * 2) 0,
+    calc(100% - var(--bubble-border) * 2) 0,
+    calc(100% - var(--bubble-border) * 2) var(--bubble-border),
+    calc(100% - var(--bubble-border)) var(--bubble-border),
+    calc(100% - var(--bubble-border)) calc(var(--bubble-border) * 2),
+    100% calc(var(--bubble-border) * 2),
+    100% calc(100% - var(--bubble-border) * 2),
+    calc(100% - var(--bubble-border)) calc(100% - var(--bubble-border) * 2),
+    calc(100% - var(--bubble-border)) calc(100% - var(--bubble-border)),
+    calc(100% - var(--bubble-border) * 2) calc(100% - var(--bubble-border)),
+    calc(100% - var(--bubble-border) * 2) 100%,
+    calc(var(--bubble-border) * 2) 100%,
+    calc(var(--bubble-border) * 2) calc(100% - var(--bubble-border)),
+    var(--bubble-border) calc(100% - var(--bubble-border)),
+    var(--bubble-border) calc(100% - var(--bubble-border) * 2),
+    0 calc(100% - var(--bubble-border) * 2)
+  );
+  position: absolute;
+  z-index: 3;
+  filter: drop-shadow(clamp(4px, .45cqw, 10px) clamp(4px, .5cqw, 10px) 0 #050509);
+  pointer-events: none;
+}
+.comic-bubble-body {
+  position: relative;
+  z-index: 1;
+  padding: var(--bubble-border);
+  background: #101016;
+  clip-path: var(--bubble-corner);
+}
+.comic-bubble-inner {
+  padding: 1cqw 1.4cqw 1.1cqw;
+  background: var(--bubble-bg);
+  clip-path: var(--bubble-corner);
+  text-align: center;
+}
+.comic-speaker {
+  display: block;
+  margin: 0 0 .55cqw;
+  color: #a0442f;
+  font: 700 clamp(9px, .72cqw, 16px)/1.2 'Silkscreen', 'Courier New', monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.comic-bubble[data-speaker="Manager"] .comic-speaker { color: #a13a62; }
+.comic-bubble[data-speaker="ElMiMAO$"] .comic-speaker { color: #6a42c0; }
+.comic-bubble[data-speaker="Presentador"] .comic-speaker { color: #a65a12; }
+.comic-dialogue {
+  margin: 0;
+  color: #17131b;
+  font: 700 clamp(12px, 1.05cqw, 23px)/1.38 'Silkscreen', 'Courier New', monospace;
+  letter-spacing: .01em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.comic-tail {
+  position: absolute;
+  z-index: 2;
+  top: calc(100% - var(--bubble-border));
+  width: 3.2cqw;
+  height: 3.8cqw;
+  background: #101016;
+  clip-path: polygon(
+    0 0, 100% 0,
+    100% 20%, 78% 20%,
+    78% 40%, 56% 40%,
+    56% 60%, 34% 60%,
+    34% 80%, 12% 80%,
+    12% 90%, 0 90%,
+    0 100%
+  );
+  transform: translateX(-50%) scaleX(var(--tail-flip, 1));
+  transform-origin: top center;
+}
+.comic-tail::after {
+  position: absolute;
+  inset: 0 var(--bubble-border) var(--bubble-border) var(--bubble-border);
+  content: "";
+  background: var(--bubble-bg);
+  clip-path: inherit;
+}
+.comic-intro-meta {
+  position: absolute;
+  z-index: 4;
+  bottom: .9cqh;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 1.1cqw;
+  padding: .38cqw .9cqw;
+  border: 1px solid #f4eddd38;
+  color: #f4eddd;
+  background: #07070be0;
+  font: 800 clamp(9px, .62cqw, 14px)/1.1 "Courier New", monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+#comicDialogueCount { color: #50e7f2; }
+.comic-click-hint { color: #ffd65a; }
+.comic-control-hint { color: #aaa3b8; font-weight: 700; }
 
 /* --------------------------------------------------------------------------
    4. Opciones y leaderboard

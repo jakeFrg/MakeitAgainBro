@@ -7,12 +7,6 @@
      ========================================================================== */
 
   const SCENE_ANIMATION_MS = 350;
-  const INTRO_COMIC = [
-    {label:'CAPÍTULO 01 · 1986',title:'¿DÓNDE ESTOY?',text:'Abres los ojos en tu habitación. Algo se siente distinto…',image:'ART/assets/escenario1.jpeg',zoom:1.05,focus:'50% 55%'},
-    {label:'CAPÍTULO 01 · 1986',title:'UNA FECHA IMPOSIBLE',text:'El calendario marca 1986. Afuera, la ciudad brilla con luces de neón.',image:'ART/assets/escenario1.jpeg',zoom:1.35,focus:'40% 45%'},
-    {label:'CAPÍTULO 01 · 1986',title:'LA CIUDAD TE ESPERA',text:'La música suena por todas partes. Sales a buscar tu lugar en el escenario.',image:'ART/assets/escenario1.jpeg',zoom:1.65,focus:'65% 60%'},
-    {label:'TUTORIAL',title:'SIGUE EL RITMO',text:'Pulsa las cuatro teclas cuando las notas lleguen a los receptores.'}
-  ];
   const COMIC_BY_NEXT_STAGE = {
     1:[
       {label:'CAPÍTULO 02 · PRIMER CONCIERTO',title:'UNA OPORTUNIDAD',text:'Después de practicar, llega tu primer concierto. La multitud espera.',image:'ART/assets/escenario1.jpeg'},
@@ -30,6 +24,53 @@
   const FINAL_COMIC = [
     {label:'EPÍLOGO',title:'UNA NOCHE PARA RECORDAR',text:'La última nota resuena y el público estalla en aplausos.',image:'ART/assets/escenario1.jpeg'},
     {label:'EPÍLOGO',title:'EL SHOW CONTINÚA',text:'Tu historia apenas comienza. Gracias por jugar.'}
+  ];
+
+  // Introducción narrativa: una sola página de cómic (Comic1.png) con cuatro
+  // viñetas. El visor recorta la viñeta activa de la página; no hay imágenes
+  // individuales. Los rectángulos están medidos sobre la imagen original.
+  const INTRO_COMIC_PAGE = {width:1672,height:941};
+  const INTRO_COMIC_PANELS = [
+    {x:12,y:12,width:816,height:452},                       // noticiero
+    {x:850,y:12,width:808,height:452},                      // manager y ElMiMAO$
+    {x:12,y:481,width:828,height:448},                      // manager en la consola
+    {                                                       // ElMiMAO$ y el micrófono
+      x:900,y:481,width:758,height:448,
+      clip:'polygon(0 0, 100% 0, 100% 100%, 21.4% 100%, 0 25.6%)'
+    }
+  ];
+
+  // Cada entrada es un clic. La burbuja se mide en porcentajes de la viñeta:
+  // left/top/width colocan el globo y tail fija dónde nace la cola y hacia
+  // dónde apunta (flip 1 = izquierda, -1 = derecha).
+  const INTRO_COMIC_DIALOGUES = [
+    {panel:0,speaker:'Presentador',text:'Buenas tardes y muy buenas noticias.',
+      bubble:{left:1.5,top:2.5,width:31,tail:{x:84,flip:1}}},
+    {panel:0,speaker:'Presentador',text:'Estamos a unas horas de que se presente el artista más grande de todos los tiempos.',
+      bubble:{left:30,top:2.5,width:40,tail:{x:12,flip:1}}},
+    {panel:0,speaker:'Presentador',text:'En el estadio ElMiMAO$ Center, un escenario creado para él, ya que ninguno puede contener a sus fans.',
+      bubble:{left:1.5,top:2,width:37,tail:{x:82,flip:1}}},
+    {panel:0,speaker:'Presentador',text:'¿Ya tienen sus boletos? Yo ya tengo el mío en VIP. ¡Cómo amo a ese tipo!',
+      bubble:{left:27,top:1.5,width:39,tail:{x:15,flip:1}}},
+
+    {panel:1,speaker:'Manager',text:'Bro, estás a unas horas de hacer la presentación de tu vida y aún no has practicado.',
+      bubble:{left:1.5,top:1.5,width:46,tail:{x:76,flip:-1}}},
+    {panel:1,speaker:'ElMiMAO$',text:'¿Practicar? Yo nací para esto, no necesito practicar.',
+      bubble:{left:42.5,top:2,width:20,tail:{x:90,flip:-1}}},
+    {panel:1,speaker:'Manager',text:'¡Sí lo necesitas! Como falles, este concierto arruinará tu carrera.',
+      bubble:{left:1,top:2,width:42,tail:{x:78,flip:-1}}},
+    {panel:1,speaker:'ElMiMAO$',text:'Tranquilo, bro, todo va a salir bien.',
+      bubble:{left:42,top:18.5,width:20.5,tail:{x:90,flip:-1}}},
+    {panel:1,speaker:'Manager',text:'Mínimo sigamos grabando la nueva canción. Se supone que la tenemos que entregar para ese jueguito que va a salir... Mmm, algo de autos, no sé muy bien de qué era.',
+      bubble:{left:.7,top:.8,width:52,tail:{x:74,flip:-1}}},
+    {panel:1,speaker:'ElMiMAO$',text:'Está bien, vamos.',
+      bubble:{left:44,top:2.5,width:19,tail:{x:88,flip:-1}}},
+
+    {panel:2,speaker:'Manager',text:'Bueno, retomemos donde lo dejamos la última vez. ¿Listo?',
+      bubble:{left:17,top:1.5,width:39,tail:{x:30,flip:1}}},
+
+    {panel:3,speaker:'ElMiMAO$',text:'¡LISTO!',
+      bubble:{left:4,top:3,width:20,tail:{x:94,flip:-1}}}
   ];
 
   const MENU_MUSIC_VOLUME_KEY = 'ritmo-menu-music-volume';
@@ -79,6 +120,16 @@
   const storyText      = $('#storySceneText');
   const storyPanelNumber = $('#storyPanelNumber');
   const storyContinueHint = $('#storyContinueHint');
+  const comicIntroView = $('#comicIntroView');
+  const comicPanel     = $('#comicPanel');
+  const comicArtClip   = $('#comicArtClip');
+  const comicPanelArt  = $('#comicPanelArt');
+  const comicCutLine   = $('#comicCutLine');
+  const comicBubble    = $('#comicBubble');
+  const comicSpeaker   = $('#comicSpeaker');
+  const comicDialogue  = $('#comicDialogue');
+  const comicTail      = $('#comicTail');
+  const comicDialogueCount = $('#comicDialogueCount');
 
   // Opciones.
   const backFromSettings = $('#backFromSettings');
@@ -104,6 +155,7 @@
   let comicPages = [];
   let comicIndex = 0;
   let comicFlow = 'intro';
+  let introDialogueIndex = 0;
 
   let menuTrack = null;          // canción del menú que suena ahora
   let introFinished = false;     // la barra solo puede aparecer al acabar la intro
@@ -323,6 +375,8 @@ if (mainMenu && !mainMenu.hidden) {
   // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone otra canción.
   function showMainMenu() {
     storyIntro.hidden = true;
+    storyIntro.classList.remove('is-dialogue-comic');
+    comicIntroView.hidden = true;
     document.body.classList.remove('story-transition');
     startScreen.hidden = false;
     showOnly(mainMenu);
@@ -332,6 +386,54 @@ if (mainMenu && !mainMenu.hidden) {
   /* ==========================================================================
      6. MODO HISTORIA
      ========================================================================== */
+
+  function setIntroComicPanel(panel) {
+    comicPanel.style.setProperty('--panel-ratio', String(panel.width / panel.height));
+    comicPanel.style.aspectRatio = `${panel.width} / ${panel.height}`;
+    comicPanelArt.style.width = `${INTRO_COMIC_PAGE.width / panel.width * 100}%`;
+    comicPanelArt.style.left = `${-panel.x / panel.width * 100}%`;
+    comicPanelArt.style.top = `${-panel.y / panel.height * 100}%`;
+    comicArtClip.style.clipPath = panel.clip || 'none';
+    comicCutLine.toggleAttribute('hidden', !panel.clip);
+  }
+
+  // Pinta un diálogo de la intro. El panel solo cambia cuando cambia la viñeta;
+  // dentro de la misma viñeta únicamente se sustituyen la burbuja y su cola.
+  function renderIntroComic(animatePanel = false) {
+    const entry = INTRO_COMIC_DIALOGUES[introDialogueIndex];
+    if (!entry) return;
+    const panel = INTRO_COMIC_PANELS[entry.panel];
+    const panelChanged = comicPanel.dataset.panel !== String(entry.panel);
+    if (panelChanged) {
+      setIntroComicPanel(panel);
+      comicPanel.dataset.panel = String(entry.panel);
+    }
+
+    const bubble = entry.bubble;
+    comicSpeaker.textContent = entry.speaker;
+    comicDialogue.textContent = entry.text;
+    comicBubble.dataset.speaker = entry.speaker;
+    comicBubble.style.left = `${bubble.left}%`;
+    comicBubble.style.top = `${bubble.top}%`;
+    comicBubble.style.width = `${bubble.width}%`;
+    comicTail.style.left = `${bubble.tail.x}%`;
+    comicTail.style.setProperty('--tail-flip', String(bubble.tail.flip || 1));
+    comicDialogueCount.textContent = `${String(introDialogueIndex + 1).padStart(2, '0')} / ${String(INTRO_COMIC_DIALOGUES.length).padStart(2, '0')}`;
+    storyIntro.setAttribute('aria-label', `Introducción: ${entry.speaker}. ${entry.text}`);
+
+    if (animatePanel) {
+      comicBubble.animate(
+        [{opacity:0, transform:'translateY(8px) scale(.97)'},{opacity:1, transform:'translateY(0) scale(1)'}],
+        {duration:SCENE_ANIMATION_MS, easing:'ease-out'}
+      );
+      if (panelChanged) {
+        comicPanel.animate(
+          [{opacity:.35, transform:'scale(1.012)'},{opacity:1, transform:'scale(1)'}],
+          {duration:SCENE_ANIMATION_MS + 80, easing:'ease-out'}
+        );
+      }
+    }
+  }
 
   function renderComicPage() {
     const page = comicPages[comicIndex];
@@ -344,6 +446,7 @@ if (mainMenu && !mainMenu.hidden) {
     storyLabel.textContent = page.label;
     storyTitle.textContent = page.title;
     storyText.textContent = page.text;
+    storyIntro.setAttribute('aria-label', `${page.label}. ${page.title}. ${page.text}`);
     storyContinueHint.textContent = comicIndex === comicPages.length - 1
       ? (comicFlow === 'final' ? 'HAZ CLIC PARA VOLVER AL MENÚ' : comicFlow === 'intro' ? 'HAZ CLIC PARA EMPEZAR' : 'HAZ CLIC PARA CONTINUAR')
       : 'HAZ CLIC PARA CONTINUAR';
@@ -354,6 +457,8 @@ if (mainMenu && !mainMenu.hidden) {
     comicPages = pages;
     comicIndex = 0;
     comicFlow = flow;
+    storyIntro.classList.remove('is-dialogue-comic');
+    comicIntroView.hidden = true;
     document.body.classList.remove('story-transition');
     startScreen.hidden = false;
     showOnly(storyIntro);
@@ -361,17 +466,30 @@ if (mainMenu && !mainMenu.hidden) {
   }
 
   function advanceComic() {
+    // La intro avanza un diálogo por clic. La viñeta cambia sola cuando el
+    // siguiente diálogo pertenece a otro panel.
+    if (comicFlow === 'intro') {
+      if (introDialogueIndex + 1 < INTRO_COMIC_DIALOGUES.length) {
+        introDialogueIndex++;
+        renderIntroComic(true);
+        return;
+      }
+      storyIntro.hidden = true;
+      comicIntroView.hidden = true;
+      storyIntro.classList.remove('is-dialogue-comic');
+      startScreen.hidden = true;
+      document.body.classList.remove('practice-mode');
+      document.dispatchEvent(new Event('rhythm:start'));
+      return;
+    }
+
     if (comicIndex + 1 < comicPages.length) {
       comicIndex++;
       renderComicPage();
       return;
     }
     storyIntro.hidden = true;
-    if (comicFlow === 'intro') {
-      startScreen.hidden = true;
-      document.body.classList.remove('practice-mode');
-      document.dispatchEvent(new Event('rhythm:start'));
-    } else if (comicFlow === 'final') {
+    if (comicFlow === 'final') {
       showMainMenu();
     } else {
       startScreen.hidden = true;
@@ -384,14 +502,16 @@ if (mainMenu && !mainMenu.hidden) {
     document.body.classList.add('story-transition');
     startScreen.hidden = false;
     showOnly(storyIntro);
-    comicPages = INTRO_COMIC;
-    comicIndex = 0;
     comicFlow = 'intro';
+    introDialogueIndex = 0;
+    comicPanel.dataset.panel = '';
+    storyIntro.classList.add('is-dialogue-comic');
+    comicIntroView.hidden = false;
     storyIntro.hidden = true;
     window.setTimeout(() => {
       document.body.classList.remove('story-transition');
       storyIntro.hidden = false;
-      renderComicPage();
+      renderIntroComic(true);
     }, 500);
   }
 

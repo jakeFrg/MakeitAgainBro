@@ -90,8 +90,37 @@
       <!-- Reinicia la partida. -->
       <button id="resetButton" class="menu-reset-button" type="button">↺ REINICIAR PARTIDA</button>
 
-      <!-- Introducción del modo historia: menu.js rellena el texto de cada escena. -->
+      <!-- Introducción del modo historia: el cómic narrativo y las escenas de
+           transición comparten este panel. menu.js decide cuál de los dos se ve. -->
       <div class="story-intro story-comic" id="storyIntro" aria-live="polite" hidden>
+        <!-- Cómic por viñetas: la página completa se recorta en la viñeta activa
+             y la burbuja se coloca respecto a ese recorte. -->
+        <div class="comic-intro-view" id="comicIntroView" hidden>
+          <div class="comic-panel" id="comicPanel">
+            <div class="comic-art-clip" id="comicArtClip">
+              <img class="comic-panel-art" id="comicPanelArt" src="ART/comics/Comic1.png" alt="Página de cómic de la introducción de ElMiMAO$" draggable="false">
+            </div>
+            <svg class="comic-cut-line" id="comicCutLine" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" hidden>
+              <line x1="0" y1="25.6" x2="21.4" y2="100"></line>
+            </svg>
+            <div class="comic-bubble" id="comicBubble">
+              <div class="comic-bubble-body">
+                <div class="comic-bubble-inner">
+                  <span class="comic-speaker" id="comicSpeaker"></span>
+                  <p class="comic-dialogue" id="comicDialogue"></p>
+                </div>
+              </div>
+              <span class="comic-tail" id="comicTail" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="comic-intro-meta" aria-hidden="true">
+            <span id="comicDialogueCount"></span>
+            <span class="comic-click-hint">HAZ CLIC PARA CONTINUAR</span>
+            <span class="comic-control-hint">PULSA LAS TECLAS DE CADA CARRIL AL LLEGAR A LOS RECEPTORES</span>
+          </div>
+        </div>
+
+        <!-- Escenas narrativas anteriores (entre canciones y epílogo). -->
         <span class="comic-panel-number" id="storyPanelNumber"></span>
         <p id="storySceneLabel" class="story-scene-label"></p>
         <h2 id="storySceneTitle"></h2>
