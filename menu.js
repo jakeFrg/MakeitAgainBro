@@ -8,10 +8,6 @@
 
   const SCENE_ANIMATION_MS = 350;
   const COMIC_BY_NEXT_STAGE = {
-    1:[
-      {label:'CAPÍTULO 02 · PRIMER CONCIERTO',title:'UNA OPORTUNIDAD',text:'Después de practicar, llega tu primer concierto. La multitud espera.',image:'ART/assets/escenario1.jpeg'},
-      {label:'CAPÍTULO 02 · PRIMER CONCIERTO',title:'QUE NO PARE LA MÚSICA',text:'Toma aire, sigue las notas y demuestra lo que puedes hacer.'}
-    ],
     2:[
       {label:'CAPÍTULO 03 · NUEVAS MIRADAS',title:'MÁS PÚBLICO',text:'Tu presentación corrió la voz. Una nueva audiencia se reúne para verte.',image:'ART/assets/escenario1.jpeg'},
       {label:'CAPÍTULO 03 · NUEVAS MIRADAS',title:'SUBE AL ESCENARIO',text:'Las luces se encienden. Mantén el ritmo y conquista a la multitud.'}
@@ -100,7 +96,71 @@
       bubble:{left:39,top:8,width:23,tail:{x:94,flip:-1}}}
   ];
 
-  // Los dos cómics comparten el mismo motor: página, viñetas y diálogos.
+  // Cómic 2.5: se muestra justo después del Cómic 2 y lleva directo al Nivel 2.
+  // Página 1672x941 con rejilla 3x2 (seis viñetas); medidas sobre Comic2.5.png.
+  // Las entradas con silent:true revelan una viñeta sin globo (viñeta 3); music:true
+  // muestra notas musicales en el borde derecho (música fuera de cuadro).
+  const COMIC_25_PAGE = {width:1672,height:941};
+  const COMIC_25_PANELS = [
+    {x:5,y:5,width:544,height:459},       // 1. hospital: doctor y ElMiMAO$
+    {x:564,y:5,width:545,height:459},     // 2. calendario de 1986
+    {x:1124,y:5,width:544,height:459},    // 3. ElMiMAO$ huye del hospital (sin diálogos)
+    {x:5,y:478,width:544,height:459},     // 4. calle de Los Ángeles
+    {x:564,y:478,width:545,height:459},   // 5. ElMiMAO$ y el artista urbano
+    {x:1124,y:478,width:544,height:459}   // 6. ElMiMAO$ con el micrófono
+  ];
+
+  const COMIC_25_DIALOGUES = [
+    // Viñeta 1: el doctor queda a la izquierda y ElMiMAO$ en la cama, a la derecha.
+    {panel:0,speaker:'Doctor',text:'¡Qué bueno que despertaste!',
+      bubble:{left:34,top:4,width:34,tail:{x:10,flip:1}}},
+    {panel:0,speaker:'ElMiMAO$',text:'¿Qué fue lo que pasó?',
+      bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
+    {panel:0,speaker:'Doctor',text:'Tuviste un accidente en un avión. Fuiste el único sobreviviente.',
+      bubble:{left:34,top:3,width:36,tail:{x:8,flip:1}}},
+    {panel:0,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¿Dónde estoy?',
+      bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
+    {panel:0,speaker:'Doctor',text:'En Los Ángeles.',
+      bubble:{left:34,top:4,width:27,tail:{x:12,flip:1}}},
+    {panel:0,speaker:'ElMiMAO$',text:'Mínimo sí llegué a mi destino.',
+      bubble:{left:38,top:15,width:31,tail:{x:96,flip:-1}}},
+    {panel:0,speaker:'ElMiMAO$',text:'Espera, ¿qué es eso?',
+      bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
+
+    // Viñeta 2: el calendario queda libre a la derecha; el doctor habla desde
+    // fuera de cuadro, con el globo pegado al borde izquierdo y la cola hacia él.
+    {panel:1,speaker:'ElMiMAO$',text:'¿Ese calendario es antiguo, no?',
+      bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
+    {panel:1,speaker:'Doctor',text:'No, es reciente. Lo compramos ayer.',
+      bubble:{left:1.5,top:3,width:38,tail:{x:4,flip:1}}},
+    {panel:1,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¡Tengo que irme de aquí!',
+      bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
+
+    // Viñeta 3: solo ilustración.
+    {panel:2,silent:true},
+
+    // Viñeta 4: la música viene de la derecha, fuera de cuadro.
+    {panel:3,speaker:'ElMiMAO$',text:'¡¿ESTOY EN EL PASADO?!',music:true,
+      bubble:{left:8,top:3,width:36,tail:{x:30,flip:1}}},
+    {panel:3,speaker:'ElMiMAO$',text:'¿Qué es eso?',music:true,
+      bubble:{left:14,top:4,width:26,tail:{x:40,flip:1}}},
+
+    // Viñeta 5: ElMiMAO$ a la izquierda, el artista urbano a la derecha.
+    {panel:4,speaker:'ElMiMAO$',text:'Hola, ¿sabes quién soy?',
+      bubble:{left:2,top:2,width:34,tail:{x:70,flip:-1}}},
+    {panel:4,speaker:'Artista urbano',text:'No, ¿debería?',
+      bubble:{left:56,top:1.5,width:28,tail:{x:25,flip:1}}},
+    {panel:4,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más grande de todos los tiempos, el pionero del reguetón.',
+      bubble:{left:2,top:2,width:46,tail:{x:62,flip:-1}}},
+    {panel:4,speaker:'Artista urbano',text:'¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Miguel Jacobo... demuéstralo.',
+      bubble:{left:2,top:2,width:52,tail:{x:92,flip:-1}}},
+
+    // Viñeta 6: último diálogo del cómic.
+    {panel:5,speaker:'ElMiMAO$',text:'¡TENGO QUE HACERLO OTRA VEZ!',
+      bubble:{left:2,top:3,width:30,tail:{x:85,flip:-1}}}
+  ];
+
+  // Los cómics comparten el mismo motor: página, viñetas y diálogos.
   const INTRO_COMIC = {
     image:'ART/comics/Comic1.png',
     alt:'Página de cómic de la introducción de ElMiMAO$',
@@ -115,6 +175,14 @@
     page:COMIC_2_PAGE,
     panels:COMIC_2_PANELS,
     dialogues:COMIC_2_DIALOGUES
+  };
+
+  const COMIC_25 = {
+    image:'ART/comics/Comic2.5.png',
+    alt:'Página de cómic: ElMiMAO$ despierta en un hospital de Los Ángeles en 1986',
+    page:COMIC_25_PAGE,
+    panels:COMIC_25_PANELS,
+    dialogues:COMIC_25_DIALOGUES
   };
 
   const MENU_MUSIC_VOLUME_KEY = 'ritmo-menu-music-volume';
@@ -174,6 +242,7 @@
   const comicDialogue  = $('#comicDialogue');
   const comicTail      = $('#comicTail');
   const comicDialogueCount = $('#comicDialogueCount');
+  const comicMusic     = $('#comicMusic');
 
   // Opciones.
   const backFromSettings = $('#backFromSettings');
@@ -462,7 +531,9 @@ if (mainMenu && !mainMenu.hidden) {
       comicPanel.dataset.panel = String(activeDialoguePanel);
     }
 
-    if (entry) {
+    const spoken = entry && !entry.silent;
+    comicMusic.hidden = !(entry && entry.music);
+    if (spoken) {
       const bubble = entry.bubble;
       comicBubble.hidden = false;
       comicSpeaker.textContent = entry.speaker;
@@ -473,8 +544,10 @@ if (mainMenu && !mainMenu.hidden) {
       comicBubble.style.width = `${bubble.width}%`;
       comicTail.style.left = `${bubble.tail.x}%`;
       comicTail.style.setProperty('--tail-flip', String(bubble.tail.flip || 1));
+      const spokenEntries = def.dialogues.filter(item => !item.silent);
+      const spokenNumber = def.dialogues.slice(0, activeDialogueIndex + 1).filter(item => !item.silent).length;
       comicDialogueCount.hidden = false;
-      comicDialogueCount.textContent = `${String(activeDialogueIndex + 1).padStart(2, '0')} / ${String(def.dialogues.length).padStart(2, '0')}`;
+      comicDialogueCount.textContent = `${String(spokenNumber).padStart(2, '0')} / ${String(spokenEntries.length).padStart(2, '0')}`;
       storyIntro.setAttribute('aria-label', `Cómic: ${entry.speaker}. ${entry.text}`);
     } else {
       comicBubble.hidden = true;
@@ -487,7 +560,7 @@ if (mainMenu && !mainMenu.hidden) {
     }
 
     if (animatePanel) {
-      if (entry) {
+      if (spoken) {
         comicBubble.animate(
           [{opacity:0, transform:'translateY(8px) scale(.97)'},{opacity:1, transform:'translateY(0) scale(1)'}],
           {duration:SCENE_ANIMATION_MS, easing:'ease-out'}
@@ -514,6 +587,7 @@ if (mainMenu && !mainMenu.hidden) {
     comicPanel.dataset.panel = '';
     comicBubble.hidden = true;
     comicDialogueCount.hidden = true;
+    comicMusic.hidden = true;
   }
 
   function finishDialogueComic() {
@@ -524,6 +598,7 @@ if (mainMenu && !mainMenu.hidden) {
     comicIntroView.hidden = true;
     storyIntro.classList.remove('is-dialogue-comic');
     comicBubble.hidden = true;
+    comicMusic.hidden = true;
     if (onComplete) onComplete();
   }
 
@@ -624,19 +699,27 @@ if (mainMenu && !mainMenu.hidden) {
     }, 500);
   }
 
-  // Cómic 2: se muestra al terminar la Canción 1 y, al acabar, retoma el flujo
-  // narrativo que ya existía para el siguiente tramo de la historia.
-  function startComic2(onComplete) {
+  // Muestra un cómic por viñetas inmediatamente (sin pantallas intermedias).
+  // El fundido a negro ya lo hizo game.js al terminar el nivel.
+  function startDialogueComic(def, flow, onComplete) {
     startScreen.hidden = false;
     showOnly(storyIntro);
-    comicFlow = 'comic2';
-    beginDialogueComic(COMIC_2, onComplete);
+    comicFlow = flow;
+    beginDialogueComic(def, onComplete);
     storyIntro.classList.add('is-dialogue-comic');
     comicIntroView.hidden = false;
     storyIntro.hidden = false;
-    // El fundido a negro ya lo hizo game.js al cerrar los resultados.
     document.body.classList.remove('story-transition');
     renderDialogueComic(true);
+  }
+
+  // Progresión Nivel 1 → Cómic 2 → Cómic 2.5 → Nivel 2, sin nada en medio.
+  function startComic2(onComplete) {
+    startDialogueComic(COMIC_2, 'comic2', onComplete);
+  }
+
+  function startComic25(onComplete) {
+    startDialogueComic(COMIC_25, 'comic25', onComplete);
   }
 
   /* ==========================================================================
@@ -750,10 +833,12 @@ if (mainMenu && !mainMenu.hidden) {
     storyIntro.addEventListener('click', advanceComic);
     document.addEventListener('rhythm:comic', event => {
       const nextStage = event.detail?.nextStage;
-      // Tras la Canción 1 se intercala el Cómic 2 y luego sigue el flujo
-      // narrativo que ya existía para el siguiente tramo.
+      // Tras el Nivel 1: Cómic 2 → Cómic 2.5 → Nivel 2 (sin ninguna pantalla en medio).
       if (nextStage === 1) {
-        startComic2(() => showComic(COMIC_BY_NEXT_STAGE[nextStage] || [], 'between'));
+        startComic2(() => startComic25(() => {
+          startScreen.hidden = true;
+          document.dispatchEvent(new CustomEvent('rhythm:comic:continue'));
+        }));
         return;
       }
       document.body.classList.add('story-transition');
@@ -810,6 +895,8 @@ if (mainMenu && !mainMenu.hidden) {
       menuMusicVolumeValue.value = `${value}%`;
       try { localStorage.setItem(MENU_MUSIC_VOLUME_KEY, String(value)); } catch (error) {}
     });
+    // Precarga los cómics para que el paso de uno al siguiente no parpadee.
+    [INTRO_COMIC, COMIC_2, COMIC_25].forEach(def => { const img = new Image(); img.src = def.image; });
     bindEvents();
     // Empieza durante la intro; si falla por las políticas del navegador, espera interacción.
     playMenuMusic(true);
