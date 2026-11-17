@@ -22,9 +22,7 @@
     {label:'EPÍLOGO',title:'EL SHOW CONTINÚA',text:'Tu historia apenas comienza. Gracias por jugar.'}
   ];
 
-  // Introducción narrativa: una sola página de cómic (Comic1.png) con cuatro
-  // viñetas. El visor recorta la viñeta activa de la página; no hay imágenes
-  // individuales. Los rectángulos están medidos sobre la imagen original.
+  // Introducción narrativa
   const INTRO_COMIC_PAGE = {width:1672,height:941};
   const INTRO_COMIC_PANELS = [
     {x:12,y:12,width:816,height:452},                       // noticiero
@@ -36,9 +34,6 @@
     }
   ];
 
-  // Cada entrada es un clic. La burbuja se mide en porcentajes de la viñeta:
-  // left/top/width colocan el globo y tail fija dónde nace la cola y hacia
-  // dónde apunta (flip 1 = izquierda, -1 = derecha).
   const INTRO_COMIC_DIALOGUES = [
     {panel:0,speaker:'Presentador',text:'Buenas tardes y muy buenas noticias.',
       bubble:{left:1.5,top:2.5,width:31,tail:{x:84,flip:1}}},
@@ -69,20 +64,15 @@
       bubble:{left:4,top:3,width:20,tail:{x:94,flip:-1}}}
   ];
 
-  // Cómic 2: se muestra después de la primera canción de la campaña. La página
-  // también es una rejilla 2x2, pero solo la primera viñeta lleva diálogos.
-  // Los rectángulos se midieron sobre Comic2.png (1672x941).
+  // Cómic 2
   const COMIC_2_PAGE = {width:1672,height:941};
   const COMIC_2_PANELS = [
-    {x:5,y:5,width:822,height:456},    // ElMiMAO$ subiendo al jet; aquí van los diálogos
+    {x:5,y:5,width:822,height:456},    // ElMiMAO$ subiendo al jet
     {x:844,y:5,width:823,height:456},  // el jet en pleno vuelo
     {x:5,y:478,width:822,height:458},  // llegada al hospital
     {x:844,y:478,width:823,height:458} // habitación del hospital
   ];
 
-  // Manager queda a la izquierda (de espaldas) y ElMiMAO$ a la derecha,
-  // subiendo las escaleras. Los globos se colocan arriba de cada uno y la
-  // cola apunta hacia su rostro; las viñetas posteriores no llevan diálogo.
   const COMIC_2_DIALOGUES = [
     {panel:0,speaker:'ElMiMAO$',text:'Me tengo que ir ya.',
       bubble:{left:40,top:7,width:22,tail:{x:92,flip:-1}}},
@@ -96,10 +86,6 @@
       bubble:{left:39,top:8,width:23,tail:{x:94,flip:-1}}}
   ];
 
-  // Cómic 2.5: se muestra justo después del Cómic 2 y lleva directo al Nivel 2.
-  // Página 1672x941 con rejilla 3x2 (seis viñetas); medidas sobre Comic2.5.png.
-  // Las entradas con silent:true revelan una viñeta sin globo (viñeta 3); music:true
-  // muestra notas musicales en el borde derecho (música fuera de cuadro).
   const COMIC_25_PAGE = {width:1672,height:941};
   const COMIC_25_PANELS = [
     {x:5,y:5,width:544,height:459},       // 1. hospital: doctor y ElMiMAO$
@@ -111,7 +97,7 @@
   ];
 
   const COMIC_25_DIALOGUES = [
-    // Viñeta 1: el doctor queda a la izquierda y ElMiMAO$ en la cama, a la derecha.
+    // Viñeta 1
     {panel:0,speaker:'Doctor',text:'¡Qué bueno que despertaste!',
       bubble:{left:34,top:4,width:34,tail:{x:10,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¿Qué fue lo que pasó?',
@@ -127,8 +113,7 @@
     {panel:0,speaker:'ElMiMAO$',text:'Espera, ¿qué es eso?',
       bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
 
-    // Viñeta 2: el calendario queda libre a la derecha; el doctor habla desde
-    // fuera de cuadro, con el globo pegado al borde izquierdo y la cola hacia él.
+    // Viñeta 2
     {panel:1,speaker:'ElMiMAO$',text:'¿Ese calendario es antiguo, no?',
       bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
     {panel:1,speaker:'Doctor',text:'No, es reciente. Lo compramos ayer.',
@@ -136,16 +121,16 @@
     {panel:1,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¡Tengo que irme de aquí!',
       bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
 
-    // Viñeta 3: solo ilustración.
+    // Viñeta 3
     {panel:2,silent:true},
 
-    // Viñeta 4: la música viene de la derecha, fuera de cuadro.
+    // Viñeta 4
     {panel:3,speaker:'ElMiMAO$',text:'¡¿ESTOY EN EL PASADO?!',music:true,
       bubble:{left:8,top:3,width:36,tail:{x:30,flip:1}}},
     {panel:3,speaker:'ElMiMAO$',text:'¿Qué es eso?',music:true,
       bubble:{left:14,top:4,width:26,tail:{x:40,flip:1}}},
 
-    // Viñeta 5: ElMiMAO$ a la izquierda, el artista urbano a la derecha.
+    // Viñeta 5
     {panel:4,speaker:'ElMiMAO$',text:'Hola, ¿sabes quién soy?',
       bubble:{left:2,top:2,width:34,tail:{x:70,flip:-1}}},
     {panel:4,speaker:'Artista urbano',text:'No, ¿debería?',
@@ -155,12 +140,11 @@
     {panel:4,speaker:'Artista urbano',text:'¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Miguel Jacobo... demuéstralo.',
       bubble:{left:2,top:2,width:52,tail:{x:92,flip:-1}}},
 
-    // Viñeta 6: último diálogo del cómic.
+    // Viñeta 6
     {panel:5,speaker:'ElMiMAO$',text:'¡TENGO QUE HACERLO OTRA VEZ!',
       bubble:{left:2,top:3,width:30,tail:{x:85,flip:-1}}}
   ];
 
-  // Los cómics comparten el mismo motor: página, viñetas y diálogos.
   const INTRO_COMIC = {
     image:'ART/comics/Comic1.png',
     alt:'Página de cómic de la introducción de ElMiMAO$',

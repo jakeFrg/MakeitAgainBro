@@ -502,8 +502,7 @@ button, select { font: inherit; }
 .story-transition::after { position: fixed; inset: 0; z-index: 20; content: ""; background: #030307; animation: comic-black-in .5s ease both; }
 @keyframes comic-black-in { from { opacity: 0; } to { opacity: 1; } }
 
-/* Cómic narrativo de la intro. La página original se recorta sobre la viñeta
-   activa; las burbujas viven dentro de ese recorte para no invadir otras viñetas. */
+/* Cómic narrativo de la intro */
 .story-intro.story-comic.is-dialogue-comic {
   padding: 0;
   background: #05050a;
@@ -559,8 +558,6 @@ button, select { font: inherit; }
 }
 
 .comic-bubble {
-  /* Borde y esquinas escalonadas: el globo se dibuja como dos capas para que
-     el contorno oscuro siga el borde pixelado en cualquier tamaño. */
   --bubble-border: clamp(3px, .26cqw, 6px);
   --bubble-bg: #fff6dc;
   --bubble-corner: polygon(
