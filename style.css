@@ -502,8 +502,7 @@ button, select { font: inherit; }
 .story-transition::after { position: fixed; inset: 0; z-index: 20; content: ""; background: #030307; animation: comic-black-in .5s ease both; }
 @keyframes comic-black-in { from { opacity: 0; } to { opacity: 1; } }
 
-/* Cómic narrativo de la intro. La página original se recorta sobre la viñeta
-   activa; las burbujas viven dentro de ese recorte para no invadir otras viñetas. */
+/* Cómic narrativo de la intro */
 .story-intro.story-comic.is-dialogue-comic {
   padding: 0;
   background: #05050a;
@@ -559,8 +558,6 @@ button, select { font: inherit; }
 }
 
 .comic-bubble {
-  /* Borde y esquinas escalonadas: el globo se dibuja como dos capas para que
-     el contorno oscuro siga el borde pixelado en cualquier tamaño. */
   --bubble-border: clamp(3px, .26cqw, 6px);
   --bubble-bg: #fff6dc;
   --bubble-corner: polygon(
@@ -669,7 +666,27 @@ button, select { font: inherit; }
 }
 #comicDialogueCount { color: #50e7f2; }
 .comic-click-hint { color: #ffd65a; }
-.comic-control-hint { color: #aaa3b8; font-weight: 700; }
+.comic-bubble[data-speaker="Doctor"] .comic-speaker { color: #2f7d86; }
+.comic-bubble[data-speaker="Artista urbano"] .comic-speaker { color: #b0377a; }
+
+/* Notas musicales discretas en el borde derecho: la música viene de fuera de cuadro. */
+.comic-music {
+  position: absolute;
+  z-index: 3;
+  top: 42%;
+  right: 3%;
+  color: #ffd65a;
+  font: 700 clamp(14px, 2.6cqw, 40px)/1 'Silkscreen', 'Courier New', monospace;
+  letter-spacing: .15em;
+  text-shadow: 2px 2px 0 #050509;
+  pointer-events: none;
+  animation: comic-music-float 1.6s ease-in-out infinite;
+}
+.comic-music[hidden] { display: none; }
+@keyframes comic-music-float {
+  0%, 100% { transform: translateY(0); opacity: .75; }
+  50% { transform: translateY(-6%); opacity: 1; }
+}
 
 /* --------------------------------------------------------------------------
    4. Opciones y leaderboard
