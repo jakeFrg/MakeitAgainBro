@@ -24,7 +24,7 @@
   // La campaña abre con un fragmento didáctico de ProDigio y después continúa
   // con las tres canciones de historia. Hazlo Otra Vez cierra la secuencia.
   const STORY_SONG_CONFIG = [
-    {id:'prodigio-tutorial', title:'Tutorial · ProDigio', audio:'Musica/Pro-digio.mp3', chart:'charts/Pro-digio-chart.json', scenario:'no-me-digas', tutorial:true, noteEndMs:48000, durationMs:50000},
+    {id:'prodigio-tutorial', title:'Tutorial · ProDigio', audio:'Musica/Pro-digio.mp3', chart:'charts/Pro-digio-chart.json', scenario:'tutorial', tutorial:true, noteEndMs:48000, durationMs:50000},
     {id:'no-me-digas', title:'No Me Digas Que No', audio:'Musica/NoMeDigasQueNo.mp3', chart:'charts/NoMeDigasQueNo-chart.json', scenario:'no-me-digas'},
     {id:'me-gustan', title:'Me Gustan Loquitas', audio:'Musica/MeGustanLoquitas.mp3', chart:'charts/MeGustanLoquitas-chart.json', scenario:'me-gustan'},
     {id:'hazlo-otra-vez', title:'Hazlo Otra Vez', audio:'Musica/HazloOtraVez.mp3', chart:'charts/HazloOtraVez-chart.json', scenario:'hazlo-otra-vez'}

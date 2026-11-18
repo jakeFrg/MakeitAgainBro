@@ -974,12 +974,17 @@ button, select { font: inherit; }
   background: linear-gradient(#09091433, #07071044);
 }
 .game-card { filter: grayscale(var(--performance-gray, 0%)); transition: filter .35s ease; }
-.stage[data-scenario="no-me-digas"] {
-  background: transparent;
-}
-body[data-scenario="no-me-digas"] .game-frame {
+.stage[data-scenario] { background: transparent; }
+
+/* Un fondo por escenario: cambia aquí qué imagen va con cuál */
+body[data-scenario="tutorial"]       { --escenario-img: url("ART/assets/ESC_00.jpeg"); }
+body[data-scenario="no-me-digas"]    { --escenario-img: url("ART/assets/ESC_01.jpeg"); }
+body[data-scenario="me-gustan"]      { --escenario-img: url("ART/assets/ESC_02sinp.jpeg"); }
+body[data-scenario="hazlo-otra-vez"] { --escenario-img: url("ART/assets/ESC_03.jpeg"); }
+
+body[data-scenario] .game-frame {
   background-color: #100c20;
-  background-image: linear-gradient(#08081726, #08081738), url("ART/assets/escenario1.jpeg");
+  background-image: linear-gradient(#08081726, #08081738), var(--escenario-img);
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 100% 100%;
