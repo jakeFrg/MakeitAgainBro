@@ -441,7 +441,8 @@ button, select { font: inherit; }
     linear-gradient(145deg, #1c163b, #10182c 60%, #2b1743);
   box-shadow: 8px 8px 0 #ff4db8, 14px 14px 0 #080a18;
   text-align: center;
-}
+}  
+
 .story-intro[hidden] { display: none; }
 .story-intro[data-scene="1"] { border-color: #ff4db8; box-shadow: 8px 8px 0 #50e7f2, 14px 14px 0 #080a18; }
 .story-intro[data-scene="2"] { border-color: #ffd65a; box-shadow: 8px 8px 0 #8b5cff, 14px 14px 0 #080a18; }
@@ -897,21 +898,7 @@ button, select { font: inherit; }
   margin: 12px auto 0;
 }
 
-/* Haces de luz difuminados detrás de la pista. */
-.concert-lights {
-  position: absolute;
-  z-index: 0;
-  top: 20px;
-  left: -18%;
-  right: -18%;
-  height: 34%;
-  pointer-events: none;
-  background:
-    linear-gradient(72deg, transparent 30%, #ff3c9f18 42%, transparent 55%),
-    linear-gradient(108deg, transparent 36%, #605cff20 49%, transparent 62%),
-    radial-gradient(ellipse at 50% 0, #fd4a9b35, transparent 68%);
-  filter: blur(7px);
-}
+
 
 /* Marcador oculto a la vista: solo guarda el mensaje de resultado para lectores de pantalla. */
 .scoreboard {
@@ -1001,7 +988,7 @@ body[data-scenario] .game-frame {
   transition: background 900ms ease;
 }
 
-/* Cambia las luces y el color del fondo según la canción de la campaña. */
+/* Cambia las luces y el color del fondo según la canción de la campaña.
 .stage[data-scenario="no-me-digas"]::before {
   background:
     linear-gradient(72deg, transparent 18%, #22d9ff32 34%, transparent 49%),
@@ -1020,6 +1007,7 @@ body[data-scenario] .game-frame {
     linear-gradient(108deg, transparent 36%, #ffd65a32 52%, transparent 68%),
     radial-gradient(ellipse at 50% 5%, #ffad3e50, transparent 49%);
 }
+*/
 
 /* Pista trapezoidal: angosta arriba y ancha abajo. */
 .highway {
@@ -1670,3 +1658,91 @@ body.level-finished .performance-hud { display: none; }
   border-radius: inherit;
   transition: height .25s ease, background-color .25s ease;
 }
+
+.personaje {
+  display: none;
+  position: absolute;
+  z-index: 0;                       /* detrás de la pista y de las notas */
+  left: var(--personaje-x, 50%);
+  top: var(--personaje-y, 42%);
+  transform: translate(-50%, -100%);
+  width: var(--personaje-ancho, 175px);
+  aspect-ratio: 256 / 299;          /* tamaño de UN cuadro: ajústalo al tuyo */
+  background-image: var(--personaje-hoja);
+  background-repeat: no-repeat;
+  background-size: 1600% 100%;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+  animation: personaje-anim 5s steps(16, jump-none) infinite;
+}
+
+@keyframes personaje-anim { to { background-position: 100% 0; } }
+
+/* Una hoja por escenario. El tutorial no tiene.*/
+body[data-scenario="no-me-digas"] {
+  --personaje-hoja: url("ART/assets/MIMAOV1Baile.png");
+}
+body[data-scenario="me-gustan"] {
+  --personaje-hoja: url("ART/assets/MIMAOV2Baile.png");
+  --personaje-y:40%;
+  --personaje-ancho: 150px;         
+}
+body[data-scenario="hazlo-otra-vez"] {
+  --personaje-hoja: url("ART/assets/MIMAOV3Baile.png");
+  --personaje-ancho: 70px;
+  --personaje-y: 41.2%;
+  --personaje-x: 50.4%;    
+}
+
+body[data-scenario="no-me-digas"] .personaje,
+body[data-scenario="me-gustan"] .personaje,
+body[data-scenario="hazlo-otra-vez"] .personaje { display: block; }
+
+
+.pantalla, .publico { display: none; position: absolute; z-index: 0; pointer-events: none; }
+
+/* ---------- Escenario 3: 4 pantallas ---------- */
+.pantalla { overflow: hidden; }
+.pantalla::before {                 /* el sprite recortado vive aquí */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: var(--corte-y, 0%);
+  width: var(--zoom, 100%);
+  aspect-ratio: 256 / 384;
+  transform: translateX(-50%);
+  background-image: var(--personaje-hoja);
+  background-repeat: no-repeat;
+  background-size: 1600% 100%;
+  image-rendering: pixelated;
+  animation: personaje-anim var(--personaje-vuelta, 5s) steps(16, jump-none) infinite;
+}
+/* Coordenadas en píxeles de tu imagen de 1920x1080. Valores de relleno: hay que ajustarlos. */
+.pantalla--1 { left: 1285px;  top: 245px; width: 190px; height: 140px; }
+.pantalla--2 { left: 480px;  top: 245px; width: 190px; height: 140px; }
+.pantalla--3 { left: 630px; top: 37px; width: 130px; height: 100px; }
+.pantalla--4 { left: 1185px; top: 37px; width: 130px; height: 100px; }
+/* Si una pantalla necesita otro acercamiento: .pantalla--2 { --zoom: 130%; --corte-y: -5%; } */
+
+body[data-scenario="hazlo-otra-vez"] .pantalla { display: block; }
+
+/* ---------- Escenario 2: público que respira ---------- */
+.publico {
+  left: 0;
+  bottom: -20px;                    /* el borde de abajo queda fuera del marco, así no se ve hueco al subir */
+  width: 100%;
+  height: auto;
+  animation: respirar var(--publico-vuelta, 1s) cubic-bezier(.37, 0, .63, 1) infinite alternate;
+}
+@keyframes respirar {
+  from { transform: translateY(0); }
+  to   { transform: translateY(calc(var(--publico-amplitud, 20px) * -1)); }
+}
+body[data-scenario="me-gustan"] .publico { display: block; }
+
+/* Se congelan al terminar el nivel */
+body.level-finished .personaje,
+body.level-finished .pantalla-sprite,
+body.level-finished .pantalla::before,
+body.level-finished .publico { animation-play-state: paused; }
