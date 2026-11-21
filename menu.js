@@ -8,10 +8,6 @@
 
   const SCENE_ANIMATION_MS = 350;
   const COMIC_BY_NEXT_STAGE = {
-    2:[
-      {label:'CAPÍTULO 03 · NUEVAS MIRADAS',title:'MÁS PÚBLICO',text:'Tu presentación corrió la voz. Una nueva audiencia se reúne para verte.',image:'ART/assets/escenario1.jpeg'},
-      {label:'CAPÍTULO 03 · NUEVAS MIRADAS',title:'SUBE AL ESCENARIO',text:'Las luces se encienden. Mantén el ritmo y conquista a la multitud.'}
-    ],
     3:[
       {label:'CAPÍTULO 04 · EL GRAN SHOW',title:'LA NOCHE FINAL',text:'El escenario más grande de la ciudad se abre ante ti.',image:'ART/assets/escenario1.jpeg'},
       {label:'CAPÍTULO 04 · EL GRAN SHOW',title:'TODO O NADA',text:'Esta es tu última canción. Haz que todos la recuerden.'}
@@ -144,6 +140,35 @@
     {panel:5,speaker:'ElMiMAO$',text:'¡TENGO QUE HACERLO OTRA VEZ!',
       bubble:{left:2,top:3,width:30,tail:{x:85,flip:-1}}}
   ];
+
+  // Cómics 3.1 y 3: viñetas sin diálogo, avanzan una por clic como las anteriores.
+  const COMIC_31_PAGE = {width:1600,height:450};
+  const COMIC_31_PANELS = [
+    {x:0,y:0,width:800,height:450},
+    {x:800,y:0,width:800,height:450}
+  ];
+  const COMIC_31 = {
+    image:'ART/comics/Comic3.1.jpeg',
+    alt:'Cómic 3.1: ElMiMAO$ llega al estadio y se prepara tras bambalinas',
+    page:COMIC_31_PAGE,
+    panels:COMIC_31_PANELS,
+    dialogues:[]
+  };
+
+  const COMIC_3_PAGE = {width:1600,height:900};
+  const COMIC_3_PANELS = [
+    {x:0,y:0,width:800,height:450},
+    {x:800,y:0,width:800,height:450},
+    {x:0,y:450,width:800,height:450},
+    {x:800,y:450,width:800,height:450}
+  ];
+  const COMIC_3 = {
+    image:'ART/comics/Comic3.jpeg',
+    alt:'Cómic 3: ElMiMAO$ y el Manager, cinco años después en las noticias',
+    page:COMIC_3_PAGE,
+    panels:COMIC_3_PANELS,
+    dialogues:[]
+  };
 
   const INTRO_COMIC = {
     image:'ART/comics/Comic1.png',
@@ -706,6 +731,14 @@ if (mainMenu && !mainMenu.hidden) {
     startDialogueComic(COMIC_25, 'comic25', onComplete);
   }
 
+  function startComic31(onComplete) {
+    startDialogueComic(COMIC_31, 'comic31', onComplete);
+  }
+
+  function startComic3(onComplete) {
+    startDialogueComic(COMIC_3, 'comic3', onComplete);
+  }
+
   /* ==========================================================================
      7. PRÁCTICA
      ========================================================================== */
@@ -825,6 +858,14 @@ if (mainMenu && !mainMenu.hidden) {
         }));
         return;
       }
+      // Al terminar la siguiente canción, mostrar los cómics 3.1 y 3 antes del próximo nivel.
+      if (nextStage === 2) {
+        startComic31(() => startComic3(() => {
+          startScreen.hidden = true;
+          document.dispatchEvent(new CustomEvent('rhythm:comic:continue'));
+        }));
+        return;
+      }
       document.body.classList.add('story-transition');
       showComic(COMIC_BY_NEXT_STAGE[nextStage] || [], 'between');
     });
@@ -880,7 +921,7 @@ if (mainMenu && !mainMenu.hidden) {
       try { localStorage.setItem(MENU_MUSIC_VOLUME_KEY, String(value)); } catch (error) {}
     });
     // Precarga los cómics para que el paso de uno al siguiente no parpadee.
-    [INTRO_COMIC, COMIC_2, COMIC_25].forEach(def => { const img = new Image(); img.src = def.image; });
+    [INTRO_COMIC, COMIC_2, COMIC_25, COMIC_31, COMIC_3].forEach(def => { const img = new Image(); img.src = def.image; });
     bindEvents();
     // Empieza durante la intro; si falla por las políticas del navegador, espera interacción.
     playMenuMusic(true);
