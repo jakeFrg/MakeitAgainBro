@@ -7,16 +7,6 @@
      ========================================================================== */
 
   const SCENE_ANIMATION_MS = 350;
-  const COMIC_BY_NEXT_STAGE = {
-    3:[
-      {label:'CAPÍTULO 04 · EL GRAN SHOW',title:'LA NOCHE FINAL',text:'El escenario más grande de la ciudad se abre ante ti.',image:'ART/assets/escenario1.jpeg'},
-      {label:'CAPÍTULO 04 · EL GRAN SHOW',title:'TODO O NADA',text:'Esta es tu última canción. Haz que todos la recuerden.'}
-    ]
-  };
-  const FINAL_COMIC = [
-    {label:'EPÍLOGO',title:'UNA NOCHE PARA RECORDAR',text:'La última nota resuena y el público estalla en aplausos.',image:'ART/assets/escenario1.jpeg'},
-    {label:'EPÍLOGO',title:'EL SHOW CONTINÚA',text:'Tu historia apenas comienza. Gracias por jugar.'}
-  ];
 
   // Introducción narrativa
   const INTRO_COMIC_PAGE = {width:1672,height:941};
@@ -167,6 +157,49 @@
     alt:'Cómic 3: ElMiMAO$ y el Manager, cinco años después en las noticias',
     page:COMIC_3_PAGE,
     panels:COMIC_3_PANELS,
+    dialogues:[]
+  };
+
+  // Cómics 4 y 4.5
+  const COMIC_45_PAGE = {width:1600,height:450};
+  const COMIC_45_PANELS = [
+    {x:0,y:0,width:800,height:450},
+    {x:800,y:0,width:800,height:450}
+  ];
+  const COMIC_45 = {
+    image:'ART/comics/Comic4.5.jpeg',
+    alt:'Cómic 4.5: ElMiMAO$ antes de la última presentación',
+    page:COMIC_45_PAGE,
+    panels:COMIC_45_PANELS,
+    dialogues:[]
+  };
+
+  const COMIC_4_PAGE = {width:1600,height:900};
+  const COMIC_4_PANELS = [
+    {x:0,y:0,width:800,height:450,caption:'5 años mas tarde'},
+    {x:800,y:0,width:800,height:450},
+    {x:0,y:450,width:800,height:450},
+    {x:800,y:450,width:800,height:450}
+  ];
+  const COMIC_4 = {
+    image:'ART/comics/Comic4.jpeg',
+    alt:'Cómic 4: ElMiMAO$ en la antesala del gran show',
+    page:COMIC_4_PAGE,
+    panels:COMIC_4_PANELS,
+    dialogues:[]
+  };
+
+  const COMIC_5_PAGE = {width:1600,height:900};
+  const COMIC_5_PANELS = [
+    {x:0,y:0,width:800,height:450},
+    {x:800,y:0,width:800,height:450},
+    {x:800,y:450,width:800,height:450}
+  ];
+  const COMIC_5 = {
+    image:'ART/comics/Comic5.jpeg',
+    alt:'Cómic 5: ElMiMAO$ cierra la noche final',
+    page:COMIC_5_PAGE,
+    panels:COMIC_5_PANELS,
     dialogues:[]
   };
 
@@ -775,6 +808,18 @@ if (mainMenu && !mainMenu.hidden) {
     startDialogueComic(COMIC_3, 'comic3', onComplete);
   }
 
+  function startComic45(onComplete) {
+    startDialogueComic(COMIC_45, 'comic45', onComplete);
+  }
+
+  function startComic4(onComplete) {
+    startDialogueComic(COMIC_4, 'comic4', onComplete);
+  }
+
+  function startComic5(onComplete) {
+    startDialogueComic(COMIC_5, 'comic5', onComplete);
+  }
+
   /* ==========================================================================
      7. PRÁCTICA
      ========================================================================== */
@@ -919,12 +964,17 @@ if (mainMenu && !mainMenu.hidden) {
         }));
         return;
       }
-      document.body.classList.add('story-transition');
-      showComic(COMIC_BY_NEXT_STAGE[nextStage] || [], 'between');
+      // Al terminar el penúltimo nivel, mostrar los cómics 4 y 4.5 antes del último.
+      if (nextStage === 3) {
+        startComic4(() => startComic45(() => {
+          startScreen.hidden = true;
+          document.dispatchEvent(new CustomEvent('rhythm:comic:continue'));
+        }));
+        return;
+      }
     });
     document.addEventListener('rhythm:comic:final', () => {
-      document.body.classList.add('story-transition');
-      showComic(FINAL_COMIC, 'final');
+      startComic5(showMainMenu);
     });
     document.addEventListener('rhythm:comic:continue', () => document.dispatchEvent(new Event('rhythm:next-stage')));
     $('#backFromCredits').addEventListener('click', showMainMenu);
@@ -975,7 +1025,7 @@ if (mainMenu && !mainMenu.hidden) {
       try { localStorage.setItem(MENU_MUSIC_VOLUME_KEY, String(value)); } catch (error) {}
     });
     // Precarga los cómics para que el paso de uno al siguiente no parpadee.
-    [INTRO_COMIC, COMIC_2, COMIC_25, COMIC_3, COMIC_35].forEach(def => { const img = new Image(); img.src = def.image; });
+    [INTRO_COMIC, COMIC_2, COMIC_25, COMIC_3, COMIC_35, COMIC_4, COMIC_45, COMIC_5].forEach(def => { const img = new Image(); img.src = def.image; });
     bindEvents();
     // Empieza durante la intro; si falla por las políticas del navegador, espera interacción.
     playMenuMusic(true);
