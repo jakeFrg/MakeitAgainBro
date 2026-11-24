@@ -1746,3 +1746,99 @@ body.level-finished .personaje,
 body.level-finished .pantalla-sprite,
 body.level-finished .pantalla::before,
 body.level-finished .publico { animation-play-state: paused; }
+/* Bienvenida, guía y salida del modo práctica. */
+.welcome-flow{position:absolute;z-index:30;inset:13% 21% 8%;display:grid;place-items:center;padding:24px;color:#fff;background:#090914f5;border:2px solid #c64a98;border-radius:14px;overflow:auto}
+.welcome-flow[hidden]{display:none}.welcome-flow form{width:min(100%,920px);text-align:center}.welcome-progress,.welcome-eyebrow{color:#50e7f2;font-size:12px;letter-spacing:.16em}
+.welcome-logo{display:block;width:94px;height:94px;object-fit:contain;margin:0 auto 8px}.welcome-logo-small{width:65px;height:65px}
+.welcome-slide h2{margin:8px;color:#fff}.welcome-slide p{max-width:720px;margin:10px auto;color:#d5cfdf;line-height:1.5}
+#welcomeFlow input{width:min(90%,340px);padding:11px;color:white;background:#171522;border:1px solid #50e7f2;border-radius:6px}.welcome-error{display:block;color:#ff687e}
+.guide-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.guide-card{padding:12px;border:1px solid #4d435b;border-radius:9px;background:#151321}.guide-card h3{color:#ffd65a;font-size:13px}.guide-card p{font-size:11px}
+.guide-art{height:58px;display:flex;justify-content:center;align-items:center;gap:8px;color:#ffcf45;font-size:32px}.guide-lanes i{width:12px;height:35px;border-radius:5px;background:#50e7f2}.guide-lanes i:nth-child(2){background:#ff4db8}.guide-lanes i:nth-child(3){background:#a989ff}.guide-lanes i:nth-child(4){background:#ff8a32}
+.guide-combo{width:54px;height:54px;margin:auto;border:4px solid #a989ff;border-radius:50%;color:#ff4db8;font-weight:bold}.guide-performance i{width:12px;height:46px;border-radius:9px;background:linear-gradient(to top,#f33 0 25%,#ffd65a 25% 65%,#00e640 65%)}
+.welcome-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}.welcome-actions button,.welcome-settings-button{padding:10px 16px;color:#ffd65a;border:1px solid #ffd65a;border-radius:5px;background:#211d2a;cursor:pointer}
+.practice-return{display:none;position:absolute;z-index:25;top:18px;right:22px;align-items:center;gap:12px;padding:9px 12px;color:white;background:#0c0b14e8;border:1px solid #50e7f2;border-radius:8px}
+.practice-return button{padding:8px 10px;color:#50e7f2;background:#151321;border:1px solid currentColor;border-radius:5px;cursor:pointer}body.practice-mode .practice-return{display:flex}
+@media(max-width:900px){.welcome-flow{inset:8% 5%}.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.practice-return{top:auto;bottom:12px;right:12px;left:12px;justify-content:space-between}}
+/* Pantalla de bienvenida: negro sólido y contorno animado. */
+body.welcome-screen-active,
+body.welcome-screen-active .game-viewport,
+body.welcome-screen-active .game-frame,
+body.welcome-screen-active .start-screen,
+body.welcome-screen-active .welcome-flow,
+body.welcome-screen-active .welcome-flow form { background:#000 !important; background-image:none !important; }
+body.welcome-screen-active .personaje,
+body.welcome-screen-active .pantalla,
+body.welcome-screen-active .publico,
+body.welcome-screen-active .concert-lights,
+body.welcome-screen-active .menu-mimao { display:none !important; }
+body.welcome-screen-active .welcome-flow { border:3px solid #50e7f2; animation:welcome-border-color 7s linear infinite; }
+@keyframes welcome-border-color {
+  0%,100% { border-color:#50e7f2; }
+  25% { border-color:#ff4db8; }
+  50% { border-color:#ffd65a; }
+  75% { border-color:#a989ff; }
+}
+.welcome-slide[hidden] { display:none; }
+.welcome-click-hint { color:#b8afc2; font-size:11px; letter-spacing:.14em; }
+body.welcome-screen-active .guide-card { background:#000; }
+
+body.welcome-screen-active .start-screen::before { display:none; }
+
+/* Alineación y jerarquía de la bienvenida. */
+.welcome-flow #welcomeForm { width:min(100%,920px); text-align:center; }
+.welcome-slide { width:100%; display:flex; flex-direction:column; align-items:center; text-align:center; }
+.welcome-slide > p { text-align:center; }
+.welcome-slide[data-welcome-slide="0"] .welcome-logo { width:132px; height:132px; margin-bottom:12px; }
+.welcome-name-row { display:flex; align-items:center; justify-content:center; gap:16px; width:min(100%,520px); margin:12px auto 4px; }
+.welcome-name-row .welcome-name-label { display:inline; flex:0 0 auto; margin:0; color:#fff; font-size:17px; font-weight:700; letter-spacing:0; }
+.welcome-name-row input { flex:1 1 260px; width:auto !important; min-width:0; }
+.welcome-leaderboard-explain { margin-top:12px !important; }
+.welcome-actions { justify-content:center; text-align:center; width:100%; }
+.welcome-click-hint { display:block; width:100%; text-align:center; }
+@media(max-width:600px) {
+  .welcome-name-row { flex-direction:column; gap:8px; }
+  .welcome-name-row input { flex:0 1 auto; width:min(100%,340px) !important; }
+  .welcome-slide[data-welcome-slide="0"] .welcome-logo { width:112px; height:112px; }
+}
+/* Práctica: fondo negro y pista con su diseño habitual. */
+body.practice-mode .game-frame { background:#000 !important; background-image:none !important; }
+body.practice-mode .song-progress { display:none !important; }
+body.practice-mode .stage::before { display:none; }
+body.practice-mode .practice-return {
+  top:12px; right:auto; left:14px; z-index:120;
+  gap:6px; padding:5px 8px; font-size:11px;
+}
+body.practice-mode .practice-return button { padding:5px 7px; font-size:10px; }
+body.practice-mode .practice-return kbd { font-size:9px; }
+/* Avisa de salida debajo de la marca durante la práctica. */
+body.practice-mode .practice-return { top:58px; left:14px; right:auto; }
+
+
+/* Leaderboard amplio con puesto, jugador y máxima puntuación. */
+.leaderboard-screen { width:min(1260px,96vw); max-height:min(94cqh,1000px); }
+.leaderboard-screen .settings-content { width:100%; }
+.leaderboard-screen .profile-progress { width:100%; margin-top:8px; padding:18px; }
+.leaderboard-screen .profile-progress h3 { margin-bottom:14px; font-size:14px; }
+.leaderboard-screen .profile-grid { gap:12px 22px; }
+.leaderboard-screen .profile-grid > div { font-size:11px; }
+.leaderboard-screen .profile-grid strong { font-size:14px; }
+.leaderboard-table { width:100%; margin-top:22px; border-collapse:separate; border-spacing:0 8px; table-layout:fixed; }
+.leaderboard-table th { padding:14px 18px; color:#50e7f2; background:#0b0a12; border-bottom:2px solid #50e7f2; font-size:15px; letter-spacing:.12em; text-align:left; }
+.leaderboard-table th:first-child { width:16%; text-align:center; }
+.leaderboard-table th:nth-child(2) { width:48%; }
+.leaderboard-table th:last-child { width:36%; text-align:right; }
+.leaderboard-table td { padding:16px 18px; color:#eee8f5; background:#14111d; border-top:1px solid #514561; border-bottom:1px solid #514561; font-size:17px; }
+.leaderboard-table td:first-child { border-left:1px solid #514561; border-radius:8px 0 0 8px; }
+.leaderboard-table td:last-child { border-right:1px solid #514561; border-radius:0 8px 8px 0; text-align:right; }
+.leaderboard-table .leaderboard-rank { color:#ffd65a; text-align:center; font-weight:900; font-size:20px; }
+.leaderboard-table .leaderboard-name { color:#fff; font-weight:700; overflow-wrap:anywhere; }
+.leaderboard-table .leaderboard-score { color:#50e7f2; font-weight:900; font-variant-numeric:tabular-nums; }
+.leaderboard-table .leaderboard-empty td { padding:28px; color:#aaa4bd; text-align:center; font-size:15px; }
+@media(max-width:650px) {
+  .leaderboard-screen .profile-progress { padding:10px; }
+  .leaderboard-table th { padding:10px 7px; font-size:10px; letter-spacing:.04em; }
+  .leaderboard-table td { padding:12px 7px; font-size:13px; }
+  .leaderboard-table .leaderboard-rank { font-size:15px; }
+}
+.leaderboard-table tbody tr:first-child .leaderboard-rank,
+.leaderboard-table tbody tr:first-child .leaderboard-score { color:#ffd65a; }

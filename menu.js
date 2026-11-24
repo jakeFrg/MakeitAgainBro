@@ -232,8 +232,9 @@
   const creditsPanel      = $('#creditsPanel');
   const settingsScreen    = $('#settingsScreen');
   const leaderboardScreen = $('#leaderboardScreen');
+  const welcomeFlow       = $('#welcomeFlow');
   const storyIntro        = $('#storyIntro');
-  const panels = [mainMenu, creditsPanel, settingsScreen, leaderboardScreen, storyIntro];
+  const panels = [mainMenu, creditsPanel, settingsScreen, leaderboardScreen, welcomeFlow, storyIntro];
 
   // Introducción de historia.
   const storyLabel     = $('#storySceneLabel');
@@ -286,6 +287,7 @@
   let introFinished = false;     // la barra solo puede aparecer al acabar la intro
   let nowPlayingTimer = 0;       // oculta la barra tras unos segundos
   let nowPlayingAnimation = null; // animación de entrada o salida en curso
+  let welcomeSlideIndex=0, settingsReturnToWelcome=false;
 
     /* ==========================================================================
      ANIMACIÓN DE EL MIMAO EN EL MENÚ
@@ -688,6 +690,12 @@ if (mainMenu && !mainMenu.hidden) {
   }
 
   function startStoryIntro() {
+    const input=$('#playerNameInput');
+    try{input.value=localStorage.getItem('miab-player-name-v1')||'';}catch(error){}
+    welcomeSlideIndex=0;renderWelcomeSlide();document.body.classList.add('welcome-screen-active');showOnly(welcomeFlow);
+  }
+  function beginStoryComic() {
+    document.body.classList.remove('welcome-screen-active');
     stopMenuMusic();
     document.body.classList.add('story-transition');
     startScreen.hidden = false;
@@ -708,6 +716,29 @@ if (mainMenu && !mainMenu.hidden) {
     }, 500);
   }
 
+  function renderWelcomeSlide(){
+    welcomeFlow.querySelectorAll('[data-welcome-slide]').forEach(slide=>slide.hidden=Number(slide.dataset.welcomeSlide)!==welcomeSlideIndex);
+  }
+  function advanceWelcome(){
+    if(welcomeSlideIndex===0){
+      const input=$('#playerNameInput'),name=input.value.trim().replace(/\s+/g,' ').slice(0,20);
+      if(!name){$('#welcomeNameError').hidden=false;input.focus();return;}
+      input.value=name;$('#welcomeNameError').hidden=true;
+      try{localStorage.setItem('miab-player-name-v1',name);}catch(error){}
+      document.dispatchEvent(new CustomEvent('rhythm:player-name',{detail:{name}}));
+    }
+    if(welcomeSlideIndex<3){welcomeSlideIndex++;renderWelcomeSlide();return;}
+    beginStoryComic();
+  }
+  function handleWelcomeClick(event){
+    if(welcomeFlow.hidden)return;
+    if(event.target.closest('button,input,select,a,label'))return;
+    advanceWelcome();
+  }
+  function returnToWelcome(){
+    settingsReturnToWelcome=false;document.body.classList.add('welcome-screen-active');
+    showOnly(welcomeFlow);renderWelcomeSlide();
+  }
   // Muestra un cómic por viñetas inmediatamente (sin pantallas intermedias).
   // El fundido a negro ya lo hizo game.js al terminar el nivel.
   function startDialogueComic(def, flow, onComplete) {
@@ -780,6 +811,7 @@ if (mainMenu && !mainMenu.hidden) {
 
   // Abre las opciones (siempre en el menú de secciones) y pone el foco en el botón de volver.
   function openSettings() {
+    settingsReturnToWelcome=!welcomeFlow.hidden;
     showOptionsHome();
     showOnly(settingsScreen);
     backFromSettings.focus();
@@ -805,7 +837,7 @@ if (mainMenu && !mainMenu.hidden) {
 
     if (!settingsScreen.hidden) {
       event.preventDefault();
-      if (backToOptions.hidden) showMainMenu();
+      if (backToOptions.hidden) { if(settingsReturnToWelcome)returnToWelcome();else showMainMenu(); }
       else showOptionsHome();
       return;
     }
@@ -823,6 +855,18 @@ if (mainMenu && !mainMenu.hidden) {
   }
 
   /* ==========================================================================
+  */
+  function handleMenuKeyboard(event){
+    if(event.key==='Escape')return;
+    if(!welcomeFlow.hidden&&event.code==='Space'){if(event.target.closest('input,textarea'))return;event.preventDefault();event.stopImmediatePropagation();advanceWelcome();return;}
+    if(!storyIntro.hidden&&(event.code==='Space'||event.key==='Enter')){event.preventDefault();event.stopImmediatePropagation();advanceComic();return;}
+    if(startScreen.hidden||!event.key.startsWith('Arrow'))return;
+    const active=document.activeElement;if(active&&/^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName))return;
+    const buttons=Array.from(startScreen.querySelectorAll('button:not([disabled])')).filter(b=>!b.closest('[hidden]')&&b.getClientRects().length);
+    if(!buttons.length)return;event.preventDefault();event.stopImmediatePropagation();
+    let i=buttons.indexOf(active),d=(event.key==='ArrowLeft'||event.key==='ArrowUp')?-1:1;buttons[(i+d+buttons.length)%buttons.length].focus();
+  }
+  /*
      10. EVENTOS Y ARRANQUE
      ========================================================================== */
 
@@ -830,6 +874,10 @@ if (mainMenu && !mainMenu.hidden) {
     // Botones del menú principal.
     $('#startButton').addEventListener('click', startStoryIntro);
     $('#practiceButton').addEventListener('click', startPractice);
+    $('#exitPracticeButton').addEventListener('click',exitPractice);
+    startScreen.addEventListener('click',handleWelcomeClick);
+    $('#welcomeSettingsButton').addEventListener('click',()=>{settingsReturnToWelcome=true;openSettings();});
+    $('#playerNameInput').addEventListener('input',()=>$('#welcomeNameError').hidden=true);
     $('#openLeaderboardButton').addEventListener('click', openLeaderboard);
     $('#creditsButton').addEventListener('click', openCredits);
     $('#openSettingsButton').addEventListener('click', openSettings);
@@ -875,7 +923,7 @@ if (mainMenu && !mainMenu.hidden) {
     });
     document.addEventListener('rhythm:comic:continue', () => document.dispatchEvent(new Event('rhythm:next-stage')));
     $('#backFromCredits').addEventListener('click', showMainMenu);
-    backFromSettings.addEventListener('click', showMainMenu);
+    backFromSettings.addEventListener('click',()=>{if(settingsReturnToWelcome)returnToWelcome();else showMainMenu();});
     $('#backFromLeaderboard').addEventListener('click', showMainMenu);
 
     // Música del menú: al terminar una canción empieza otra al azar y la barra avanza sola.
@@ -886,6 +934,7 @@ if (mainMenu && !mainMenu.hidden) {
     menuMusic.addEventListener('loadedmetadata', updateNowPlayingProgress);
 
     document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown',handleMenuKeyboard,true);
   }
 
   // Calcula la escala que hace caber el marco 1920x1080 sin deformarlo.

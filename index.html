@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -39,6 +39,10 @@
     <span id="countdownNumber">3</span>
     <small>PREPÁRATE</small>
   </div>
+  <aside class="practice-return" id="practiceReturn">
+    <span>Práctica · Puedes volver cuando quieras</span>
+    <button id="exitPracticeButton" type="button">← VOLVER AL MENÚ <kbd>ESC</kbd></button>
+  </aside>
   <aside class="performance-hud" id="performanceHud" aria-label="Desempeño de la partida">
     <div class="performance-heading">
       <span class="stat-label">DESEMPEÑO</span>
@@ -100,6 +104,65 @@
 
       <!-- Reinicia la partida. -->
       <button id="resetButton" class="menu-reset-button" type="button">↺ REINICIAR PARTIDA</button>
+
+      <!-- Bienvenida inicial antes de entrar al cómic y comenzar la historia. -->
+      <section class="welcome-flow" id="welcomeFlow" aria-label="Bienvenida al juego" hidden>
+        <div id="welcomeForm">
+          <section class="welcome-slide" data-welcome-slide="0">
+            <img class="welcome-logo" src="ART/assets/RockLeek%20logo.png" alt="Logo de ROCKLEEK">
+            <p class="welcome-eyebrow">MAKE IT AGAIN BRO!</p>
+            <h2>¡Hola! Somos ROCKLEEK</h2>
+            <p>Es un placer tenerte aquí; gracias por jugar nuestro juego.</p>
+            <div class="welcome-name-row">
+              <label class="welcome-name-label" for="playerNameInput">¿Cómo te llamas?</label>
+              <input id="playerNameInput" name="playerName" type="text" maxlength="20" autocomplete="nickname" placeholder="Escribe tu nombre" required>
+            </div>
+            <p class="welcome-leaderboard-explain">Tu nombre aparecerá en la leaderboard junto a la puntuación total que consigas en las cuatro canciones, para que puedas ver qué lugar ocupas.</p>
+            <small id="welcomeNameError" class="welcome-error" hidden>Escribe un nombre para continuar.</small>
+          </section>
+
+          <section class="welcome-slide" data-welcome-slide="1" hidden>
+            <p class="welcome-eyebrow">GUÍA RÁPIDA</p>
+            <h2>¿Qué verás en la pista?</h2>
+            <div class="guide-grid">
+              <article class="guide-card">
+                <div class="guide-art guide-lanes" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                <h3>Notas y carriles</h3><p>Pulsa la tecla del carril cuando la nota llegue a la línea de golpe.</p>
+              </article>
+              <article class="guide-card">
+                <div class="guide-art guide-special" aria-hidden="true">★</div>
+                <h3>Notas especiales</h3><p>Acertarlas carga el impulso que puedes activar con Espacio.</p>
+              </article>
+              <article class="guide-card">
+                <div class="guide-art guide-combo" aria-hidden="true">x2</div>
+                <h3>Combo</h3><p>Encadena aciertos para aumentar el multiplicador y tus puntos.</p>
+              </article>
+              <article class="guide-card">
+                <div class="guide-art guide-performance" aria-hidden="true"><i></i></div>
+                <h3>Desempeño</h3><p>Evita fallar para conservar la barra; si llega a cero, la partida termina.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="welcome-slide" data-welcome-slide="2" hidden>
+            <p class="welcome-eyebrow">TÚ DECIDES</p>
+            <h2>¿Quieres cambiar algo?</h2>
+            <p>Desde configuración puedes ajustar audio, dificultad, canción, mapa de notas y teclas. Puedes volver aquí al terminar.</p>
+            <button id="welcomeSettingsButton" class="welcome-settings-button" type="button">⚙ ABRIR CONFIGURACIÓN</button>
+          </section>
+
+          <section class="welcome-slide" data-welcome-slide="3" hidden>
+            <img class="welcome-logo welcome-logo-small" src="ART/assets/RockLeek%20logo.png" alt="">
+            <p class="welcome-eyebrow">TODO LISTO</p>
+            <h2>¡Disfruta el juego!</h2>
+            <p>Ya no te quitamos más tiempo. Seguimos con la historia. ¡Gracias por jugar! :D</p>
+          </section>
+
+          <footer class="welcome-actions">
+            <span class="welcome-click-hint">HAZ CLIC O PRESIONA ESPACIO PARA CONTINUAR</span>
+          </footer>
+        </div>
+      </section>
 
       <!-- Introducción del modo historia: el cómic narrativo y las escenas de
            transición comparten este panel. menu.js decide cuál de los dos se ve. -->
@@ -229,13 +292,19 @@
           <section class="profile-progress" aria-label="Progreso guardado del jugador">
             <h3>PROGRESO GUARDADO</h3>
             <div class="profile-grid">
+              <div><span>JUGADOR</span><strong id="profilePlayerName">—</strong></div>
               <div><span>POPULARIDAD</span><strong id="profilePopularity">50%</strong></div>
               <div><span>NIVELES COMPLETADOS</span><strong id="profileLevels">0</strong></div>
               <div><span>PUNTUACIÓN ACUMULADA</span><strong id="profileTotalScore">000000</strong></div>
               <div><span>PRECISIÓN GLOBAL</span><strong id="profileAccuracy">0%</strong></div>
               <div><span>DESEMPEÑO MEDIO</span><strong id="profileAveragePerformance">0%</strong></div>
             </div>
-            <ol id="leaderboardList" class="leaderboard-list" aria-label="Mejores partidas guardadas"></ol>
+            <table class="leaderboard-table" aria-label="Mejores puntuaciones guardadas">
+              <thead>
+                <tr><th scope="col">TOP</th><th scope="col">NOMBRE</th><th scope="col">PUNTUACIÓN MÁXIMA</th></tr>
+              </thead>
+              <tbody id="leaderboardList"></tbody>
+            </table>
           </section>
         </div>
       </section>

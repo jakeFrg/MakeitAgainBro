@@ -62,6 +62,7 @@
   const BEST_SCORE_KEY = 'ritmo-best-score-v1';
   const PLAYER_PROFILE_KEY = 'ritmo-player-profile-v1';
   const PLAYER_LEADERBOARD_KEY = 'ritmo-local-leaderboard-v1';
+  const PLAYER_NAME_KEY='miab-player-name-v1';
   const LANE_KEYS_STORAGE_KEY = 'ritmo-lane-keys-v1';
   const DIFFICULTY_STORAGE_KEY = 'ritmo-difficulty-v1';
   const EFFECTS_VOLUME_KEY = 'ritmo-volume';
@@ -106,6 +107,7 @@
   const profileAccuracy           = $('#profileAccuracy');
   const profileAveragePerformance = $('#profileAveragePerformance');
   const leaderboardList           = $('#leaderboardList');
+  const profilePlayerName = $('#profilePlayerName');
 
   // Opciones, canción y volúmenes.
   const difficultySelect = $('#difficulty');
@@ -175,6 +177,7 @@
   let playerLeaderboard = readLocalLeaderboard();
   let bestScore = playerProfile.bestScore;
   let profileSaveTimer = 0;
+  let campaignRun={score:0,hits:0,misses:0,bestCombo:0};
 
   // Impulso
   let energy = 0;                     // energía del impulso (0 a 100)
@@ -387,6 +390,7 @@
 
   // Muestra el perfil guardado y las 5 mejores partidas del ranking.
   function updateProfileUI() {
+    try{profilePlayerName.textContent=localStorage.getItem(PLAYER_NAME_KEY)||'Jugador';}catch(error){}
     profilePopularity.textContent = `${Math.round(playerProfile.popularity)}%`;
     profileLevels.textContent = String(playerProfile.levelsCompleted);
     profileTotalScore.textContent = String(playerProfile.totalScore).padStart(6, '0');
@@ -399,21 +403,40 @@
 
     leaderboardList.replaceChildren();
     if (!playerLeaderboard.length) {
-      const empty = document.createElement('li');
-      empty.className = 'leaderboard-empty';
-      empty.textContent = 'Aún no hay partidas guardadas.';
-      leaderboardList.appendChild(empty);
+      const row=document.createElement('tr');
+      row.className='leaderboard-empty';
+      const cell=document.createElement('td');
+      cell.colSpan=3;
+      cell.textContent='Aún no hay puntuaciones guardadas.';
+      row.appendChild(cell);
+      leaderboardList.appendChild(row);
       return;
     }
-    playerLeaderboard.slice(0, 5).forEach((record, index) => {
-      const item = document.createElement('li');
-      item.append(`${record.date || 'Partida'} · `);
-      const scoreLabel = document.createElement('strong');
-      scoreLabel.textContent = `${Number(record.score).toLocaleString('es-MX')} pts`;
-      item.append(scoreLabel, ` · ${Number(record.accuracy) || 0}% precisión · combo ${Number(record.bestCombo) || 0}`);
-      item.setAttribute('aria-label', `Puesto ${index + 1}: ${scoreLabel.textContent}, precisión ${Number(record.accuracy) || 0} por ciento`);
-      leaderboardList.appendChild(item);
+    const bestScoreByPlayer=new Map();
+    playerLeaderboard.forEach(record=>{
+      const name=String(record.name||'Jugador').trim()||'Jugador';
+      const points=Math.max(0,Number(record.score)||0);
+      const previous=bestScoreByPlayer.get(name);
+      if(!previous||points>previous.score)bestScoreByPlayer.set(name,{name,score:points});
     });
+    Array.from(bestScoreByPlayer.values())
+      .sort((a,b)=>b.score-a.score)
+      .slice(0,10)
+      .forEach((record,index)=>{
+        const row=document.createElement('tr');
+        const rank=document.createElement('td');
+        rank.className='leaderboard-rank';
+        rank.textContent=String(index+1).padStart(2,'0');
+        const name=document.createElement('td');
+        name.className='leaderboard-name';
+        name.textContent=record.name;
+        const score=document.createElement('td');
+        score.className='leaderboard-score';
+        score.textContent=record.score.toLocaleString('es-MX')+' pts';
+        row.append(rank,name,score);
+        row.setAttribute('aria-label','Puesto '+(index+1)+': '+name.textContent+', '+score.textContent);
+        leaderboardList.appendChild(row);
+      });
   }
 
   // Refresca la barra de desempeño (verde, amarilla o roja según el nivel).
@@ -791,7 +814,7 @@
   function start({allowSilentFallback = false} = {}) {
     if (running || countdownActive) return;
     document.body.classList.remove('level-finished');
-    const musicRound = !isPracticeMode();
+    const musicRound = true;
     clearBoostState();
     heldLaneKeys.clear();
     songAudio.pause();
@@ -952,13 +975,11 @@
   }
 
   // Guarda la partida en el perfil y el ranking, y ajusta la popularidad (no se usa en práctica).
-  function saveRunToProfile(outcome, accuracy) {
-    playerLeaderboard.push({
-      score: Math.max(0, score), accuracy, bestCombo,
-      date: new Date().toLocaleDateString('es-MX')
-    });
-    playerLeaderboard.sort((a, b) => Number(b.score) - Number(a.score));
-    playerLeaderboard = playerLeaderboard.slice(0, 10);
+  function saveRunToProfile(outcome,accuracy,addLeaderboard=true,recordScore=score,recordCombo=bestCombo){
+    if(addLeaderboard){let name='Jugador';try{name=localStorage.getItem(PLAYER_NAME_KEY)||name;}catch(error){}
+      playerLeaderboard.push({name,score:Math.max(0,recordScore),accuracy,bestCombo:recordCombo,date:new Date().toLocaleDateString('es-MX')});
+      playerLeaderboard.sort((a,b)=>Number(b.score)-Number(a.score));playerLeaderboard=playerLeaderboard.slice(0,10);
+    }
 
     playerProfile.gamesPlayed++;
     playerProfile.totalScore += Math.max(0, score);
@@ -1044,8 +1065,17 @@
     const grade = accuracy >= 95 ? 'S' : accuracy >= 85 ? 'A' : accuracy >= 70 ? 'B' : accuracy >= 50 ? 'C' : 'D';
 
     updateScore(pausedAt);
-    const tutorialRound = storyCampaignActive && storyPlaylist[storyStageIndex]?.tutorial;
-    if (!isPracticeMode() && !tutorialRound) saveRunToProfile(outcome, accuracy);
+    if(storyCampaignActive){
+      campaignRun.score+=Math.max(0,score);campaignRun.hits+=hits;campaignRun.misses+=misses;campaignRun.bestCombo=Math.max(campaignRun.bestCombo,bestCombo);
+      saveRunToProfile(outcome,accuracy,false);
+      if(outcome==='defeat'||storyStageIndex===storyPlaylist.length-1){
+        const attempts=campaignRun.hits+campaignRun.misses,totalAccuracy=attempts?Math.round(campaignRun.hits/attempts*100):0;
+        let playerName='Jugador';try{playerName=localStorage.getItem(PLAYER_NAME_KEY)||playerName;}catch(error){}
+        playerLeaderboard.push({name:playerName,score:campaignRun.score,accuracy:totalAccuracy,bestCombo:campaignRun.bestCombo,date:new Date().toLocaleDateString('es-MX')});
+        playerLeaderboard.sort((a,b)=>Number(b.score)-Number(a.score));playerLeaderboard=playerLeaderboard.slice(0,10);
+        updateProfileUI();savePlayerProfile(true);
+      }
+    }else if(!isPracticeMode())saveRunToProfile(outcome,accuracy);
     showResults(outcome, accuracy, grade);
   }
 
@@ -1296,6 +1326,7 @@
 
   // Tecla presionada: asignación, impulso (Espacio) o golpe en un carril.
   function handleKeydown(event) {
+    if(!running&&bindingLane===null)return;
     // Ignora la repetición automática del sistema al mantener una tecla.
     if (event.repeat) {
       const repeatedKey = normalizeKey(event.key);
@@ -1395,6 +1426,7 @@
     const song = storyPlaylist[index];
     if (!song) return;
     storyCampaignActive = true;
+    if(index===0)campaignRun={score:0,hits:0,misses:0,bestCombo:0};
     document.body.classList.remove('story-transition');
     storyStageIndex = index;
     chart = applyDifficulty(song.chart);
