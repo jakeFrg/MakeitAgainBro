@@ -1007,6 +1007,15 @@
     savePlayerProfile(true);
   }
 
+  // Enlaza el final de una canción con el siguiente paso de la historia después
+  // del fundido a negro, sin pantallas ni menús intermedios.
+  function dispatchStoryAfterFade(eventName, detail = null) {
+    document.body.classList.add('story-transition');
+    window.setTimeout(() => {
+      document.dispatchEvent(detail ? new CustomEvent(eventName, {detail}) : new Event(eventName));
+    }, 650);
+  }
+
   // Muestra sobre la pista la pantalla de resultados (victoria o derrota).
   function showResults(outcome, accuracy, grade) {
     message.classList.add('results');
@@ -1032,11 +1041,10 @@
     if (storyCampaignActive) {
       message.style.cursor = 'pointer';
       message.addEventListener('click', () => {
-        document.body.classList.add('story-transition');
         if (nextStageIndex >= 0) {
-          window.setTimeout(() => document.dispatchEvent(new CustomEvent('rhythm:comic', {detail:{nextStage:nextStageIndex}})), 650);
+          dispatchStoryAfterFade('rhythm:comic', {nextStage:nextStageIndex});
         } else {
-          window.setTimeout(() => document.dispatchEvent(new Event('rhythm:comic:final')), 650);
+          dispatchStoryAfterFade('rhythm:comic:final');
         }
       }, {once:true});
     } else {
@@ -1076,6 +1084,16 @@
         updateProfileUI();savePlayerProfile(true);
       }
     }else if(!isPracticeMode())saveRunToProfile(outcome,accuracy);
+
+    // El Nivel 1 no tiene pantalla de resultados: termina y entra directo al Cómic 2.
+    if (storyCampaignActive && storyStageIndex === 0) {
+      message.hidden = true;
+      message.textContent = '';
+      message.classList.remove('results', 'defeat', 'audio-prompt');
+      dispatchStoryAfterFade('rhythm:comic', {nextStage:1});
+      return;
+    }
+
     showResults(outcome, accuracy, grade);
   }
 

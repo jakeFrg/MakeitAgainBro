@@ -688,6 +688,21 @@ button, select { font: inherit; }
   0%, 100% { transform: translateY(0); opacity: .75; }
   50% { transform: translateY(-6%); opacity: 1; }
 }
+.comic-caption {
+  position: absolute;
+  z-index: 3;
+  right: 3%;
+  bottom: 4%;
+  padding: .5cqw .9cqw;
+  border: 2px solid #101016;
+  color: #17131b;
+  background: #fff6dc;
+  font: 700 clamp(14px, 1.9cqw, 32px)/1.2 'Silkscreen', 'Courier New', monospace;
+  text-align: center;
+  box-shadow: 3px 3px 0 #050509;
+  pointer-events: none;
+}
+.comic-caption[hidden] { display: none; }
 
 /* --------------------------------------------------------------------------
    4. Opciones y leaderboard

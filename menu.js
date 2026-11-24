@@ -141,24 +141,24 @@
       bubble:{left:2,top:3,width:30,tail:{x:85,flip:-1}}}
   ];
 
-  // Cómics 3.1 y 3: viñetas sin diálogo, avanzan una por clic como las anteriores.
-  const COMIC_31_PAGE = {width:1600,height:450};
-  const COMIC_31_PANELS = [
+  // Cómics 3 y 3.5: viñetas sin diálogo, avanzan una por clic como las anteriores.
+  const COMIC_35_PAGE = {width:1600,height:450};
+  const COMIC_35_PANELS = [
     {x:0,y:0,width:800,height:450},
     {x:800,y:0,width:800,height:450}
   ];
-  const COMIC_31 = {
-    image:'ART/comics/Comic3.1.jpeg',
-    alt:'Cómic 3.1: ElMiMAO$ llega al estadio y se prepara tras bambalinas',
-    page:COMIC_31_PAGE,
-    panels:COMIC_31_PANELS,
+  const COMIC_35 = {
+    image:'ART/comics/Comic3.5.jpeg',
+    alt:'Cómic 3.5: ElMiMAO$ llega al estadio y se prepara tras bambalinas',
+    page:COMIC_35_PAGE,
+    panels:COMIC_35_PANELS,
     dialogues:[]
   };
 
   const COMIC_3_PAGE = {width:1600,height:900};
   const COMIC_3_PANELS = [
     {x:0,y:0,width:800,height:450},
-    {x:800,y:0,width:800,height:450},
+    {x:800,y:0,width:800,height:450,caption:'5 años mas tarde'},
     {x:0,y:450,width:800,height:450},
     {x:800,y:450,width:800,height:450}
   ];
@@ -253,6 +253,7 @@
   const comicTail      = $('#comicTail');
   const comicDialogueCount = $('#comicDialogueCount');
   const comicMusic     = $('#comicMusic');
+  const comicCaption   = $('#comicCaption');
 
   // Opciones.
   const backFromSettings = $('#backFromSettings');
@@ -541,6 +542,8 @@ if (mainMenu && !mainMenu.hidden) {
       setComicPanel(def, panel);
       comicPanel.dataset.panel = String(activeDialoguePanel);
     }
+    comicCaption.hidden = !panel.caption;
+    comicCaption.textContent = panel.caption || '';
 
     const spoken = entry && !entry.silent;
     comicMusic.hidden = !(entry && entry.music);
@@ -599,6 +602,7 @@ if (mainMenu && !mainMenu.hidden) {
     comicBubble.hidden = true;
     comicDialogueCount.hidden = true;
     comicMusic.hidden = true;
+    comicCaption.hidden = true;
   }
 
   function finishDialogueComic() {
@@ -610,6 +614,7 @@ if (mainMenu && !mainMenu.hidden) {
     storyIntro.classList.remove('is-dialogue-comic');
     comicBubble.hidden = true;
     comicMusic.hidden = true;
+    comicCaption.hidden = true;
     if (onComplete) onComplete();
   }
 
@@ -762,8 +767,8 @@ if (mainMenu && !mainMenu.hidden) {
     startDialogueComic(COMIC_25, 'comic25', onComplete);
   }
 
-  function startComic31(onComplete) {
-    startDialogueComic(COMIC_31, 'comic31', onComplete);
+  function startComic35(onComplete) {
+    startDialogueComic(COMIC_35, 'comic35', onComplete);
   }
 
   function startComic3(onComplete) {
@@ -906,9 +911,9 @@ if (mainMenu && !mainMenu.hidden) {
         }));
         return;
       }
-      // Al terminar la siguiente canción, mostrar los cómics 3.1 y 3 antes del próximo nivel.
+      // Al terminar la siguiente canción, mostrar los cómics 3 y 3.5 antes del próximo nivel.
       if (nextStage === 2) {
-        startComic31(() => startComic3(() => {
+        startComic3(() => startComic35(() => {
           startScreen.hidden = true;
           document.dispatchEvent(new CustomEvent('rhythm:comic:continue'));
         }));
@@ -970,7 +975,7 @@ if (mainMenu && !mainMenu.hidden) {
       try { localStorage.setItem(MENU_MUSIC_VOLUME_KEY, String(value)); } catch (error) {}
     });
     // Precarga los cómics para que el paso de uno al siguiente no parpadee.
-    [INTRO_COMIC, COMIC_2, COMIC_25, COMIC_31, COMIC_3].forEach(def => { const img = new Image(); img.src = def.image; });
+    [INTRO_COMIC, COMIC_2, COMIC_25, COMIC_3, COMIC_35].forEach(def => { const img = new Image(); img.src = def.image; });
     bindEvents();
     // Empieza durante la intro; si falla por las políticas del navegador, espera interacción.
     playMenuMusic(true);
