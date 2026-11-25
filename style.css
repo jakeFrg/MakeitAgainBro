@@ -371,12 +371,12 @@ button, select { font: inherit; }
 }
 
 /* Altura de cada botón de la columna */
-#startButton           { top: 455px; width: 600px; left: 665px; }
-#practiceButton        { top: 572px; }
-#openLeaderboardButton { top: 661px; }
-#openSettingsButton    { top: 748px; }
-#creditsButton         { top: 833px; }
-#exitButton            { top: 917px; }
+#startButton           { top: 470px; width: 600px; left: 665px; }
+#practiceButton        { top: 590px; left: 735px; }
+#openLeaderboardButton { top: 680px; left: 735px; }
+#openSettingsButton    { top: 770px; left: 735px; }
+#creditsButton         { top: 860px; left: 735px; }
+#exitButton            { top: 950px; left: 735px; }
 
 /* Animacion de Botones */
 .main-menu .start-menu-buttons button:hover,
