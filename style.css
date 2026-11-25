@@ -719,12 +719,12 @@ button, select { font: inherit; }
   color: #f4eddd;
   font: 700 clamp(12px, 1.5cqw, 24px)/1.8 'Silkscreen', 'Courier New', monospace;
   text-align: center;
-  animation: final-credits-roll 18s linear forwards;
+  animation: final-credits-roll 28s linear forwards;
 }
 .final-credits p { margin: 0 0 1.2em; }
 .final-credits-title {
   color: #ffd65a;
-  font-size: 1.6em;
+  font-size: 5em;
   letter-spacing: .16em;
 }
 .final-credits-end { color: #50e7f2; }
@@ -732,12 +732,12 @@ button, select { font: inherit; }
   position: absolute;
   bottom: 4cqh;
   color: #ffd65a;
-  font: 800 clamp(10px, .8cqw, 16px)/1.2 'Silkscreen', 'Courier New', monospace;
+  font: 800 clamp(100px, .8cqw, 16px)/1.2 'Silkscreen', 'Courier New', monospace;
   letter-spacing: .12em;
 }
 @keyframes final-credits-roll {
-  from { transform: translateY(-120%); }
-  to { transform: translateY(120%); }
+  0%, 10% { transform: translateY(5cqh); } /* Se queda quieto un momento */
+  100% { transform: translateY(-100%); }   /* Sube y se va */
 }
 
 /* --------------------------------------------------------------------------
