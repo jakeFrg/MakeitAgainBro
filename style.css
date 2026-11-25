@@ -403,6 +403,8 @@ button, select { font: inherit; }
   -webkit-text-stroke: 0;
   text-shadow: none;
 }
+
+
 #resetButton.menu-reset-button:hover,
 #resetButton.menu-reset-button:focus-visible { color: #101329; background: var(--cyan); }
 
@@ -724,7 +726,7 @@ button, select { font: inherit; }
 .final-credits p { margin: 0 0 1.2em; }
 .final-credits-title {
   color: #ffd65a;
-  font-size: 5em;
+  font-size: 1.6em;
   letter-spacing: .16em;
 }
 .final-credits-end { color: #50e7f2; }
@@ -732,7 +734,7 @@ button, select { font: inherit; }
   position: absolute;
   bottom: 4cqh;
   color: #ffd65a;
-  font: 800 clamp(100px, .8cqw, 16px)/1.2 'Silkscreen', 'Courier New', monospace;
+  font: 800 clamp(10px, .8cqw, 16px)/1.2 'Silkscreen', 'Courier New', monospace;
   letter-spacing: .12em;
 }
 @keyframes final-credits-roll {
@@ -1893,3 +1895,5 @@ body.practice-mode .practice-return { top:58px; left:14px; right:auto; }
 }
 .leaderboard-table tbody tr:first-child .leaderboard-rank,
 .leaderboard-table tbody tr:first-child .leaderboard-score { color:#ffd65a; }
+
+.menu-version { position: absolute; z-index: 20; bottom: -40px; right: 0px; color: #fff; font-size: 40px; letter-spacing: .12em; text-shadow: 0 0 4px #000; }
