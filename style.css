@@ -371,12 +371,12 @@ button, select { font: inherit; }
 }
 
 /* Altura de cada botón de la columna */
-#startButton           { top: 461px; }
-#practiceButton        { top: 562px; }
-#openLeaderboardButton { top: 651px; }
-#openSettingsButton    { top: 738px; }
-#creditsButton         { top: 823px; }
-#exitButton            { top: 907px; }
+#startButton           { top: 455px; width: 600px; left: 665px; }
+#practiceButton        { top: 572px; }
+#openLeaderboardButton { top: 661px; }
+#openSettingsButton    { top: 748px; }
+#creditsButton         { top: 833px; }
+#exitButton            { top: 917px; }
 
 /* Animacion de Botones */
 .main-menu .start-menu-buttons button:hover,
@@ -703,6 +703,42 @@ button, select { font: inherit; }
   pointer-events: none;
 }
 .comic-caption[hidden] { display: none; }
+.final-credits {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #030307;
+  cursor: pointer;
+}
+.final-credits[hidden] { display: none; }
+.final-credits-scroll {
+  width: min(70cqw, 900px);
+  color: #f4eddd;
+  font: 700 clamp(12px, 1.5cqw, 24px)/1.8 'Silkscreen', 'Courier New', monospace;
+  text-align: center;
+  animation: final-credits-roll 22s linear infinite;
+}
+.final-credits p { margin: 0 0 1.2em; }
+.final-credits-title {
+  color: #ffd65a;
+  font-size: 1.6em;
+  letter-spacing: .16em;
+}
+.final-credits-end { color: #50e7f2; }
+.final-credits-hint {
+  position: absolute;
+  bottom: 4cqh;
+  color: #ffd65a;
+  font: 800 clamp(10px, .8cqw, 16px)/1.2 'Silkscreen', 'Courier New', monospace;
+  letter-spacing: .12em;
+}
+@keyframes final-credits-roll {
+  from { transform: translateY(-120%); }
+  to { transform: translateY(120%); }
+}
 
 /* --------------------------------------------------------------------------
    4. Opciones y leaderboard

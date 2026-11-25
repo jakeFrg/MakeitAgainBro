@@ -25,6 +25,8 @@
   <audio id="musicaNivel" src="Musica/HazloOtraVez.mp3" preload="auto"></audio>
   <!-- Canción de la partida: su reloj guía las notas. Se puede cambiar desde Opciones. -->
   <audio id="songAudio" src="Musica/Pro-digio.mp3" preload="auto" hidden></audio>
+  <!-- Música de los créditos finales. -->
+  <audio id="finalMusic" src="Musica/Ocean Man.mpeg" preload="auto"></audio>
 
   <!-- Marco fijo de referencia (1920x1080). El script lo escala de forma
        proporcional y lo centra; el espacio sobrante queda como bandas negras. -->
@@ -211,6 +213,22 @@
         <p>Pablo Campuzano Muñoz</p>
         <p>Ian Sánchez Campuzano</p>
         <button id="backFromCredits" class="credits-back" type="button">VOLVER</button>
+      </div>
+
+      <!-- Créditos finales: escena propia con desplazamiento vertical. -->
+      <div class="final-credits" id="finalCreditsPanel" hidden>
+        <div class="final-credits-scroll">
+          <p class="final-credits-title">CRÉDITOS</p>
+          <p>DISEÑO · Mauricio Pérez Fragoso</p>
+          <p>PROGRAMACIÓN · Pablo Campuzano Muñoz</p>
+          <p>ARTE · Ian Sánchez Campuzano</p>
+          <p>MÚSICA · Pablo Campuzano Muñoz</p>
+          <p>GUION · Mauricio Pérez Fragoso</p>
+          <p>PRUEBAS · Ian Sánchez Campuzano</p>
+          <p>PRODUCCIÓN · Ian Sánchez Campuzano, Mauricio Pérez Fragoso, Pablo Campuzano Muñoz</p>
+          <p class="final-credits-end">GRACIAS POR JUGAR</p>
+        </div>
+        <span class="final-credits-hint">Haz clic para volver</span>
       </div>
 
       <!-- Opciones: un menú de secciones y una página por sección (data-option-page enlaza cada botón con su página). -->

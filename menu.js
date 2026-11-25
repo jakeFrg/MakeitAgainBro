@@ -193,7 +193,7 @@
   const COMIC_5_PANELS = [
     {x:0,y:0,width:800,height:450},
     {x:800,y:0,width:800,height:450},
-    {x:800,y:450,width:800,height:450}
+    {x:800,y:450,width:800,height:450,finalCredits:true}
   ];
   const COMIC_5 = {
     image:'ART/comics/Comic5.jpeg',
@@ -263,11 +263,12 @@
   const startScreen       = $('#startScreen');
   const mainMenu          = $('#mainMenu');
   const creditsPanel      = $('#creditsPanel');
+  const finalCreditsPanel = $('#finalCreditsPanel');
   const settingsScreen    = $('#settingsScreen');
   const leaderboardScreen = $('#leaderboardScreen');
   const welcomeFlow       = $('#welcomeFlow');
   const storyIntro        = $('#storyIntro');
-  const panels = [mainMenu, creditsPanel, settingsScreen, leaderboardScreen, welcomeFlow, storyIntro];
+  const panels = [mainMenu, creditsPanel, finalCreditsPanel, settingsScreen, leaderboardScreen, welcomeFlow, storyIntro];
 
   // Introducción de historia.
   const storyLabel     = $('#storySceneLabel');
@@ -297,6 +298,7 @@
 
   // Música del menú y barra de la canción que suena.
   const menuMusic = $('#musicaMenu');
+  const finalMusic = $('#finalMusic');
   const menuMusicVolume = $('#menuMusicVolume');
   const menuMusicVolumeValue = $('#menuMusicVolumeValue');
   const menuNowPlaying = $('#menuNowPlaying');
@@ -316,6 +318,7 @@
   let activeDialogueIndex = 0;         // diálogo actual dentro de ese cómic
   let activeDialoguePanel = 0;         // viñeta actual (también después de los diálogos)
   let activeDialogueOnComplete = null; // qué hacer al terminar el cómic
+  let comicFadePending = false;        // evita avanzar durante el fundido a créditos
 
   let menuTrack = null;          // canción del menú que suena ahora
   let introFinished = false;     // la barra solo puede aparecer al acabar la intro
@@ -509,6 +512,34 @@ if (mainMenu && !mainMenu.hidden) {
     hideNowPlaying(true);
   }
 
+  // Música de los créditos finales: suena desde el inicio del cómic final.
+  function unlockFinalMusic() {
+    finalMusic.play().then(() => {
+      document.removeEventListener('pointerdown', unlockFinalMusic);
+      document.removeEventListener('keydown', unlockFinalMusic);
+    }).catch(() => {});
+  }
+
+  function startFinalMusic() {
+    finalMusic.volume = menuMusic.volume;
+    finalMusic.loop = true;
+    try { finalMusic.currentTime = 0; } catch (error) {}
+    finalMusic.play().then(() => {
+      document.removeEventListener('pointerdown', unlockFinalMusic);
+      document.removeEventListener('keydown', unlockFinalMusic);
+    }).catch(() => {
+      document.addEventListener('pointerdown', unlockFinalMusic);
+      document.addEventListener('keydown', unlockFinalMusic);
+    });
+  }
+
+  function stopFinalMusic() {
+    finalMusic.pause();
+    try { finalMusic.currentTime = 0; } catch (error) {}
+    document.removeEventListener('pointerdown', unlockFinalMusic);
+    document.removeEventListener('keydown', unlockFinalMusic);
+  }
+
   /* ==========================================================================
      5. NAVEGACIÓN ENTRE PANELES
      ========================================================================== */
@@ -535,6 +566,8 @@ if (mainMenu && !mainMenu.hidden) {
 }
   // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone otra canción.
   function showMainMenu() {
+    stopFinalMusic();
+    comicFadePending = false;
     storyIntro.hidden = true;
     storyIntro.classList.remove('is-dialogue-comic');
     comicIntroView.hidden = true;
@@ -544,6 +577,12 @@ if (mainMenu && !mainMenu.hidden) {
     startScreen.hidden = false;
     showOnly(mainMenu);
     playMenuMusic(true);
+  }
+
+  function showFinalCredits() {
+    startScreen.hidden = false;
+    showOnly(finalCreditsPanel);
+    document.body.classList.remove('story-transition');
   }
 
   /* ==========================================================================
@@ -577,6 +616,7 @@ if (mainMenu && !mainMenu.hidden) {
     }
     comicCaption.hidden = !panel.caption;
     comicCaption.textContent = panel.caption || '';
+    if (panel.finalCredits && panelChanged) startFinalMusic();
 
     const spoken = entry && !entry.silent;
     comicMusic.hidden = !(entry && entry.music);
@@ -614,10 +654,17 @@ if (mainMenu && !mainMenu.hidden) {
         );
       }
       if (panelChanged) {
-        comicPanel.animate(
-          [{opacity:.35, transform:'scale(1.012)'},{opacity:1, transform:'scale(1)'}],
-          {duration:SCENE_ANIMATION_MS + 80, easing:'ease-out'}
-        );
+        if (panel.finalCredits) {
+          comicPanel.animate(
+            [{opacity:0},{opacity:1}],
+            {duration:600, easing:'ease-out'}
+          );
+        } else {
+          comicPanel.animate(
+            [{opacity:.35, transform:'scale(1.012)'},{opacity:1, transform:'scale(1)'}],
+            {duration:SCENE_ANIMATION_MS + 80, easing:'ease-out'}
+          );
+        }
       }
     }
   }
@@ -627,6 +674,7 @@ if (mainMenu && !mainMenu.hidden) {
   function beginDialogueComic(def, onComplete) {
     activeDialogueComic = def;
     activeDialogueOnComplete = onComplete || null;
+    comicFadePending = false;
     activeDialogueIndex = 0;
     activeDialoguePanel = def.dialogues[0]?.panel || 0;
     comicPanelArt.src = def.image;
@@ -642,6 +690,7 @@ if (mainMenu && !mainMenu.hidden) {
     const onComplete = activeDialogueOnComplete;
     activeDialogueComic = null;
     activeDialogueOnComplete = null;
+    comicFadePending = false;
     storyIntro.hidden = true;
     comicIntroView.hidden = true;
     storyIntro.classList.remove('is-dialogue-comic');
@@ -682,6 +731,7 @@ if (mainMenu && !mainMenu.hidden) {
   }
 
   function advanceComic() {
+    if (comicFadePending) return;
     // Los cómics por viñetas avanzan un paso por clic: primero sus diálogos y
     // después las viñetas restantes, que se revelan sin burbuja.
     if (activeDialogueComic) {
@@ -707,6 +757,19 @@ if (mainMenu && !mainMenu.hidden) {
       if (activeDialoguePanel + 1 < def.panels.length) {
         activeDialoguePanel++;
         renderDialogueComic(true);
+        return;
+      }
+      if (def.panels[activeDialoguePanel].finalCredits) {
+        comicFadePending = true;
+        const fadeOut = comicPanel.animate(
+          [{opacity:1},{opacity:0}],
+          {duration:300, easing:'ease-in', fill:'forwards'}
+        );
+        fadeOut.finished.then(() => {
+          fadeOut.cancel();
+          finishDialogueComic();
+          comicFadePending = false;
+        });
         return;
       }
       finishDialogueComic();
@@ -892,7 +955,7 @@ if (mainMenu && !mainMenu.hidden) {
       return;
     }
 
-    if (!leaderboardScreen.hidden || !storyIntro.hidden) {
+    if (!leaderboardScreen.hidden || !storyIntro.hidden || !finalCreditsPanel.hidden) {
       event.preventDefault();
       showMainMenu();
       return;
@@ -974,7 +1037,7 @@ if (mainMenu && !mainMenu.hidden) {
       }
     });
     document.addEventListener('rhythm:comic:final', () => {
-      startComic5(showMainMenu);
+      startComic5(showFinalCredits);
     });
     document.addEventListener('rhythm:comic:continue', () => document.dispatchEvent(new Event('rhythm:next-stage')));
     $('#backFromCredits').addEventListener('click', showMainMenu);
