@@ -719,7 +719,7 @@ button, select { font: inherit; }
   color: #f4eddd;
   font: 700 clamp(12px, 1.5cqw, 24px)/1.8 'Silkscreen', 'Courier New', monospace;
   text-align: center;
-  animation: final-credits-roll 22s linear infinite;
+  animation: final-credits-roll 18s linear forwards;
 }
 .final-credits p { margin: 0 0 1.2em; }
 .final-credits-title {

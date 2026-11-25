@@ -264,6 +264,7 @@
   const mainMenu          = $('#mainMenu');
   const creditsPanel      = $('#creditsPanel');
   const finalCreditsPanel = $('#finalCreditsPanel');
+  const finalCreditsScroll = $('#finalCreditsScroll');
   const settingsScreen    = $('#settingsScreen');
   const leaderboardScreen = $('#leaderboardScreen');
   const welcomeFlow       = $('#welcomeFlow');
@@ -319,6 +320,7 @@
   let activeDialoguePanel = 0;         // viñeta actual (también después de los diálogos)
   let activeDialogueOnComplete = null; // qué hacer al terminar el cómic
   let comicFadePending = false;        // evita avanzar durante el fundido a créditos
+  let finalCreditsTimer = 0;           // paso automático de la última viñeta a créditos
 
   let menuTrack = null;          // canción del menú que suena ahora
   let introFinished = false;     // la barra solo puede aparecer al acabar la intro
@@ -567,6 +569,7 @@ if (mainMenu && !mainMenu.hidden) {
   // Vuelve al menú principal, cancela la introducción si estaba en marcha y pone otra canción.
   function showMainMenu() {
     stopFinalMusic();
+    window.clearTimeout(finalCreditsTimer);
     comicFadePending = false;
     storyIntro.hidden = true;
     storyIntro.classList.remove('is-dialogue-comic');
@@ -583,6 +586,21 @@ if (mainMenu && !mainMenu.hidden) {
     startScreen.hidden = false;
     showOnly(finalCreditsPanel);
     document.body.classList.remove('story-transition');
+  }
+
+  function goToFinalCredits() {
+    window.clearTimeout(finalCreditsTimer);
+    if (!activeDialogueComic || comicFadePending) return;
+    comicFadePending = true;
+    const fadeOut = comicPanel.animate(
+      [{opacity:1},{opacity:0}],
+      {duration:300, easing:'ease-in', fill:'forwards'}
+    );
+    fadeOut.finished.then(() => {
+      fadeOut.cancel();
+      if (activeDialogueComic) finishDialogueComic();
+      comicFadePending = false;
+    });
   }
 
   /* ==========================================================================
@@ -616,7 +634,10 @@ if (mainMenu && !mainMenu.hidden) {
     }
     comicCaption.hidden = !panel.caption;
     comicCaption.textContent = panel.caption || '';
-    if (panel.finalCredits && panelChanged) startFinalMusic();
+    if (panel.finalCredits && panelChanged) {
+      startFinalMusic();
+      finalCreditsTimer = window.setTimeout(goToFinalCredits, 4000);
+    }
 
     const spoken = entry && !entry.silent;
     comicMusic.hidden = !(entry && entry.music);
@@ -674,6 +695,7 @@ if (mainMenu && !mainMenu.hidden) {
   function beginDialogueComic(def, onComplete) {
     activeDialogueComic = def;
     activeDialogueOnComplete = onComplete || null;
+    window.clearTimeout(finalCreditsTimer);
     comicFadePending = false;
     activeDialogueIndex = 0;
     activeDialoguePanel = def.dialogues[0]?.panel || 0;
@@ -690,6 +712,7 @@ if (mainMenu && !mainMenu.hidden) {
     const onComplete = activeDialogueOnComplete;
     activeDialogueComic = null;
     activeDialogueOnComplete = null;
+    window.clearTimeout(finalCreditsTimer);
     comicFadePending = false;
     storyIntro.hidden = true;
     comicIntroView.hidden = true;
@@ -760,16 +783,7 @@ if (mainMenu && !mainMenu.hidden) {
         return;
       }
       if (def.panels[activeDialoguePanel].finalCredits) {
-        comicFadePending = true;
-        const fadeOut = comicPanel.animate(
-          [{opacity:1},{opacity:0}],
-          {duration:300, easing:'ease-in', fill:'forwards'}
-        );
-        fadeOut.finished.then(() => {
-          fadeOut.cancel();
-          finishDialogueComic();
-          comicFadePending = false;
-        });
+        goToFinalCredits();
         return;
       }
       finishDialogueComic();
@@ -1041,6 +1055,8 @@ if (mainMenu && !mainMenu.hidden) {
     });
     document.addEventListener('rhythm:comic:continue', () => document.dispatchEvent(new Event('rhythm:next-stage')));
     $('#backFromCredits').addEventListener('click', showMainMenu);
+    finalCreditsPanel.addEventListener('click', showMainMenu);
+    finalCreditsScroll.addEventListener('animationend', showMainMenu);
     backFromSettings.addEventListener('click',()=>{if(settingsReturnToWelcome)returnToWelcome();else showMainMenu();});
     $('#backFromLeaderboard').addEventListener('click', showMainMenu);
 
