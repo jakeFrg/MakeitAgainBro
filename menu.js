@@ -21,32 +21,32 @@
   ];
 
   const INTRO_COMIC_DIALOGUES = [
-    {panel:0,speaker:'Presentador',text:'Buenas tardes y muy buenas noticias.',
+    {panel:0,speaker:'Presentador',text:'Muy buenas tardes y muy buenas noticias.',
       bubble:{left:1.5,top:2.5,width:31,tail:{x:84,flip:1}}},
-    {panel:0,speaker:'Presentador',text:'Estamos a unas horas de que se presente el artista más grande de todos los tiempos.',
+    {panel:0,speaker:'Presentador',text:'Mañana sera el concierto mas importante, donde se presentará el artista más viral de todos los tiempos.',
       bubble:{left:30,top:2.5,width:40,tail:{x:12,flip:1}}},
-    {panel:0,speaker:'Presentador',text:'En el estadio ElMiMAO$ Center, un escenario creado para él, ya que ninguno puede contener a sus fans.',
+    {panel:0,speaker:'Presentador',text:'Y se presentará en un SOLD OUT histórico de más de 100,000 personas, en un estadio creado para él.',
       bubble:{left:1.5,top:2,width:37,tail:{x:82,flip:1}}},
-    {panel:0,speaker:'Presentador',text:'¿Ya tienen sus boletos? Yo ya tengo el mío en VIP. ¡Cómo amo a ese tipo!',
+    {panel:0,speaker:'Presentador',text:'¿Ya tienen sus boletos? Porque tengo un primo que los vende baratos. ¡50 mil varos!',
       bubble:{left:27,top:1.5,width:39,tail:{x:15,flip:1}}},
 
-    {panel:1,speaker:'Manager',text:'Bro, estás a unas horas de hacer la presentación de tu vida y aún no has practicado.',
+    {panel:1,speaker:'Manager',text:'Bro, mañana es la presentación de tu vida y aún no has practicado.',
       bubble:{left:1.5,top:1.5,width:46,tail:{x:76,flip:-1}}},
     {panel:1,speaker:'ElMiMAO$',text:'¿Practicar? Yo nací para esto, no necesito practicar.',
       bubble:{left:42.5,top:2,width:20,tail:{x:90,flip:-1}}},
-    {panel:1,speaker:'Manager',text:'¡Sí lo necesitas! Como falles, este concierto arruinará tu carrera.',
+    {panel:1,speaker:'Manager',text:'¡Sí lo necesitas! Como la cagues, este concierto arruinará tu carrera.',
       bubble:{left:1,top:2,width:42,tail:{x:78,flip:-1}}},
-    {panel:1,speaker:'ElMiMAO$',text:'Tranquilo, bro, todo va a salir bien.',
+    {panel:1,speaker:'ElMiMAO$',text:'Tranqui bro, todo va a estar chido.',
       bubble:{left:42,top:18.5,width:20.5,tail:{x:90,flip:-1}}},
-    {panel:1,speaker:'Manager',text:'Mínimo sigamos grabando la nueva canción. Se supone que la tenemos que entregar para ese jueguito que va a salir... Mmm, algo de autos, no sé muy bien de qué era.',
+    {panel:1,speaker:'Manager',text:'Mínimo sigamos grabando la nueva canción. Se supone que la tenemos que entregar para ese jueguito que va a salir... Mmm, algo de robar autos, no sé muy bien de qué era.',
       bubble:{left:.7,top:.8,width:52,tail:{x:74,flip:-1}}},
-    {panel:1,speaker:'ElMiMAO$',text:'Está bien, vamos.',
+    {panel:1,speaker:'ElMiMAO$',text:'Bueno, va.',
       bubble:{left:44,top:2.5,width:19,tail:{x:88,flip:-1}}},
 
     {panel:2,speaker:'Manager',text:'Bueno, retomemos donde lo dejamos la última vez. ¿Listo?',
       bubble:{left:17,top:1.5,width:39,tail:{x:30,flip:1}}},
 
-    {panel:3,speaker:'ElMiMAO$',text:'¡LISTO!',
+    {panel:3,speaker:'ElMiMAO$',text:'¡LISTO BRO!',
       bubble:{left:4,top:3,width:20,tail:{x:94,flip:-1}}}
   ];
 
@@ -60,15 +60,15 @@
   ];
 
   const COMIC_2_DIALOGUES = [
-    {panel:0,speaker:'ElMiMAO$',text:'Me tengo que ir ya.',
+    {panel:0,speaker:'ElMiMAO$',text:'Ahorita vengo, bro.',
       bubble:{left:40,top:7,width:22,tail:{x:92,flip:-1}}},
-    {panel:0,speaker:'Manager',text:'Pero aún faltan horas para el concierto.',
+    {panel:0,speaker:'Manager',text:'¿A donde vas? Literal faltan horas para el concierto.',
       bubble:{left:2,top:24,width:23.5,tail:{x:96,flip:-1}}},
-    {panel:0,speaker:'ElMiMAO$',text:'Sí, pero tengo que ir a comprarme una nueva gorra en Los Ángeles.',
+    {panel:0,speaker:'ElMiMAO$',text:'Ya sé, pero quiero ir a pensar cosas en Los Ángeles.',
       bubble:{left:36,top:5,width:25,tail:{x:95,flip:-1}}},
-    {panel:0,speaker:'Manager',text:'Pero Los Ángeles está a una hora de aquí. Puedes ir en coche.',
+    {panel:0,speaker:'Manager',text:'Pero Los Ángeles está a una hora de aquí. ¿Porque no vas en coche?',
       bubble:{left:1.5,top:21,width:24,tail:{x:97,flip:-1}}},
-    {panel:0,speaker:'ElMiMAO$',text:'¿De qué sirve tener un jet privado si no lo usas?',
+    {panel:0,speaker:'ElMiMAO$',text:'¿De qué sirve tener un jet privado si no lo usas, bro?',
       bubble:{left:39,top:8,width:23,tail:{x:94,flip:-1}}}
   ];
 
@@ -84,25 +84,25 @@
 
   const COMIC_25_DIALOGUES = [
     // Viñeta 1
-    {panel:0,speaker:'Doctor',text:'¡Qué bueno que despertaste!',
+    {panel:0,speaker:'Doctor',text:'¡Uhhhhh! ¡Qué bueno que despertaste!',
       bubble:{left:34,top:4,width:34,tail:{x:10,flip:1}}},
-    {panel:0,speaker:'ElMiMAO$',text:'¿Qué fue lo que pasó?',
+    {panel:0,speaker:'ElMiMAO$',text:'¿Qué fue lo que pasó, bro?',
       bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
-    {panel:0,speaker:'Doctor',text:'Tuviste un accidente en un avión. Fuiste el único sobreviviente.',
+    {panel:0,speaker:'Doctor',text:'¿Bro? Bueno, tuviste un accidente en un avión. Fuiste el único sobreviviente.',
       bubble:{left:34,top:3,width:36,tail:{x:8,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¿Dónde estoy?',
       bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
     {panel:0,speaker:'Doctor',text:'En Los Ángeles.',
       bubble:{left:34,top:4,width:27,tail:{x:12,flip:1}}},
-    {panel:0,speaker:'ElMiMAO$',text:'Mínimo sí llegué a mi destino.',
+    {panel:0,speaker:'ElMiMAO$',text:'Bueno, mínimo sí llegué.',
       bubble:{left:38,top:15,width:31,tail:{x:96,flip:-1}}},
-    {panel:0,speaker:'ElMiMAO$',text:'Espera, ¿qué es eso?',
+    {panel:0,speaker:'ElMiMAO$',text:'Espera, ¿qué es eso, bro?',
       bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
 
     // Viñeta 2
-    {panel:1,speaker:'ElMiMAO$',text:'¿Ese calendario es antiguo, no?',
+    {panel:1,speaker:'ElMiMAO$',text:'¿Ese calendario es vintage, no?',
       bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
-    {panel:1,speaker:'Doctor',text:'No, es reciente. Lo compramos ayer.',
+    {panel:1,speaker:'Doctor',text:'No, me lo acaba de regalar mi abuelita. Es el del mercado.',
       bubble:{left:1.5,top:3,width:38,tail:{x:4,flip:1}}},
     {panel:1,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¡Tengo que irme de aquí!',
       bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
@@ -117,13 +117,13 @@
       bubble:{left:14,top:4,width:26,tail:{x:40,flip:1}}},
 
     // Viñeta 5
-    {panel:4,speaker:'ElMiMAO$',text:'Hola, ¿sabes quién soy?',
+    {panel:4,speaker:'ElMiMAO$',text:'Hola, ahorita no estoy dando autógrafos, bro',
       bubble:{left:2,top:2,width:34,tail:{x:70,flip:-1}}},
-    {panel:4,speaker:'Artista urbano',text:'No, ¿debería?',
+    {panel:4,speaker:'Artista urbano',text:'¿Y tu quién eres, bro? ¿Qué haces aquí?',
       bubble:{left:56,top:1.5,width:28,tail:{x:25,flip:1}}},
-    {panel:4,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más grande de todos los tiempos, el pionero del reguetón.',
+    {panel:4,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más viral de todos los tiempos, el dios del reguetón.',
       bubble:{left:2,top:2,width:46,tail:{x:62,flip:-1}}},
-    {panel:4,speaker:'Artista urbano',text:'¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Miguel Jacobo... demuéstralo.',
+    {panel:4,speaker:'Artista urbano',text:'¿Viral? ¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Jacobo Cinco Razon... no creeeeo.',
       bubble:{left:2,top:2,width:52,tail:{x:92,flip:-1}}},
 
     // Viñeta 6
@@ -137,6 +137,8 @@
     {x:0,y:0,width:800,height:450},
     {x:800,y:0,width:800,height:450}
   ];
+
+  
   const COMIC_35 = {
     image:'ART/comics/Comic3.5.jpeg',
     alt:'Cómic 3.5: ElMiMAO$ llega al estadio y se prepara tras bambalinas',
@@ -157,7 +159,14 @@
     alt:'Cómic 3: ElMiMAO$ y el Manager, cinco años después en las noticias',
     page:COMIC_3_PAGE,
     panels:COMIC_3_PANELS,
-    dialogues:[]
+    dialogues:[{panel:4,speaker:'ElMiMAO$',text:'Hola, ahorita no estoy dando autógrafos, bro',
+      bubble:{left:2,top:2,width:34,tail:{x:70,flip:-1}}},
+    {panel:4,speaker:'Artista urbano',text:'¿Y tu quién eres, bro? ¿Qué haces aquí?',
+      bubble:{left:56,top:1.5,width:28,tail:{x:25,flip:1}}},
+    {panel:4,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más viral de todos los tiempos, el dios del reguetón.',
+      bubble:{left:2,top:2,width:46,tail:{x:62,flip:-1}}},
+    {panel:4,speaker:'Artista urbano',text:'¿Viral? ¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Jacobo Cinco Razon... no creeeeo.',
+      bubble:{left:2,top:2,width:52,tail:{x:92,flip:-1}}},]
   };
 
   // Cómics 4 y 4.5
