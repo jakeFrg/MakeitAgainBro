@@ -153,7 +153,7 @@
     {x:800,y:450,width:800,height:450}
   ];
   const COMIC_3 = {
-    image:'ART/comics/Comic3.jpeg',
+    image:'ART/comics/Comic3.jpg',
     alt:'Cómic 3: ElMiMAO$ y el Manager, cinco años después en las noticias',
     page:COMIC_3_PAGE,
     panels:COMIC_3_PANELS,
