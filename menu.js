@@ -131,7 +131,7 @@
       bubble:{left:2,top:3,width:30,tail:{x:85,flip:-1}}}
   ];
 
-  // Cómics 3 y 3.5: viñetas sin diálogo, avanzan una por clic como las anteriores.
+  // Cómic 3 y cómic 3.5
   const COMIC_35_PAGE = {width:1600,height:450};
   const COMIC_35_PANELS = [
     {x:0,y:0,width:800,height:450},
@@ -140,7 +140,7 @@
 
   
   const COMIC_35 = {
-    image:'ART/comics/Comic3.5.jpeg',
+    image:'ART/comics/Comic3.5.jpg',
     alt:'Cómic 3.5: ElMiMAO$ llega al estadio y se prepara tras bambalinas',
     page:COMIC_35_PAGE,
     panels:COMIC_35_PANELS,
@@ -159,14 +159,7 @@
     alt:'Cómic 3: ElMiMAO$ y el Manager, cinco años después en las noticias',
     page:COMIC_3_PAGE,
     panels:COMIC_3_PANELS,
-    dialogues:[{panel:4,speaker:'ElMiMAO$',text:'Hola, ahorita no estoy dando autógrafos, bro',
-      bubble:{left:2,top:2,width:34,tail:{x:70,flip:-1}}},
-    {panel:4,speaker:'Artista urbano',text:'¿Y tu quién eres, bro? ¿Qué haces aquí?',
-      bubble:{left:56,top:1.5,width:28,tail:{x:25,flip:1}}},
-    {panel:4,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más viral de todos los tiempos, el dios del reguetón.',
-      bubble:{left:2,top:2,width:46,tail:{x:62,flip:-1}}},
-    {panel:4,speaker:'Artista urbano',text:'¿Viral? ¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Jacobo Cinco Razon... no creeeeo.',
-      bubble:{left:2,top:2,width:52,tail:{x:92,flip:-1}}},]
+    dialogues:[]
   };
 
   // Cómics 4 y 4.5
@@ -176,7 +169,7 @@
     {x:800,y:0,width:800,height:450}
   ];
   const COMIC_45 = {
-    image:'ART/comics/Comic4.5.jpeg',
+    image:'ART/comics/Comic4.5.jpg',
     alt:'Cómic 4.5: ElMiMAO$ antes de la última presentación',
     page:COMIC_45_PAGE,
     panels:COMIC_45_PANELS,
@@ -191,7 +184,7 @@
     {x:800,y:450,width:800,height:450}
   ];
   const COMIC_4 = {
-    image:'ART/comics/Comic4.jpeg',
+    image:'ART/comics/Comic4.jpg',
     alt:'Cómic 4: ElMiMAO$ en la antesala del gran show',
     page:COMIC_4_PAGE,
     panels:COMIC_4_PANELS,
@@ -202,10 +195,10 @@
   const COMIC_5_PANELS = [
     {x:0,y:0,width:800,height:450},
     {x:800,y:0,width:800,height:450},
-    {x:800,y:450,width:800,height:450,finalCredits:true}
+    {x:0,y:450,width:800,height:450,finalCredits:true}
   ];
   const COMIC_5 = {
-    image:'ART/comics/Comic5.jpeg',
+    image:'ART/comics/Comic5.jpg',
     alt:'Cómic 5: ElMiMAO$ cierra la noche final',
     page:COMIC_5_PAGE,
     panels:COMIC_5_PANELS,
