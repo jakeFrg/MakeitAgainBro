@@ -48,9 +48,9 @@
 
   // Dificultades: velocidad de caída, separación mínima entre notas y ajustes del modo práctica.
   const DIFFICULTIES = {
-    easy:   {leadMs:2850, minGapMs:550, practiceCount:45,  practiceMinGapMs:900, practiceMaxGapMs:1400},
-    normal: {leadMs:2500, minGapMs:300, practiceCount:75,  practiceMinGapMs:650, practiceMaxGapMs:1150},
-    hard:   {leadMs:1800, minGapMs:180, practiceCount:100, practiceMinGapMs:350, practiceMaxGapMs:750}
+    easy:   {leadMs:2850, minGapMs:550, hitWindowMs:240, practiceCount:45,  practiceMinGapMs:900, practiceMaxGapMs:1400},
+    normal: {leadMs:2500, minGapMs:300, hitWindowMs:150, practiceCount:75,  practiceMinGapMs:650, practiceMaxGapMs:1150},
+    hard:   {leadMs:1800, minGapMs:180, hitWindowMs:90, practiceCount:100, practiceMinGapMs:350, practiceMaxGapMs:750}
   };
 
   // Desempeño: barra de vida del jugador (llega a 0 = derrota).
@@ -609,7 +609,8 @@
     notesByLane = [[], [], [], []];
     for (const note of notes) notesByLane[note.lane].push(note);
 
-    // Ventana propia por nota: si dos notas del mismo carril están cerca, la ventana se reduce.
+    // Cada dificultad tiene un margen base; notas cercanas reducen la ventana para distinguirlas.
+    const difficultyWindow = getDifficultyConfig().hitWindowMs ?? HIT_WINDOW_MS;
     for (const laneNotes of notesByLane) {
       for (let index = 0; index < laneNotes.length; index++) {
         const note = laneNotes[index];
@@ -617,8 +618,8 @@
         const nextGap = index + 1 < laneNotes.length ? laneNotes[index + 1].timeMs - note.timeMs : Infinity;
         const nearestGap = Math.min(previousGap, nextGap);
         note.hitWindowMs = Number.isFinite(nearestGap)
-          ? Math.max(8, Math.min(HIT_WINDOW_MS, Math.floor(nearestGap / 2) - 5))
-          : HIT_WINDOW_MS;
+          ? Math.max(8, Math.min(difficultyWindow, Math.floor(nearestGap / 2) - 5))
+          : difficultyWindow;
       }
     }
   }
@@ -1016,41 +1017,41 @@
     }, 650);
   }
 
-  // Muestra sobre la pista la pantalla de resultados (victoria o derrota).
+  // Muestra resultados; el tutorial (escenario 0) queda exento del mínimo.
   function showResults(outcome, accuracy, grade) {
+    const isCampaignConcert = storyCampaignActive && storyStageIndex > 0;
+    const passed = outcome !== 'defeat' && (!isCampaignConcert || playerPerformance >= 70 || accuracy >= 80);
     message.classList.add('results');
-    message.classList.toggle('defeat', outcome === 'defeat');
-    const title = outcome === 'defeat' ? 'DERROTA' : 'NIVEL COMPLETADO';
-    const reason = outcome === 'defeat' ? '<small>DESEMPEÑO AGOTADO</small><br>' : '';
-    const nextStageIndex = storyCampaignActive && storyStageIndex + 1 < storyPlaylist.length
-      ? storyStageIndex + 1
-      : -1;
-    const resultAction = storyCampaignActive
-      ? '<br><small class="continue-hint">HAZ CLIC PARA CONTINUAR</small>'
-      : `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`;
-    message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO RESTANTE: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
+    message.classList.toggle('defeat', !passed);
+    const title = isCampaignConcert ? (passed ? 'CONCIERTO COMPLETADO' : 'CONCIERTO NO SUPERADO') : (outcome === 'defeat' ? 'DERROTA' : 'NIVEL COMPLETADO');
+    const reason = !passed ? (outcome !== 'defeat' ? '<small>SE REQUIERE 70% DE DESEMPEÑO O 80% DE PRECISIÓN</small><br>' : '<small>DESEMPEÑO AGOTADO</small><br>') : '';
+    const nextStageIndex = storyCampaignActive && storyStageIndex + 1 < storyPlaylist.length ? storyStageIndex + 1 : -1;
+    const resultAction = !storyCampaignActive
+      ? `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`
+      : passed
+        ? '<br><small class="continue-hint">HAZ CLIC PARA CONTINUAR</small>'
+        : '<br><small class="continue-hint">ELIGE CÓMO CONTINUAR</small><br><button id="retryConcertButton" class="replay-level-button" type="button">↻ REPETIR CONCIERTO</button><br><button id="restartStoryButton" class="replay-level-button" type="button">↶ VOLVER AL PRIMER CONCIERTO</button>';
+    message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
     message.hidden = false;
     if (!storyCampaignActive) {
-      message.querySelector('#replayLevelButton').addEventListener('click', event => {
-        event.preventDefault();
-        event.stopPropagation();
-        // Reutiliza el mapa y el audio activos; start reinicia variables, notas y reloj.
-        start();
-      }, {once:true});
-    }
-    if (storyCampaignActive) {
-      message.style.cursor = 'pointer';
-      message.addEventListener('click', () => {
-        if (nextStageIndex >= 0) {
-          dispatchStoryAfterFade('rhythm:comic', {nextStage:nextStageIndex});
-        } else {
-          dispatchStoryAfterFade('rhythm:comic:final');
-        }
-      }, {once:true});
-    } else {
+      message.querySelector('#replayLevelButton').addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); start(); }, {once:true});
       message.style.cursor = '';
+      setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
+      return;
     }
-    setFeedback(outcome === 'defeat' ? 'DERROTA · DESEMPEÑO AGOTADO' : 'NIVEL COMPLETADO', outcome === 'defeat' ? '#ff687e' : undefined);
+    if (!passed) {
+      message.style.cursor = 'default';
+      message.querySelector('#retryConcertButton').addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); startStoryCampaignStage(storyStageIndex); }, {once:true});
+      message.querySelector('#restartStoryButton').addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); startStoryCampaignStage(1); }, {once:true});
+      setFeedback(isCampaignConcert && outcome !== 'defeat' ? 'CONCIERTO NO SUPERADO · REQUIERE 70% DE DESEMPEÑO O 80% DE PRECISIÓN' : 'CONCIERTO NO SUPERADO', '#ff687e');
+      return;
+    }
+    message.style.cursor = 'pointer';
+    message.addEventListener('click', () => {
+      if (nextStageIndex >= 0) dispatchStoryAfterFade('rhythm:comic', {nextStage:nextStageIndex});
+      else dispatchStoryAfterFade('rhythm:comic:final');
+    }, {once:true});
+    setFeedback(storyStageIndex === 0 ? 'TUTORIAL COMPLETADO' : 'CONCIERTO COMPLETADO');
   }
 
   // Termina la partida: detiene todo, calcula precisión y rango, guarda y muestra resultados.
@@ -1074,18 +1075,22 @@
 
     updateScore(pausedAt);
     if(storyCampaignActive){
-      campaignRun.score+=Math.max(0,score);campaignRun.hits+=hits;campaignRun.misses+=misses;campaignRun.bestCombo=Math.max(campaignRun.bestCombo,bestCombo);
-      saveRunToProfile(outcome,accuracy,false);
-      if(outcome==='defeat'||storyStageIndex===storyPlaylist.length-1){
-        const attempts=campaignRun.hits+campaignRun.misses,totalAccuracy=attempts?Math.round(campaignRun.hits/attempts*100):0;
-        let playerName='Jugador';try{playerName=localStorage.getItem(PLAYER_NAME_KEY)||playerName;}catch(error){}
-        playerLeaderboard.push({name:playerName,score:campaignRun.score,accuracy:totalAccuracy,bestCombo:campaignRun.bestCombo,date:new Date().toLocaleDateString('es-MX')});
-        playerLeaderboard.sort((a,b)=>Number(b.score)-Number(a.score));playerLeaderboard=playerLeaderboard.slice(0,10);
-        updateProfileUI();savePlayerProfile(true);
+      const isCampaignConcert=storyStageIndex>0;
+      const passed=outcome!=='defeat'&&(!isCampaignConcert||playerPerformance>=70||accuracy>=80);
+      saveRunToProfile(passed?outcome:'defeat',accuracy,false);
+      if(passed){
+        campaignRun.score+=Math.max(0,score);campaignRun.hits+=hits;campaignRun.misses+=misses;campaignRun.bestCombo=Math.max(campaignRun.bestCombo,bestCombo);
+        if(storyStageIndex===storyPlaylist.length-1){
+          const totalAttempts=campaignRun.hits+campaignRun.misses,totalAccuracy=totalAttempts?Math.round(campaignRun.hits/totalAttempts*100):0;
+          let playerName='Jugador';try{playerName=localStorage.getItem(PLAYER_NAME_KEY)||playerName;}catch(error){}
+          playerLeaderboard.push({name:playerName,score:campaignRun.score,accuracy:totalAccuracy,bestCombo:campaignRun.bestCombo,date:new Date().toLocaleDateString('es-MX')});
+          playerLeaderboard.sort((a,b)=>Number(b.score)-Number(a.score));playerLeaderboard=playerLeaderboard.slice(0,10);
+          updateProfileUI();savePlayerProfile(true);
+        }
       }
     }else if(!isPracticeMode())saveRunToProfile(outcome,accuracy);
 
-    // El Nivel 1 no tiene pantalla de resultados: termina y entra directo al Cómic 2.
+    // El tutorial introductorio siempre avanza al cómic y al primer concierto.
     if (storyCampaignActive && storyStageIndex === 0) {
       message.hidden = true;
       message.textContent = '';
@@ -1093,10 +1098,8 @@
       dispatchStoryAfterFade('rhythm:comic', {nextStage:1});
       return;
     }
-
     showResults(outcome, accuracy, grade);
   }
-
   /* ==========================================================================
      12. NOTAS SOSTENIDAS
      ========================================================================== */
@@ -1164,7 +1167,8 @@
 
     let low = 0;
     let high = laneNotes.length;
-    const earliest = time - HIT_WINDOW_MS;
+    const maxHitWindow = getDifficultyConfig().hitWindowMs ?? HIT_WINDOW_MS;
+    const earliest = time - maxHitWindow;
     while (low < high) {
       const middle = (low + high) >>> 1;
       if (laneNotes[middle].timeMs < earliest) low = middle + 1;
@@ -1173,7 +1177,7 @@
 
     for (let index = low; index < laneNotes.length; index++) {
       const note = laneNotes[index];
-      if (note.timeMs > time + HIT_WINDOW_MS) break;
+      if (note.timeMs > time + maxHitWindow) break;
       if (note.hit || note.missed) continue;
       const error = Math.abs(note.timeMs - time);
       const noteWindow = note.hitWindowMs ?? HIT_WINDOW_MS;
