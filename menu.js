@@ -61,15 +61,15 @@
 
   const COMIC_2_DIALOGUES = [
     {panel:0,speaker:'ElMiMAO$',text:'Ahorita vengo, bro.',
-      bubble:{left:40,top:7,width:22,tail:{x:92,flip:-1}}},
+      bubble:{left:42,top:1,width:34,tail:{x:94,flip:-1}}},
     {panel:0,speaker:'Manager',text:'¿A donde vas? Literal faltan horas para el concierto.',
-      bubble:{left:2,top:24,width:23.5,tail:{x:96,flip:-1}}},
+      bubble:{left:2,top:5,width:34,tail:{x:96,flip:-1}}},
     {panel:0,speaker:'ElMiMAO$',text:'Ya sé, pero quiero ir a pensar cosas en Los Ángeles.',
-      bubble:{left:36,top:5,width:25,tail:{x:95,flip:-1}}},
+      bubble:{left:42,top:1,width:34,tail:{x:94,flip:-1}}},
     {panel:0,speaker:'Manager',text:'Pero Los Ángeles está a una hora de aquí. ¿Porque no vas en coche?',
-      bubble:{left:1.5,top:21,width:24,tail:{x:97,flip:-1}}},
+      bubble:{left:1.5,top:6,width:35,tail:{x:97,flip:-1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¿De qué sirve tener un jet privado si no lo usas, bro?',
-      bubble:{left:39,top:8,width:23,tail:{x:94,flip:-1}}}
+      bubble:{left:40,top:1,width:34,tail:{x:94,flip:-1}}}
   ];
 
   const COMIC_25_PAGE = {width:1672,height:941};
@@ -85,50 +85,50 @@
   const COMIC_25_DIALOGUES = [
     // Viñeta 1
     {panel:0,speaker:'Doctor',text:'¡Uhhhhh! ¡Qué bueno que despertaste!',
-      bubble:{left:34,top:4,width:34,tail:{x:10,flip:1}}},
+      bubble:{left:34,top:4,width:40,tail:{x:10,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¿Qué fue lo que pasó, bro?',
-      bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
+      bubble:{left:40,top:17,width:34,tail:{x:96,flip:-1}}},
     {panel:0,speaker:'Doctor',text:'¿Bro? Bueno, tuviste un accidente en un avión. Fuiste el único sobreviviente.',
-      bubble:{left:34,top:3,width:36,tail:{x:8,flip:1}}},
+      bubble:{left:34,top:3,width:42,tail:{x:8,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¿Dónde estoy?',
-      bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
+      bubble:{left:40,top:17,width:34,tail:{x:96,flip:-1}}},
     {panel:0,speaker:'Doctor',text:'En Los Ángeles.',
-      bubble:{left:34,top:4,width:27,tail:{x:12,flip:1}}},
+      bubble:{left:34,top:4,width:32,tail:{x:12,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'Bueno, mínimo sí llegué.',
-      bubble:{left:38,top:15,width:31,tail:{x:96,flip:-1}}},
+      bubble:{left:38,top:15,width:37,tail:{x:96,flip:-1}}},
     {panel:0,speaker:'ElMiMAO$',text:'Espera, ¿qué es eso, bro?',
-      bubble:{left:40,top:17,width:29,tail:{x:96,flip:-1}}},
+      bubble:{left:40,top:17,width:34,tail:{x:96,flip:-1}}},
 
     // Viñeta 2
     {panel:1,speaker:'ElMiMAO$',text:'¿Ese calendario es vintage, no?',
-      bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
+      bubble:{left:4,top:3,width:42,tail:{x:85,flip:-1}}},
     {panel:1,speaker:'Doctor',text:'No, me lo acaba de regalar mi abuelita. Es el del mercado.',
-      bubble:{left:1.5,top:3,width:38,tail:{x:4,flip:1}}},
+      bubble:{left:1.5,top:3,width:44,tail:{x:4,flip:1}}},
     {panel:1,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¡Tengo que irme de aquí!',
-      bubble:{left:4,top:3,width:36,tail:{x:85,flip:-1}}},
+      bubble:{left:4,top:3,width:42,tail:{x:85,flip:-1}}},
 
     // Viñeta 3
     {panel:2,silent:true},
 
     // Viñeta 4
     {panel:3,speaker:'ElMiMAO$',text:'¡¿ESTOY EN EL PASADO?!',music:true,
-      bubble:{left:8,top:3,width:36,tail:{x:30,flip:1}}},
+      bubble:{left:8,top:3,width:42,tail:{x:30,flip:1}}},
     {panel:3,speaker:'ElMiMAO$',text:'¿Qué es eso?',music:true,
-      bubble:{left:14,top:4,width:26,tail:{x:40,flip:1}}},
+      bubble:{left:14,top:4,width:31,tail:{x:40,flip:1}}},
 
     // Viñeta 5
     {panel:4,speaker:'ElMiMAO$',text:'Hola, ahorita no estoy dando autógrafos, bro',
-      bubble:{left:2,top:2,width:34,tail:{x:70,flip:-1}}},
+      bubble:{left:2,top:2,width:40,tail:{x:70,flip:-1}}},
     {panel:4,speaker:'Artista urbano',text:'¿Y tu quién eres, bro? ¿Qué haces aquí?',
-      bubble:{left:56,top:1.5,width:28,tail:{x:25,flip:1}}},
+      bubble:{left:56,top:1.5,width:33,tail:{x:25,flip:1}}},
     {panel:4,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más viral de todos los tiempos, el dios del reguetón.',
-      bubble:{left:2,top:2,width:46,tail:{x:62,flip:-1}}},
+      bubble:{left:2,top:2,width:52,tail:{x:62,flip:-1}}},
     {panel:4,speaker:'Artista urbano',text:'¿Viral? ¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Jacobo Cinco Razon... no creeeeo.',
-      bubble:{left:2,top:2,width:52,tail:{x:92,flip:-1}}},
+      bubble:{left:2,top:2,width:58,tail:{x:92,flip:-1}}},
 
     // Viñeta 6
     {panel:5,speaker:'ElMiMAO$',text:'¡TENGO QUE HACERLO OTRA VEZ!',
-      bubble:{left:2,top:3,width:30,tail:{x:85,flip:-1}}}
+      bubble:{left:2,top:3,width:35,tail:{x:85,flip:-1}}}
   ];
 
   // Cómic 3 y cómic 3.5
@@ -144,7 +144,23 @@
     alt:'Cómic 3.5: ElMiMAO$ llega al estadio y se prepara tras bambalinas',
     page:COMIC_35_PAGE,
     panels:COMIC_35_PANELS,
-    dialogues:[]
+    dialogues:[
+      // Persona 1
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:18,top:1,width:30,tail:{x:70,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:20,top:4,width:28,tail:{x:72,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:18,top:7,width:30,tail:{x:70,flip:-1}}},
+
+      // Persona 2
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:50,top:1,width:30,tail:{x:50,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:50,top:4,width:30,tail:{x:50,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:48,top:7,width:32,tail:{x:52,flip:-1}}}
+    ]
   };
 
   const COMIC_3_PAGE = {width:1600,height:900};
@@ -159,7 +175,30 @@
     alt:'Cómic 3: ElMiMAO$ y el Manager, cinco años después en las noticias',
     page:COMIC_3_PAGE,
     panels:COMIC_3_PANELS,
-    dialogues:[]
+    dialogues:[
+      // Persona 1
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:8,top:3,width:32,tail:{x:95,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:8,top:8,width:32,tail:{x:95,flip:-1}}},
+
+      // Persona 2
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:44,top:3,width:30,tail:{x:95,flip:-1}}},
+
+      // Viñeta 2
+      {panel:1,silent:true},
+
+      // Persona 1
+      {panel:2,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:54,top:3,width:30,tail:{x:8,flip:1}}},
+
+      // Persona 2
+      {panel:3,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:38,top:3,width:30,tail:{x:8,flip:1}}},
+      {panel:3,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:40,top:8,width:30,tail:{x:8,flip:1}}}
+    ]
   };
 
   // Cómics 4 y 4.5
@@ -173,7 +212,23 @@
     alt:'Cómic 4.5: ElMiMAO$ antes de la última presentación',
     page:COMIC_45_PAGE,
     panels:COMIC_45_PANELS,
-    dialogues:[]
+    dialogues:[
+      // Persona 1
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:4,top:1,width:28,tail:{x:95,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:4,top:5,width:28,tail:{x:95,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:4,top:9,width:28,tail:{x:95,flip:-1}}},
+
+      // Persona 2
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:56,top:1,width:30,tail:{x:95,flip:-1}}},
+      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:40,top:1,width:30,tail:{x:95,flip:-1}}},
+      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:44,top:5,width:30,tail:{x:95,flip:-1}}}
+    ]
   };
 
   const COMIC_4_PAGE = {width:1600,height:900};
@@ -188,7 +243,26 @@
     alt:'Cómic 4: ElMiMAO$ en la antesala del gran show',
     page:COMIC_4_PAGE,
     panels:COMIC_4_PANELS,
-    dialogues:[]
+    dialogues:[
+      // Persona 1
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:6,top:1,width:30,tail:{x:95,flip:-1}}},
+      // Persona 2
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:44,top:1,width:30,tail:{x:95,flip:-1}}},
+      // Persona 1
+      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:4,top:1,width:28,tail:{x:95,flip:-1}}},
+      // Persona 2
+      {panel:2,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:54,top:1,width:30,tail:{x:95,flip:-1}}},
+      // Persona 1
+      {panel:3,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:4,top:1,width:28,tail:{x:95,flip:-1}}},
+      // Persona 2
+      {panel:3,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:58,top:1,width:28,tail:{x:95,flip:-1}}}
+    ]
   };
 
   const COMIC_5_PAGE = {width:1600,height:900};
@@ -202,7 +276,23 @@
     alt:'Cómic 5: ElMiMAO$ cierra la noche final',
     page:COMIC_5_PAGE,
     panels:COMIC_5_PANELS,
-    dialogues:[]
+    dialogues:[
+      // Persona 1
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:8,top:2,width:30,tail:{x:95,flip:-1}}},
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:8,top:7,width:30,tail:{x:95,flip:-1}}},
+      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:12,top:2,width:30,tail:{x:90,flip:-1}}},
+
+      // Persona 2
+      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:52,top:2,width:30,tail:{x:85,flip:-1}}},
+      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:55,top:2,width:30,tail:{x:85,flip:-1}}},
+      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
+        bubble:{left:55,top:7,width:30,tail:{x:85,flip:-1}}}
+    ]
   };
 
   const INTRO_COMIC = {
@@ -625,6 +715,7 @@ if (mainMenu && !mainMenu.hidden) {
   function renderDialogueComic(animatePanel = false) {
     const def = activeDialogueComic;
     if (!def) return;
+    comicPanel.dataset.comicFlow = comicFlow;
     const entry = def.dialogues[activeDialogueIndex] || null;
     if (entry) activeDialoguePanel = entry.panel;
     const panel = def.panels[activeDialoguePanel];

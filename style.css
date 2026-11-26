@@ -622,6 +622,14 @@ button, select { font: inherit; }
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
+.comic-panel[data-comic-flow="comic2"] .comic-bubble-inner { padding: 1.2cqw 1.7cqw 1.3cqw; }
+.comic-panel[data-comic-flow="comic2"] .comic-speaker { font-size: clamp(10px, .85cqw, 19px); }
+.comic-panel[data-comic-flow="comic2"] .comic-dialogue { font-size: clamp(13px, 1.2cqw, 26px); }
+.comic-panel[data-comic-flow="comic25"] .comic-bubble { --bubble-border: clamp(3px, .34cqw, 7px); }
+.comic-panel[data-comic-flow="comic25"] .comic-bubble-inner { padding: 1.5cqw 2.1cqw 1.6cqw; }
+.comic-panel[data-comic-flow="comic25"] .comic-speaker { font-size: clamp(11px, 1.05cqw, 22px); }
+.comic-panel[data-comic-flow="comic25"] .comic-dialogue { font-size: clamp(14px, 1.5cqw, 32px); }
+.comic-panel[data-comic-flow="comic25"] .comic-tail { width: 4.2cqw; height: 5cqw; }
 .comic-tail {
   position: absolute;
   z-index: 2;
@@ -695,11 +703,11 @@ button, select { font: inherit; }
   z-index: 3;
   right: 3%;
   bottom: 4%;
-  padding: .5cqw .9cqw;
+  padding: .6cqw 1.1cqw;
   border: 2px solid #101016;
   color: #17131b;
   background: #fff6dc;
-  font: 700 clamp(14px, 1.9cqw, 32px)/1.2 'Silkscreen', 'Courier New', monospace;
+  font: 700 clamp(18px, 2.6cqw, 44px)/1.2 'Silkscreen', 'Courier New', monospace;
   text-align: center;
   box-shadow: 3px 3px 0 #050509;
   pointer-events: none;
