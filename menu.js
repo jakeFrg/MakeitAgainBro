@@ -1116,6 +1116,21 @@ if (mainMenu && !mainMenu.hidden) {
 
     // Cada clic en el cómic avanza exactamente un cuadro.
     storyIntro.addEventListener('click', advanceComic);
+
+    // Barra temporal de desarrollo: abre un cómic sin pasar por el juego.
+    const devComics = {
+      intro:[INTRO_COMIC,'intro'], '2':[COMIC_2,'comic2'], '25':[COMIC_25,'comic25'],
+      '3':[COMIC_3,'comic3'], '35':[COMIC_35,'comic35'], '4':[COMIC_4,'comic4'],
+      '45':[COMIC_45,'comic45'], '5':[COMIC_5,'comic5']
+    };
+    document.querySelectorAll('[data-dev-comic]').forEach(button => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.devComic;
+        if (key === 'menu') { showMainMenu(); return; }
+        const chosen = devComics[key];
+        if (chosen) startDialogueComic(chosen[0], chosen[1], showMainMenu);
+      });
+    });
     document.addEventListener('rhythm:comic', event => {
       const nextStage = event.detail?.nextStage;
       // Tras el Nivel 1: Cómic 2 → Cómic 2.5 → Nivel 2 (sin ninguna pantalla en medio).
