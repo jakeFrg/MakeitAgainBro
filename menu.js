@@ -21,33 +21,33 @@
   ];
 
   const INTRO_COMIC_DIALOGUES = [
-    {panel:0,speaker:'Juan Pollos',text:'Muy buenas tardes y muy buenas noticias.',
-      bubble:{left:1.5,top:2.5,width:31,tail:{x:84,flip:1}}},
-    {panel:0,speaker:'Juan Pollos',text:'Mañana sera el concierto mas importante, donde se presentará el artista más viral de todos los tiempos.',
-      bubble:{left:30,top:2.5,width:40,tail:{x:12,flip:1}}},
-    {panel:0,speaker:'Juan Pollos',text:'Y se presentará en un SOLD OUT histórico de más de 100,000 personas, en un estadio creado para él.',
-      bubble:{left:1.5,top:2,width:37,tail:{x:82,flip:1}}},
-    {panel:0,speaker:'Juan Pollos',text:'¿Ya tienen sus boletos? Porque tengo un primo que los vende baratos. ¡50 mil varos!',
-      bubble:{left:27,top:1.5,width:39,tail:{x:15,flip:1}}},
+    {panel:0,speaker:'Juan Pollos Jr',text:'Muy buenas tardes y muy buenas noticias.',
+      bubble:{left:14,top:4,width:21,tail:{x:72,flip:1}}},
+    {panel:0,speaker:'Juan Pollos Jr',text:'Mañana será el concierto más importante, donde se presentará el artista más viral de todos los tiempos.',
+      bubble:{left:23,top:2.5,width:40,tail:{x:14,flip:1}}},
+    {panel:0,speaker:'Juan Pollos Jr',text:'Y se presentará en un SOLD OUT histórico de más de 150,000 personas, en un estadio creado solo para él.',
+      bubble:{left:1,top:2.5,width:40,tail:{x:73,flip:1}}},
+    {panel:0,speaker:'Juan Pollos Jr',text:'¿Ya tienen sus boletos? Porque tengo un primo que los vende baratos. ¡50 mil varos!',
+      bubble:{left:23,top:4,width:39,tail:{x:15,flip:1}}},
 
     {panel:1,speaker:'Peibol',text:'Bro, mañana es la presentación de tu vida y aún no has practicado.',
-      bubble:{left:1.5,top:1.5,width:46,tail:{x:76,flip:-1}}},
+      bubble:{left:12.5,top:1.5,width:33,tail:{x:88,flip:1}}},
     {panel:1,speaker:'ElMiMAO$',text:'¿Practicar? Yo nací para esto, no necesito practicar.',
-      bubble:{left:42.5,top:2,width:20,tail:{x:90,flip:-1}}},
+      bubble:{left:38,top:2,width:27,tail:{x:90,flip:-1}}},
     {panel:1,speaker:'Peibol',text:'¡Sí lo necesitas! Como la cagues, este concierto arruinará tu carrera.',
-      bubble:{left:1,top:2,width:42,tail:{x:78,flip:-1}}},
+      bubble:{left:10,top:1.5,width:35,tail:{x:88,flip:1}}},
     {panel:1,speaker:'ElMiMAO$',text:'Tranqui bro, todo va a estar chido.',
-      bubble:{left:42,top:18.5,width:20.5,tail:{x:90,flip:-1}}},
+      bubble:{left:46,top:2,width:19,tail:{x:87,flip:-1}}},
     {panel:1,speaker:'Peibol',text:'Mínimo sigamos grabando la nueva canción. Se supone que la tenemos que entregar para ese jueguito que va a salir... Mmm, algo de robar autos, no sé muy bien de qué era.',
-      bubble:{left:.7,top:.8,width:52,tail:{x:74,flip:-1}}},
+      bubble:{left:.7,top:.8,width:56,tail:{x:74,flip:1}}},
     {panel:1,speaker:'ElMiMAO$',text:'Bueno, va.',
-      bubble:{left:44,top:2.5,width:19,tail:{x:88,flip:-1}}},
+      bubble:{left:50,top:2.5,width:14,tail:{x:80,flip:-1}}},
 
     {panel:2,speaker:'Peibol',text:'Bueno, retomemos donde lo dejamos la última vez. ¿Listo?',
-      bubble:{left:17,top:1.5,width:39,tail:{x:30,flip:1}}},
+      bubble:{left:20,top:1.5,width:32,tail:{x:83,flip:1}}},
 
     {panel:3,speaker:'ElMiMAO$',text:'¡LISTO BRO!',
-      bubble:{left:4,top:3,width:20,tail:{x:94,flip:-1}}}
+      bubble:{left:58,top:1.7,width:15,tail:{x:28,flip:1}}}
   ];
 
   // Cómic 2
@@ -61,15 +61,17 @@
 
   const COMIC_2_DIALOGUES = [
     {panel:0,speaker:'ElMiMAO$',text:'Ahorita vengo, bro.',
-      bubble:{left:42,top:1,width:34,tail:{x:94,flip:-1}}},
+      bubble:{left:34,top:1,width:24,tail:{x:84,flip:-1}}},
     {panel:0,speaker:'Peibol',text:'¿A donde vas? Literal faltan horas para el concierto.',
-      bubble:{left:2,top:5,width:34,tail:{x:96,flip:-1}}},
+      bubble:{left:17,top:3,width:34,tail:{x:81,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'Ya sé, pero quiero ir a pensar cosas en Los Ángeles.',
-      bubble:{left:42,top:1,width:34,tail:{x:94,flip:-1}}},
+      bubble:{left:65,top:1,width:34,tail:{x:24,flip:1}}},
     {panel:0,speaker:'Peibol',text:'Pero Los Ángeles está a una hora de aquí. ¿Porque no vas en coche?',
-      bubble:{left:1.5,top:6,width:35,tail:{x:97,flip:-1}}},
+      bubble:{left:1.5,top:3,width:40,tail:{x:46,flip:-1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¿De qué sirve tener un jet privado si no lo usas, bro?',
-      bubble:{left:40,top:1,width:34,tail:{x:94,flip:-1}}}
+      bubble:{left:65,top:1,width:34,tail:{x:24,flip:1}}},
+    {panel:0,speaker:'ElMiMAO$',text:'Bueno, sale bye',
+      bubble:{left:70.55,top:1,width:19,tail:{x:22.5,flip:1}}}
   ];
 
   const COMIC_25_PAGE = {width:1672,height:941};
@@ -85,50 +87,49 @@
   const COMIC_25_DIALOGUES = [
     // Viñeta 1
     {panel:0,speaker:'Doctor Mauicio',text:'¡Uhhhhh! ¡Qué bueno que despertaste!',
-      bubble:{left:34,top:4,width:40,tail:{x:10,flip:1}}},
+      bubble:{left:39,top:4,width:30,tail:{x:19,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¿Qué fue lo que pasó, bro?',
-      bubble:{left:40,top:17,width:34,tail:{x:96,flip:-1}}},
+      bubble:{left:40,top:30,width:24,tail:{x:85,flip:-1}}},
     {panel:0,speaker:'Doctor Mauicio',text:'¿Bro? Bueno, tuviste un accidente en un avión. Fuiste el único sobreviviente.',
-      bubble:{left:34,top:3,width:42,tail:{x:8,flip:1}}},
+      bubble:{left:40,top:7,width:54,tail:{x:8,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¿Dónde estoy?',
-      bubble:{left:40,top:17,width:34,tail:{x:96,flip:-1}}},
+      bubble:{left:30,top:30,width:34,tail:{x:88,flip:-1}}},
     {panel:0,speaker:'Doctor Mauicio',text:'En Los Ángeles.',
-      bubble:{left:34,top:4,width:32,tail:{x:12,flip:1}}},
+      bubble:{left:37,top:4,width:27,tail:{x:19,flip:1}}},
     {panel:0,speaker:'ElMiMAO$',text:'Bueno, mínimo sí llegué.',
-      bubble:{left:38,top:15,width:37,tail:{x:96,flip:-1}}},
+      bubble:{left:30,top:30,width:34,tail:{x:88,flip:-1}}},
     {panel:0,speaker:'ElMiMAO$',text:'Espera, ¿qué es eso, bro?',
-      bubble:{left:40,top:17,width:34,tail:{x:96,flip:-1}}},
+      bubble:{left:30,top:29,width:37,tail:{x:83,flip:-1}}},
 
     // Viñeta 2
     {panel:1,speaker:'ElMiMAO$',text:'¿Ese calendario es vintage, no?',
-      bubble:{left:4,top:3,width:42,tail:{x:85,flip:-1}}},
+      bubble:{left:3,top:13,width:42,tail:{x:22,flip:-1}}},
     {panel:1,speaker:'Doctor Mauicio',text:'No, me lo acaba de regalar mi abuelita. Es el del mercado.',
-      bubble:{left:1.5,top:3,width:44,tail:{x:4,flip:1}}},
-    {panel:1,speaker:'ElMiMAO$',text:'¡¿CÓMO?! ¡Tengo que irme de aquí!',
-      bubble:{left:4,top:3,width:42,tail:{x:85,flip:-1}}},
+      bubble:{left:53,top:3,width:44,tail:{x:90,flip:-1}}},
 
     // Viñeta 3
-    {panel:2,silent:true},
+    {panel:2,speaker:'ElMiMAO$',text:'AHHHHHH',
+      bubble:{left:58,top:23,width:18,tail:{x:42,flip:1}}},
 
     // Viñeta 4
     {panel:3,speaker:'ElMiMAO$',text:'¡¿ESTOY EN EL PASADO?!',music:true,
-      bubble:{left:8,top:3,width:42,tail:{x:30,flip:1}}},
+      bubble:{left:36,top:11,width:34,tail:{x:30,flip:1}}},
     {panel:3,speaker:'ElMiMAO$',text:'¿Qué es eso?',music:true,
-      bubble:{left:14,top:4,width:31,tail:{x:40,flip:1}}},
+      bubble:{left:38,top:12,width:25,tail:{x:40,flip:1}}},
 
     // Viñeta 5
     {panel:4,speaker:'ElMiMAO$',text:'Hola, ahorita no estoy dando autógrafos, bro',
-      bubble:{left:2,top:2,width:40,tail:{x:70,flip:-1}}},
+      bubble:{left:7.5,top:5,width:36,tail:{x:80,flip:1}}},
     {panel:4,speaker:'Artista urbano',text:'¿Y tu quién eres, bro? ¿Qué haces aquí?',
-      bubble:{left:56,top:1.5,width:33,tail:{x:25,flip:1}}},
+      bubble:{left:31,top:1.5,width:33,tail:{x:75,flip:-1}}},
     {panel:4,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más viral de todos los tiempos, el dios del reguetón.',
-      bubble:{left:2,top:2,width:52,tail:{x:62,flip:-1}}},
+      bubble:{left:2,top:5,width:54,tail:{x:62,flip:1}}},
     {panel:4,speaker:'Artista urbano',text:'¿Viral? ¿Reguetón? ¿Qué es eso? ¿Dices ser el mejor artista? ¡Ja! Mejor que Jacobo Cinco Razon... no creeeeo.',
       bubble:{left:2,top:2,width:58,tail:{x:92,flip:-1}}},
 
     // Viñeta 6
     {panel:5,speaker:'ElMiMAO$',text:'¡TENGO QUE HACERLO OTRA VEZ!',
-      bubble:{left:2,top:3,width:35,tail:{x:85,flip:-1}}}
+      bubble:{left:64,top:1.5,width:30,tail:{x:19,flip:1}}}
   ];
 
   // Cómic 3 y cómic 3.5
@@ -147,25 +148,25 @@
     dialogues:[
       // Viñeta 1
       {panel:0,speaker:'Peibol',text:'¿Viste el periódico esta mañana?',
-        bubble:{left:18,top:30,width:30,tail:{x:70,flip:-1}}},
+        bubble:{left:18,top:33,width:30,tail:{x:73,flip:-1}}},
       {panel:0,speaker:'ElMiMAO$',text:'¿Periódico? No se que eso. Eso era solo para manualidades ¿no?',
-        bubble:{left:50,top:30,width:40,tail:{x:35,flip:1}}},
+        bubble:{left:50,top:32,width:33,tail:{x:31,flip:1}}},
       {panel:0,speaker:'Peibol',text:'Si, el periódico, para saber las noticias',
-        bubble:{left:18,top:30,width:30,tail:{x:70,flip:-1}}},
+        bubble:{left:25,top:31,width:23,tail:{x:70,flip:-1}}},
       {panel:0,speaker:'ElMiMAO$',text:'Ah, como Twitter',
-        bubble:{left:50,top:30,width:20,tail:{x:35,flip:1}}},
+        bubble:{left:52,top:32,width:18,tail:{x:40,flip:1}}},
       {panel:0,speaker:'Peibol',text:'Olvídalo',
-        bubble:{left:30,top:30,width:17,tail:{x:50,flip:-1}}},
+        bubble:{left:35,top:33,width:13,tail:{x:50,flip:-1}}},
 
       // Viñeta 2
       {panel:1,speaker:'Peibol',text:'¿No estas nervioso?',
-        bubble:{left:25,top:7,width:30,tail:{x:50,flip:-1}}},
+        bubble:{left:28,top:12,width:20,tail:{x:42,flip:-1}}},
       {panel:1,speaker:'ElMiMAO$',text:'No, ¿por?',
-        bubble:{left:53,top:9,width:15,tail:{x:60,flip:1}}},
+        bubble:{left:57,top:14,width:13,tail:{x:60,flip:1}}},
       {panel:1,speaker:'Peibol',text:'¿Por lo que dirán?',
-        bubble:{left:25,top:7,width:30,tail:{x:50,flip:-1}}},
+        bubble:{left:28,top:12,width:20,tail:{x:44,flip:-1}}},
       {panel:1,speaker:'ElMiMAO$',text:'Tranqui, bro. Yo nací para hacer esto.',
-        bubble:{left:47,top:8,width:30,tail:{x:50,flip:1}}},
+        bubble:{left:47,top:12,width:23,tail:{x:79,flip:1}}},
     ]
   };
 
@@ -184,36 +185,36 @@
     dialogues:[
       // Viñeta 1
       {panel:0,speaker:'Peibol',text:'¡WOW! ¡Tu música esta picudísima!',
-        bubble:{left:8,top:9,width:32,tail:{x:95,flip:-1}}},
-      {panel:0,speaker:'Peibol',text:'¿Cómo te llamas? ¿Donde estavas todos estos años?',
-        bubble:{left:8,top:9,width:32,tail:{x:95,flip:-1}}},
+        bubble:{left:20,top:12,width:32,tail:{x:47,flip:-1}}},
+      {panel:0,speaker:'Peibol',text:'¿Cómo te llamas? ¿Donde estabas todos estos años?',
+        bubble:{left:20,top:11,width:27,tail:{x:55,flip:-1}}},
       {panel:0,speaker:'ElMiMAO$',text:'Soy ElMiMAO$, el artista más viral de todos los tiempos',
-        bubble:{left:60,top:10,width:32,tail:{x:5,flip:1}}},
+        bubble:{left:57,top:11,width:30,tail:{x:25,flip:1}}},
       {panel:0,speaker:'Peibol',text:'¿ElMiMAO$? ¡Está padrísimo ese nombre!',
-        bubble:{left:8,top:9,width:32,tail:{x:95,flip:-1}}},
+        bubble:{left:20,top:11,width:24,tail:{x:59,flip:-1}}},
       {panel:0,speaker:'Peibol',text:'Yo soy Peibol, el mejor mánager musical de todo L.A. ¿Quieres ser parte de Peibolin Records?',
-        bubble:{left:3,top:7,width:39,tail:{x:95,flip:-1}}},
+        bubble:{left:3,top:9,width:44,tail:{x:77,flip:-1}}},
       {panel:0,speaker:'ElMiMAO$',text:'No se porque pero me das buena espina, ¡Vamos a hacerlo, bro!',
-        bubble:{left:60,top:10,width:32,tail:{x:5,flip:1}}},
-      {panel:0,speaker:'ElMiMAO',text:'¿Bro? Me encanta. Llegaremos juntos a la cima, bro',
-        bubble:{left:8,top:9,width:32,tail:{x:95,flip:-1}}},
+        bubble:{left:59,top:11,width:32,tail:{x:15,flip:1}}},
+      {panel:0,speaker:'ElMiMAO$',text:'¿Bro? Me encanta. Llegaremos juntos a la cima, bro',
+        bubble:{left:14,top:9,width:32,tail:{x:70,flip:-1}}},
 
       // Viñeta 2
       {panel:1,silent:true},
 
       // Viñeta 3
       {panel:2,speaker:'Juan Pollos',text:'¡Muy buenas tardes y muy buenas noticias!',
-        bubble:{left:54,top:20,width:30,tail:{x:8,flip:1}}},
-      {panel:2,speaker:'Juan Pollos',text:'Se esta haciendo famosito un artista llamado el MIMAO$, y la verdad a mi me parece muy vulgar su música',
-        bubble:{left:54,top:20,width:40,tail:{x:8,flip:1}}},
+        bubble:{left:51,top:18,width:24,tail:{x:25,flip:1}}},
+      {panel:2,speaker:'Juan Pollos',text:'Se esta haciendo medio famosito un artista llamado ElMiMAO$, y la verdad a mi me parece muy vulgar su música',
+        bubble:{left:49,top:14,width:40,tail:{x:19,flip:1}}},
       {panel:2,speaker:'Juan Pollos',text:'No como la canción de Jacobo Cinco Razon, que acaba de lanzar su nueva canción',
-        bubble:{left:54,top:20,width:40,tail:{x:8,flip:1}}},
+        bubble:{left:54,top:18,width:40,tail:{x:8,flip:1}}},
       {panel:2,speaker:'Juan Pollos',text:'En la que junta a varios artistas de verdad, y cantan para recaudar fondos para combatir la hambruna extrema en África',
-        bubble:{left:54,top:20,width:42,tail:{x:8,flip:1}}},
+        bubble:{left:53,top:15,width:42,tail:{x:10,flip:1}}},
       {panel:2,speaker:'Juan Pollos',text:'Es que de verdad, es mi idolo, y no solo porque es mi jefe, si no porque es una grandísima persona',
-        bubble:{left:54,top:20,width:40,tail:{x:8,flip:1}}},
+        bubble:{left:52,top:16,width:33,tail:{x:14,flip:1}}},
       {panel:2,speaker:'Juan Pollos',text:'Y recuerden, !Esos niños mienten!',
-        bubble:{left:54,top:20,width:30,tail:{x:8,flip:1}}},
+        bubble:{left:51,top:20,width:20,tail:{x:29,flip:1}}},
 
       // Viñeta 4
       {panel:3,silent:true},
@@ -232,21 +233,17 @@
     page:COMIC_45_PAGE,
     panels:COMIC_45_PANELS,
     dialogues:[
-      // Persona 1
-      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:4,top:1,width:28,tail:{x:95,flip:-1}}},
-      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:4,top:5,width:28,tail:{x:95,flip:-1}}},
-      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:4,top:9,width:28,tail:{x:95,flip:-1}}},
+      // Viñeta 1
+      {panel:0,speaker:'Peibol',text:'Este es el concierto más importante de tu vida, bro. ¡Tienes que darlo todo!',
+        bubble:{left:34,top:33,width:38,tail:{x:34,flip:1}}},
+      {panel:0,speaker:'ElMiMAO$',text:'Lo sé bro, no te preocupes. Es mi momento. ',
+        bubble:{left:4,top:31,width:28,tail:{x:76,flip:-1}}},
+      {panel:0,speaker:'Peibol',text:'¡Hoy vas a hacer vibrar a mas de 100,000 personas, bro!',
+        bubble:{left:34,top:33,width:32,tail:{x:40,flip:1}}},
 
-      // Persona 2
-      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:56,top:1,width:30,tail:{x:95,flip:-1}}},
-      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:40,top:1,width:30,tail:{x:95,flip:-1}}},
-      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:44,top:5,width:30,tail:{x:95,flip:-1}}}
+      // Viñeta 2
+      {panel:1,speaker:'ElMiMAO$',text:'¡Que locura! ¡cuanta gente!',
+        bubble:{left:45,top:16,width:20,tail:{x:25,flip:1}}},
     ]
   };
 
@@ -268,35 +265,35 @@
 
       // Viñeta 2
       {panel:1,speaker:'Peibol',text:'¡¿Ya viste lo que está diciendo Jacobo Cinco Razon en J5?!',
-        bubble:{left:42,top:15,width:30,tail:{x:56,flip:1}}},
+        bubble:{left:42,top:17,width:30,tail:{x:56,flip:1}}},
       {panel:1,speaker:'ElMiMAO$',text:'No, estoy viendo mis caricaturas',
-        bubble:{left:20,top:27,width:28,tail:{x:25,flip:1}}},
+        bubble:{left:20,top:31,width:20,tail:{x:38,flip:1}}},
       {panel:1,speaker:'Peibol',text:'Rápido, cambiale al canal 67',
-        bubble:{left:42,top:15,width:30,tail:{x:56,flip:1}}},
+        bubble:{left:30,top:22,width:30,tail:{x:56,flip:-1}}},
       
       // Viñeta 3
       {panel:2,speaker:'Juan Pollos',text:'Hola jefe, digo Jacobo Cinco Razon',
-        bubble:{left:10,top:10,width:30,tail:{x:95,flip:-1}}},
+        bubble:{left:20,top:13,width:22,tail:{x:80,flip:-1}}},
       {panel:2,speaker:'Juan Pollos',text:'Me decias que estarás presente en Knebworth, ¡Que emoción!',
-        bubble:{left:10,top:10,width:30,tail:{x:95,flip:-1}}},
+        bubble:{left:18,top:12,width:30,tail:{x:63,flip:-1}}},
       {panel:2,speaker:'Jacobo Cinco Razon',text:'Si bueno y no solo eso, estaré cerrando el show, en el escenario principal',
-        bubble:{left:57,top:10,width:37,tail:{x:28,flip:1}}},
-      {panel:2,speaker:'Juan Pollos',text:'¿Como, no te enteraste?',
-        bubble:{left:10,top:10,width:30,tail:{x:95,flip:-1}}},
-      {panel:2,speaker:'Jacobo Cinco Razon',text:'¿De que?, cabeza de rodilla',
-        bubble:{left:60,top:12,width:30,tail:{x:28,flip:1}}},
+        bubble:{left:57,top:13,width:37,tail:{x:32,flip:1}}},
+      {panel:2,speaker:'Juan Pollos',text:'¿Como, no se enteró?',
+        bubble:{left:20,top:16,width:23,tail:{x:70,flip:-1}}},
+      {panel:2,speaker:'Jacobo Cinco Razon',text:'¿De que?, escupelo cabeza de rodilla',
+        bubble:{left:60,top:15,width:33,tail:{x:28,flip:1}}},
       {panel:2,speaker:'Juan Pollos',text:'De que ElMiMAO$, estará cerrando el show',
-        bubble:{left:10,top:10,width:30,tail:{x:95,flip:-1}}},
+        bubble:{left:20,top:13,width:24,tail:{x:66,flip:-1}}},
       {panel:2,speaker:'Jacobo Cinco Razon',text:'¡¿COMOOOO?! Ese inadaptado no puede cerrar el show mas importante de la historia',
-        bubble:{left:57,top:7,width:37,tail:{x:28,flip:1}}},
+        bubble:{left:57,top:14,width:42,tail:{x:28,flip:1}}},
       
         // Viñeta 4
       {panel:3,speaker:'ElMiMAO$',text:'¡QUEEE! ¡Voy a cerrar el show!',
-        bubble:{left:9,top:14,width:28,tail:{x:75,flip:-1}}},
+        bubble:{left:9,top:19,width:28,tail:{x:75,flip:-1}}},
       {panel:3,speaker:'Peibol',text:'¡Si! Tienes que demostrarle a todo el mundo lo que vales',
-        bubble:{left:49,top:14,width:28,tail:{x:35,flip:1}}},
+        bubble:{left:51,top:18,width:28,tail:{x:31,flip:1}}},
       {panel:3,speaker:'Peibol',text:'Y callarle la boca a ese tontito',
-        bubble:{left:49,top:14,width:28,tail:{x:35,flip:1}}},
+        bubble:{left:49,top:18,width:21,tail:{x:51,flip:1}}},
     ]
   };
 
@@ -312,21 +309,25 @@
     page:COMIC_5_PAGE,
     panels:COMIC_5_PANELS,
     dialogues:[
-      // Persona 1
-      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:8,top:2,width:30,tail:{x:95,flip:-1}}},
-      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:8,top:7,width:30,tail:{x:95,flip:-1}}},
-      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:12,top:2,width:30,tail:{x:90,flip:-1}}},
+      // Viñeta 1
+      {panel:0,speaker:'Fan',text:'¡ElMiMAO$, te amo!',
+        bubble:{left:50,top:29,width:19,tail:{x:88,flip:-1}}},
+      {panel:0,speaker:'Fan',text:'¡ElMiMAO$, hazme un hijo!',
+        bubble:{left:60,top:39,width:16,tail:{x:88,flip:-1}}},
+      {panel:0,speaker:'ElMiMAO$',text:'¡Los amo! ¡Gracias totales!',
+        bubble:{left:25,top:13,width:19,tail:{x:80,flip:1}}},
 
-      // Persona 2
-      {panel:0,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:52,top:2,width:30,tail:{x:85,flip:-1}}},
-      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:55,top:2,width:30,tail:{x:85,flip:-1}}},
-      {panel:1,speaker:'Nombre del personaje',text:'Aquí va un texto',
-        bubble:{left:55,top:7,width:30,tail:{x:85,flip:-1}}}
+      // Viñeta 2
+      {panel:1,speaker:'Jacobo Cinco Razon',text:'ElMiMAO$, eres un grande',
+        bubble:{left:52,top:14,width:27,tail:{x:49,flip:1}}},
+      {panel:1,speaker:'Jacobo Cinco Razon',text:'Te reconozco como el rey del reguetón, y te invito a colaborar en mi próximo disco',
+        bubble:{left:52,top:12,width:37,tail:{x:37,flip:1}}},
+      {panel:1,speaker:'ElMiMAO$',text:'¡Gracias bro! ¡Es un honor!',
+        bubble:{left:20,top:13,width:27,tail:{x:55,flip:-1}}},
+      
+      // Viñeta 3
+      {panel:2,speaker:'ElMiMAO$',text:'¡lO HICE OTRA VEZ BRO!',
+        bubble:{left:31,top:8,width:19,tail:{x:80,flip:1}}}
     ]
   };
 
