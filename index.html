@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -32,6 +32,11 @@
        proporcional y lo centra; el espacio sobrante queda como bandas negras. -->
   <div class="game-viewport">
   <div class="game-frame" id="gameFrame">
+
+  <div id="concertResultScreen" class="concert-result-screen" aria-hidden="true" hidden>
+    <img id="concertResultImage" alt="">
+  </div>
+  <div class="stage-message" id="stageMessage" hidden></div>
 
   <!-- Intro de carga: cubre el juego hasta terminar la animación del logo. -->
   <div class="game-intro" id="gameIntro" aria-hidden="true">
@@ -376,8 +381,6 @@
           <!-- Aciertos consecutivos: el contador se reinicia al fallar. -->
           <div id="combo" class="combo-count-marker" aria-label="Aciertos consecutivos">0</div>
 
-          <!-- Mensaje sobre la pista (resultados, aviso para activar el audio). -->
-          <div class="stage-message" id="stageMessage" hidden></div>
         </div>
       </section>
 

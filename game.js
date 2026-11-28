@@ -87,6 +87,8 @@
   const clockEl          = $('#clock');
   const feedback         = $('#feedback');
   const message          = $('#stageMessage');
+  const concertResultScreen = $('#concertResultScreen');
+  const concertResultImage = $('#concertResultImage');
   const judgementDisplay = $('#judgementDisplay');
   const scoreEl          = $('#score');
   const comboEl          = $('#combo');
@@ -177,6 +179,7 @@
   let playerLeaderboard = readLocalLeaderboard();
   let bestScore = playerProfile.bestScore;
   let profileSaveTimer = 0;
+  let resultScreenTimer = 0;
   let campaignRun={score:0,hits:0,misses:0,bestCombo:0};
 
   // Impulso
@@ -814,6 +817,8 @@
   // Empieza una ronda: reinicia puntos, impulso y notas; en historia arranca la canción.
   function start({allowSilentFallback = false} = {}) {
     if (running || countdownActive) return;
+    clearTimeout(resultScreenTimer);
+    resultScreenTimer = 0;
     document.body.classList.remove('level-finished');
     const musicRound = true;
     clearBoostState();
@@ -838,6 +843,8 @@
     updateSongProgress(0);
     updateBoostUI();
     clearLaneResults();
+    concertResultScreen.hidden = true;
+    concertResultScreen.onclick = null;
     message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
     setFeedback(musicRound ? 'PREPÁRATE' : 'PREPÁRATE');
@@ -936,6 +943,8 @@
 
   // Detiene la partida y deja todo en su estado inicial.
   function reset() {
+    clearTimeout(resultScreenTimer);
+    resultScreenTimer = 0;
     countdownToken++;
     clearTimeout(countdownTimer);
     countdownActive = false;
@@ -970,6 +979,8 @@
     clearLaneResults();
     updateSongProgress(0);
     message.textContent = '';
+    concertResultScreen.hidden = true;
+    concertResultScreen.onclick = null;
     message.classList.remove('results', 'defeat', 'audio-prompt');
     message.hidden = true;
     setFeedback('LISTO');
@@ -1017,22 +1028,56 @@
     }, 650);
   }
 
-  // Muestra resultados; el tutorial (escenario 0) queda exento del mínimo.
+  // Muestra resultados asociados al concierto actual; el tutorial no usa esta pantalla.
   function showResults(outcome, accuracy, grade) {
     const isCampaignConcert = storyCampaignActive && storyStageIndex > 0;
     const passed = outcome !== 'defeat' && (!isCampaignConcert || playerPerformance >= 70 || accuracy >= 80);
+    const currentStage = storyCampaignActive ? storyPlaylist[storyStageIndex] : null;
+    message.dataset.resultStage = currentStage?.scenario || 'standalone';
+    message.dataset.resultOutcome = passed ? 'victory' : 'defeat';
     message.classList.add('results');
     message.classList.toggle('defeat', !passed);
-    const title = isCampaignConcert ? (passed ? 'CONCIERTO COMPLETADO' : 'CONCIERTO NO SUPERADO') : (outcome === 'defeat' ? 'DERROTA' : 'NIVEL COMPLETADO');
-    const reason = !passed ? (outcome !== 'defeat' ? '<small>SE REQUIERE 70% DE DESEMPEÑO O 80% DE PRECISIÓN</small><br>' : '<small>DESEMPEÑO AGOTADO</small><br>') : '';
+    const title = isCampaignConcert ? (passed ? 'VICTORIA' : 'DERROTA') : (outcome === 'defeat' ? 'DERROTA' : 'NIVEL COMPLETADO');
+    const reason = !passed ? (outcome !== 'defeat' ? 'SE REQUIERE 70% DE DESEMPEÑO O 80% DE PRECISIÓN' : 'DESEMPEÑO AGOTADO') : '';
     const nextStageIndex = storyCampaignActive && storyStageIndex + 1 < storyPlaylist.length ? storyStageIndex + 1 : -1;
     const resultAction = !storyCampaignActive
-      ? `<br><button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`
+      ? `<button id="replayLevelButton" class="replay-level-button" type="button">↻ REPETIR PARTIDA</button>`
       : passed
-        ? '<br><small class="continue-hint">HAZ CLIC PARA CONTINUAR</small>'
-        : '<br><small class="continue-hint">ELIGE CÓMO CONTINUAR</small><br><button id="retryConcertButton" class="replay-level-button" type="button">↻ REPETIR CONCIERTO</button><br><button id="restartStoryButton" class="replay-level-button" type="button">↶ VOLVER AL PRIMER CONCIERTO</button>';
-    message.innerHTML = `${title}<br>${reason}<small>PUNTUACIÓN FINAL: ${score}</small><br><small>RANGO: ${grade} · PRECISIÓN: ${accuracy}%</small><br><small>DESEMPEÑO: ${playerPerformance}%</small><br><small>ACIERTOS: ${hits} · ERRORES: ${misses}</small><br><small>MEJOR COMBO: ${bestCombo}</small>${resultAction}`;
+        ? '<small class="continue-hint">HAZ CLIC PARA CONTINUAR</small>'
+        : '<small class="continue-hint">ELIGE CÓMO CONTINUAR</small><button id="retryConcertButton" class="replay-level-button" type="button">↻ REPETIR CONCIERTO</button><button id="restartStoryButton" class="replay-level-button" type="button">↶ VOLVER AL PRIMER CONCIERTO</button>';
+    const resultRows = [
+      ['PUNTUACIÓN FINAL', score],
+      ['RANGO', grade],
+      ['PRECISIÓN', `${accuracy}%`],
+      ['DESEMPEÑO', `${playerPerformance}%`],
+      ['ACIERTOS', hits],
+      ['ERRORES', misses],
+      ['MEJOR COMBO', bestCombo]
+    ].map(([label, value]) => `<tr><th scope="row">${label}</th><td>${value}</td></tr>`).join('');
+    message.innerHTML = `<h2 class="result-title">${title}</h2><div class="result-summary-panel">${reason ? `<p class="result-reason">${reason}</p>` : ''}<table class="result-score-table"><tbody>${resultRows}</tbody></table><div class="result-summary-actions">${resultAction}</div></div>`;
     message.hidden = false;
+    const resultArt = {
+      1: {victory:'Victoria1erNivel.jpeg', defeat:'Derrota1erNivel.jpeg'},
+      2: {victory:'Victoria2doNivel.jpeg', defeat:'Derrota2doNivel.jpeg'},
+      3: {victory:'Victoria3erNivel.jpeg', defeat:'Derrota3erNivel.jpeg'}
+    };
+    const resultImageFile = isCampaignConcert ? resultArt[storyStageIndex]?.[passed ? 'victory' : 'defeat'] : null;
+    clearTimeout(resultScreenTimer);
+    resultScreenTimer = 0;
+    if (resultImageFile) {
+      concertResultImage.src = new URL(`./ART/Pantallas/${resultImageFile}`, window.location.href).href;
+      concertResultImage.alt = `${passed ? 'Victoria' : 'Derrota'} del concierto ${storyStageIndex}`;
+      concertResultScreen.hidden = false;
+      concertResultScreen.onclick = null;
+      message.hidden = true;
+      resultScreenTimer = window.setTimeout(() => {
+        message.hidden = false;
+        resultScreenTimer = 0;
+      }, 3000);
+    } else {
+      concertResultScreen.hidden = true;
+      concertResultScreen.onclick = null;
+    }
     if (!storyCampaignActive) {
       message.querySelector('#replayLevelButton').addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); start(); }, {once:true});
       message.style.cursor = '';
@@ -1048,6 +1093,10 @@
     }
     message.style.cursor = 'pointer';
     message.addEventListener('click', () => {
+      // La capa de ilustración está por encima del menú; ocultarla antes del fundido
+      // permite que el cómic siguiente se vea y no quede tapado por el resultado.
+      message.hidden = true;
+      concertResultScreen.hidden = true;
       if (nextStageIndex >= 0) dispatchStoryAfterFade('rhythm:comic', {nextStage:nextStageIndex});
       else dispatchStoryAfterFade('rhythm:comic:final');
     }, {once:true});

@@ -1257,27 +1257,57 @@ body[data-scenario] .game-frame {
 }
 .stage-message small { font-size: 9px; }
 
-/* Resumen centrado en la pista al terminar el nivel (borde rojo si es derrota). */
+/* Imagen de victoria/derrota antes de abrir la tabla de resultados. */
+.concert-result-screen {
+  position: absolute;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #000;
+  cursor: default;
+}
+.concert-result-screen[hidden] { display: none; }
+.concert-result-screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+
+
+/* El título queda fuera del recuadro de estadísticas, sobre la tabla. */
 .stage-message.results {
-  z-index: 12;
+  --result-accent: #ffd65a;
+  position: absolute;
+  z-index: 130;
   top: 50%;
   left: 50%;
-  width: min(88%, 540px);
-  padding: 4px 8px;
+  width: min(88%, 650px);
   transform: translate(-50%, -50%);
-  border: 0;
-  border-radius: 0;
-  background: transparent;
   color: white;
-  box-shadow: none;
   font-size: clamp(13px, 1.1cqw, 18px);
-  line-height: 1.65;
-  text-shadow: 0 2px 6px #000, 0 0 12px #000, 0 0 22px #000;
+  line-height: 1.5;
+  text-shadow: 0 2px 6px #000, 0 0 12px #000;
   pointer-events: auto;
 }
-.stage-message.results small { font-size: 1em; }
-.stage-message.results.defeat { border-color: transparent; box-shadow: none; }
-.stage-message.results .continue-hint { display: inline-block; margin-top: 10px; color: #ffd65a; font-size: .8em; letter-spacing: .12em; }
+.stage-message.results[data-result-stage="no-me-digas"] { --result-accent: #50e7f2; }
+.stage-message.results[data-result-stage="me-gustan"] { --result-accent: #ff4db8; }
+.stage-message.results[data-result-stage="hazlo-otra-vez"] { --result-accent: #ffd65a; left: 66%; }
+.stage-message.results.defeat { --result-accent: #ff687e; }
+.stage-message.results .result-title { margin: 0 0 14px; color: var(--result-accent); font-size: clamp(36px, 3.4cqw, 64px); font-weight: 900; line-height: 1; letter-spacing: .1em; text-align: center; text-shadow: 0 3px 10px #000, 0 0 20px #000; }
+.stage-message.results .result-summary-panel { max-height: calc(100% - 90px); overflow-y: auto; padding: clamp(14px, 1.8cqw, 28px); border: 2px solid var(--result-accent); border-radius: 12px; background: linear-gradient(145deg, #0b0b18ed, #141021e8); box-shadow: 0 0 22px color-mix(in srgb, var(--result-accent) 35%, transparent), inset 0 0 22px #0008; }
+.stage-message.results .result-reason { margin: 0 0 10px; color: #ffb8c1; font-size: .85em; font-weight: 700; text-align: center; }
+.stage-message.results .result-score-table { width: 100%; border-collapse: collapse; background: #080812a8; text-align: left; }
+.stage-message.results .result-score-table tr + tr { border-top: 1px solid #ffffff20; }
+.stage-message.results .result-score-table th,
+.stage-message.results .result-score-table td { padding: 8px 12px; }
+.stage-message.results .result-score-table th { color: #d2cde1; font-size: .78em; letter-spacing: .08em; }
+.stage-message.results .result-score-table td { color: #fff; font-weight: 900; text-align: right; }
+.stage-message.results .result-summary-actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin-top: 16px; }
+.stage-message.results .continue-hint { flex-basis: 100%; display: block; color: var(--result-accent); font-size: .8em; letter-spacing: .12em; text-align: center; }
+.stage-message.results .replay-level-button { margin-top: 0; }
 .replay-level-button {
   position: relative;
   z-index: 1;
